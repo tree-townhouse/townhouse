@@ -673,8 +673,12 @@ export function getNoteMenu(props: {
 				},
 			});
 		}
-		// 공개 범위 변경 옵션: 대상 노트를 쓴 유저가 본인이 아닌 로컬 유저이고 자신이 모더레이터/관리자일 때만 표시
-		if (($i.isModerator || $i.isAdmin) && appearNote.userId !== $i.id && appearNote.user.host == null) {
+		const isOwner = appearNote.userId === $i.id;
+		const isOtherLocalUser = appearNote.userId !== $i.id && appearNote.user.host == null;
+		const isAdminOrModerator = $i.isModerator || $i.isAdmin;
+
+		// 2. 다른 로컬 유저가 쓴 노트의 경우 모더레이터/관리자에게는 삭제 버튼과 공개 범위 변경 버튼이 표시되어야 함
+		if (isAdminOrModerator && isOtherLocalUser) {
 			menuItems.push({ type: 'divider' });
 
 			menuItems.push({
@@ -702,26 +706,22 @@ export function getNoteMenu(props: {
 					});
 					if (canceled) return;
 
-					if ($i.isModerator === true || $i.isAdmin === true) {
-						os.apiWithDialog('admin/update-note-visibility', {
-							noteId: appearNote.id,
-							visibility: result.visibility,
-							localOnly: result.localOnly,
-						}).then(() => {
-							appearNote.visibility = result.visibility;
-							appearNote.localOnly = result.localOnly;
-						});
-					} else {
-						// Note owner case (no admin endpoint support yet, but showing menu anyway for now)
-						os.alert({
-							type: 'error',
-							text: '권한이 없습니다. (Moderator/Admin only)',
-						});
-					}
+					os.apiWithDialog('admin/update-note-visibility', {
+						noteId: appearNote.id,
+						visibility: result.visibility,
+						localOnly: result.localOnly,
+					}).then(() => {
+						appearNote.visibility = result.visibility;
+						appearNote.localOnly = result.localOnly;
+					});
 				},
 			});
+		}
 
-			if (appearNote.userId === $i.id) {
+		if (isOwner || (isAdminOrModerator && isOtherLocalUser)) {
+			// Owner gets edit / delete & edit
+			// Admin/Mod on other local users' notes only get delete
+			if (isOwner) {
 				if ($i.policies.canEditNote) {
 					menuItems.push({
 						icon: 'ti ti-edit',
@@ -736,6 +736,8 @@ export function getNoteMenu(props: {
 					action: delEdit,
 				});
 			}
+
+			// Both Owner and Admin/Mod get delete
 			menuItems.push({
 				icon: 'ti ti-trash',
 				text: i18n.ts.delete,
