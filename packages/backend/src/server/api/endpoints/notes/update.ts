@@ -114,6 +114,18 @@ export const paramDef = {
 		},
 		cw: { type: 'string', nullable: true, maxLength: 100 },
 		disableRightClick: { type: 'boolean', default: false },
+		visibility: {
+			type: 'string',
+			enum: ['public', 'home', 'followers', 'specified'],
+			nullable: true,
+		},
+		visibleUserIds: {
+			type: 'array',
+			uniqueItems: true,
+			items: { type: 'string', format: 'misskey:id' },
+			nullable: true,
+		},
+		localOnly: { type: 'boolean', nullable: true },
 		scheduledDelete: {
 			type: 'object',
 			nullable: true,
@@ -209,6 +221,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				} : null,
 				text: ps.text ?? null,
 				cw: ps.cw ?? null,
+				visibility: ps.visibility ?? undefined,
+				visibleUserIds: ps.visibleUserIds ?? undefined,
+				localOnly: ps.localOnly ?? undefined,
 				disableRightClick: ps.disableRightClick,
 				deleteAt: ps.scheduledDelete?.deleteAt ? new Date(ps.scheduledDelete.deleteAt) : ps.scheduledDelete?.deleteAfter ? new Date(Date.now() + ps.scheduledDelete.deleteAfter) : null,
 			};

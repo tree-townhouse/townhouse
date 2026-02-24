@@ -673,8 +673,8 @@ export function getNoteMenu(props: {
 				},
 			});
 		}
-		// 공개 범위 변경 옵션: 로컬 노트를 대상으로 본인 또는 모더레이터/관리자일 때만 표시
-		if ((appearNote.userId === $i.id || $i.isModerator || $i.isAdmin) && appearNote.user.host == null) {
+		// 공개 범위 변경 옵션: 대상 노트를 쓴 유저가 본인이 아닌 로컬 유저이고 자신이 모더레이터/관리자일 때만 표시
+		if (($i.isModerator || $i.isAdmin) && appearNote.userId !== $i.id && appearNote.user.host == null) {
 			menuItems.push({ type: 'divider' });
 
 			menuItems.push({
