@@ -697,11 +697,6 @@ export function getNoteMenu(props: {
 							}, {
 								value: 'followers', label: i18n.ts._visibility.followers,
 							}],
-						},
-						localOnly: {
-							type: 'boolean',
-							label: i18n.ts.disableFederation || '연합에 보내지 않기',
-							default: appearNote.localOnly,
 						}
 					});
 					if (canceled) return;
@@ -709,10 +704,10 @@ export function getNoteMenu(props: {
 					os.apiWithDialog('admin/update-note-visibility', {
 						noteId: appearNote.id,
 						visibility: result.visibility,
-						localOnly: result.localOnly,
+						// We pass the existing localOnly value since the endpoint requires it
+						localOnly: appearNote.localOnly,
 					}).then(() => {
 						appearNote.visibility = result.visibility;
-						appearNote.localOnly = result.localOnly;
 					});
 				},
 			});
