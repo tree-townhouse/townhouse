@@ -685,29 +685,26 @@ export function getNoteMenu(props: {
 				icon: 'ti ti-eye',
 				text: i18n.ts.visibility || '공개 범위',
 				action: async () => {
-					const { canceled, result } = await os.form(i18n.ts.visibility || '공개 범위', {
-						visibility: {
-							type: 'enum',
-							label: i18n.ts.visibility || '공개 범위',
-							default: appearNote.visibility,
-							enum: [{
-								value: 'public', label: i18n.ts._visibility.public,
-							}, {
-								value: 'home', label: i18n.ts._visibility.home,
-							}, {
-								value: 'followers', label: i18n.ts._visibility.followers,
-							}],
-						}
+					const { canceled, result } = await os.select({
+						title: i18n.ts.visibility || '공개 범위',
+						default: appearNote.visibility,
+						items: [{
+							value: 'public', label: i18n.ts._visibility.public,
+						}, {
+							value: 'home', label: i18n.ts._visibility.home,
+						}, {
+							value: 'followers', label: i18n.ts._visibility.followers,
+						}],
 					});
-					if (canceled) return;
+					if (canceled || result == null) return;
 
 					os.apiWithDialog('admin/update-note-visibility', {
 						noteId: appearNote.id,
-						visibility: result.visibility,
+						visibility: result,
 						// We pass the existing localOnly value since the endpoint requires it
 						localOnly: appearNote.localOnly,
 					}).then(() => {
-						appearNote.visibility = result.visibility;
+						appearNote.visibility = result;
 					});
 				},
 			});
