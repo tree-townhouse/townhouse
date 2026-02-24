@@ -24,11 +24,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkA v-tooltip.noDelay.right="i18n.ts.timeline" :class="$style.item" :activeClass="$style.active" to="/" exact>
 				<i :class="$style.itemIcon" class="ti ti-home ti-fw" style="viewTransitionName: navbar-homeIcon;"></i><span :class="$style.itemText">{{ i18n.ts.timeline }}</span>
 			</MkA>
-			<template v-for="item in prefer.r.menu.value">
+			<template v-for="item in menuItems">
 				<div v-if="item === '-'" :class="$style.divider"></div>
 				<component
 					:is="navbarItemDef[item].to ? 'MkA' : 'button'"
-					v-else-if="navbarItemDef[item] && (navbarItemDef[item].show !== false)"
+					v-else
 					v-tooltip.noDelay.right="navbarItemDef[item].title"
 					class="_button"
 					:class="[$style.item, { [$style.active]: navbarItemDef[item].active }]"
@@ -157,6 +157,19 @@ const otherMenuItemIndicated = computed(() => {
 });
 const controlPanelIndicated = ref(false);
 const bannerDisplay = ref(prefer.s.bannerDisplay);
+
+const menuItems = computed(() => {
+	const items = prefer.r.menu.value.filter(item => item === '-' || (navbarItemDef[item] && navbarItemDef[item].show !== false));
+	const result: string[] = [];
+	for (const item of items) {
+		if (item === '-') {
+			if (result.length === 0 || result[result.length - 1] === '-') continue;
+		}
+		result.push(item);
+	}
+	if (result.length > 0 && result[result.length - 1] === '-') result.pop();
+	return result;
+});
 
 if ($i && ($i.isAdmin ?? $i.isModerator)) {
 	misskeyApi('admin/abuse-user-reports', {

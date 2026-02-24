@@ -24,6 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'markSensitiveDriveFile',
 					'resetPassword',
 					'suspendRemoteInstance',
+					'updateNoteVisibility',
 				].includes(log.type),
 				[$style.logRed]: [
 					'suspend',
@@ -70,6 +71,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else-if="log.type === 'createUserAnnouncement'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
 		<span v-else-if="log.type === 'updateUserAnnouncement'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
 		<span v-else-if="log.type === 'deleteUserAnnouncement'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
+		<span v-else-if="log.type === 'updateNoteVisibility'">: @{{ log.info.noteUserUsername }}{{ log.info.noteUserHost ? '@' + log.info.noteUserHost : '' }}</span>
 		<span v-else-if="log.type === 'deleteNote'">: @{{ log.info.noteUserUsername }}{{ log.info.noteUserHost ? '@' + log.info.noteUserHost : '' }}</span>
 		<span v-else-if="log.type === 'deleteDriveFile'">: @{{ log.info.fileUserUsername }}{{ log.info.fileUserHost ? '@' + log.info.fileUserHost : '' }}</span>
 		<span v-else-if="log.type === 'createAvatarDecoration'">: {{ log.info.avatarDecoration.name }}</span>
@@ -111,6 +113,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="log.type === 'createUserAnnouncement'" class="ti ti-plus"></i>
 		<i v-else-if="log.type === 'updateUserAnnouncement'" class="ti ti-pencil"></i>
 		<i v-else-if="log.type === 'deleteUserAnnouncement'" class="ti ti-trash"></i>
+		<i v-else-if="log.type === 'updateNoteVisibility'" class="ti ti-eye"></i>
 		<i v-else-if="log.type === 'deleteNote'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'deleteDriveFile'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'createAd'" class="ti ti-plus"></i>
@@ -150,6 +153,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div>{{ i18n.ts.user }}: {{ log.info.userId }}</div>
 			<div :class="$style.diff">
 				<CodeDiff :context="5" :hideHeader="true" :oldString="log.info.before ?? ''" :newString="log.info.after ?? ''" maxHeight="300px"/>
+			</div>
+		</template>
+		<template v-else-if="log.type === 'updateNoteVisibility'">
+			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.noteUserId}`" class="_link">@{{ log.info.noteUserUsername }}{{ log.info.noteUserHost ? '@' + log.info.noteUserHost : '' }}</MkA></div>
+			<div>{{ i18n.ts.note }}: <MkA :to="`/notes/${log.info.noteId}`" class="_link">{{ log.info.noteId }}</MkA></div>
+			<div :class="$style.diff">
+				<CodeDiff :context="5" :hideHeader="true" :oldString="log.info.before" :newString="log.info.after" maxHeight="300px"/>
 			</div>
 		</template>
 		<template v-else-if="log.type === 'suspend'">

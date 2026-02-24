@@ -194,6 +194,7 @@ export const moderationLogTypes = [
 	'deleteGalleryPost',
 	'deleteChatRoom',
 	'updateProxyAccountDescription',
+	'updateNoteVisibility',
 ] as const;
 
 export const rolePolicies = [
@@ -551,5 +552,13 @@ export type ModerationLogPayloads = {
 	updateProxyAccountDescription: {
 		before: string | null;
 		after: string | null;
-	}
+	};
+	updateNoteVisibility: {
+		noteId: string;
+		noteUserId: string;
+		noteUserUsername: string;
+		noteUserHost: string | null;
+		before: string;
+		after: string;
+	};
 };
