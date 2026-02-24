@@ -676,6 +676,36 @@ export function getNoteMenu(props: {
 
 		if (appearNote.userId === $i.id || $i.isModerator || $i.isAdmin) {
 			menuItems.push({ type: 'divider' });
+
+			if ($i.isModerator || $i.isAdmin) {
+				menuItems.push({
+					icon: 'ti ti-eye',
+					text: i18n.ts.visibility,
+					action: async () => {
+						const { canceled, result } = await os.select({
+							title: i18n.ts.visibility,
+							items: [{
+								value: 'public', label: i18n.ts._visibility.public,
+							}, {
+								value: 'home', label: i18n.ts._visibility.home,
+							}, {
+								value: 'followers', label: i18n.ts._visibility.followers,
+							}, {
+								value: 'specified', label: i18n.ts._visibility.specified,
+							}],
+							default: appearNote.visibility,
+						});
+						if (canceled) return;
+						os.apiWithDialog('admin/update-note-visibility', {
+							noteId: appearNote.id,
+							visibility: result,
+						}).then(() => {
+							appearNote.visibility = result;
+						});
+					},
+				});
+			}
+
 			if (appearNote.userId === $i.id) {
 				if ($i.policies.canEditNote) {
 					menuItems.push({
