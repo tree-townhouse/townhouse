@@ -1316,7 +1316,7 @@ async function post(ev?: MouseEvent) {
 			text: `${err.message}\n${(err as any).id}`,
 		});
 	});
-	if (textareaEl.value) textareaEl.value.style.height = '140px';
+	if (textareaEl.value) textareaEl.value.style.height = '60px';
 	if (props.updateMode) sound.playMisskeySfx('noteEdited');
 	haptic();
 }
@@ -2070,7 +2070,7 @@ html[data-color-scheme=light] .preview {
 	max-width: 100%;
 	min-width: 100%;
 	width: 100%;
-	min-height: 140px;
+	min-height: 60px;
 	max-height: 500px;
 	field-sizing: content;
 }
@@ -2193,7 +2193,7 @@ html[data-color-scheme=light] .preview {
 	}
 
 	.text {
-		min-height: 120px;
+		min-height: 60px;
 		padding: 0 22px;
 	}
 
