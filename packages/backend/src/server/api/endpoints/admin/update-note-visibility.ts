@@ -25,8 +25,9 @@ export const paramDef = {
 	properties: {
 		noteId: { type: 'string', format: 'misskey:id' },
 		visibility: { type: 'string', enum: noteVisibilities },
+		localOnly: { type: 'boolean' },
 	},
-	required: ['noteId', 'visibility'],
+	required: ['noteId', 'visibility', 'localOnly'],
 } as const;
 
 @Injectable()
@@ -58,24 +59,31 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const beforeVisibility = note.visibility;
 			const afterVisibility = ps.visibility as typeof noteVisibilities[number];
 
-			if (beforeVisibility === afterVisibility) {
+			const beforeLocalOnly = note.localOnly;
+			const afterLocalOnly = ps.localOnly;
+
+			if (beforeVisibility === afterVisibility && beforeLocalOnly === afterLocalOnly) {
 				return;
 			}
 
 			await this.notesRepository.update({ id: note.id }, {
 				visibility: afterVisibility,
+				localOnly: afterLocalOnly,
 			});
 
-			this.moderationLogService.log(me, 'updateNoteVisibility', {
-				noteId: note.id,
-				noteUserId: user.id,
-				noteUserUsername: user.username,
-				noteUserHost: user.host,
-				before: beforeVisibility,
-				after: afterVisibility,
-			});
+			if (beforeVisibility !== afterVisibility) {
+				this.moderationLogService.log(me, 'updateNoteVisibility', {
+					noteId: note.id,
+					noteUserId: user.id,
+					noteUserUsername: user.username,
+					noteUserHost: user.host,
+					before: beforeVisibility,
+					after: afterVisibility,
+				});
+			}
 
 			note.visibility = afterVisibility;
+			note.localOnly = afterLocalOnly;
 			this.searchService.unindexNote(note);
 			this.searchService.indexNote(note);
 		});
