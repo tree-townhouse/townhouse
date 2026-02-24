@@ -722,6 +722,7 @@ export function getNoteMenu(props: {
 			// Owner gets edit / delete & edit
 			// Admin/Mod on other local users' notes only get delete
 			if (isOwner) {
+				menuItems.push({ type: 'divider' });
 				if ($i.policies.canEditNote) {
 					menuItems.push({
 						icon: 'ti ti-edit',
