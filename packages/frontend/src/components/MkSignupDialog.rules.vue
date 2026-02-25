@@ -21,17 +21,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div style="font-weight: bold; margin-top: 0.5em;">{{ i18n.ts.beSureToReadThisAsItIsImportant }}</div>
 			</div>
 
-			<MkFolder v-if="availableServerRules" :defaultOpen="true">
-				<template #label>{{ i18n.ts.serverRules }}</template>
-				<template #suffix><i v-if="agreeServerRules" class="ti ti-check" style="color: var(--MI_THEME-success)"></i></template>
-
-				<ol class="_gaps_s" :class="$style.rules">
-					<li v-for="item in instance.serverRules" :class="$style.rule"><div :class="$style.ruleText" v-html="item"></div></li>
-				</ol>
-
-				<MkSwitch :modelValue="agreeServerRules" style="margin-top: 16px;" @update:modelValue="updateAgreeServerRules">{{ i18n.ts.agree }}</MkSwitch>
-			</MkFolder>
-
 			<MkFolder v-if="availableTos || availablePrivacyPolicy" :defaultOpen="true">
 				<template #label>{{ tosPrivacyPolicyLabel }}</template>
 				<template #suffix><i v-if="agreeTosAndPrivacyPolicy" class="ti ti-check" style="color: var(--MI_THEME-success)"></i></template>
@@ -41,6 +30,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 
 				<MkSwitch :modelValue="agreeTosAndPrivacyPolicy" style="margin-top: 16px;" @update:modelValue="updateAgreeTosAndPrivacyPolicy">{{ i18n.ts.agree }}</MkSwitch>
+			</MkFolder>
+
+			<MkFolder v-if="availableServerRules" :defaultOpen="true">
+				<template #label>{{ i18n.ts.serverRules }}</template>
+				<template #suffix><i v-if="agreeServerRules" class="ti ti-check" style="color: var(--MI_THEME-success)"></i></template>
+
+				<ol class="_gaps_s" :class="$style.rules">
+					<li v-for="item in instance.serverRules" :class="$style.rule"><div :class="$style.ruleText" v-html="item"></div></li>
+				</ol>
+
+				<MkSwitch :modelValue="agreeServerRules" style="margin-top: 16px;" @update:modelValue="updateAgreeServerRules">{{ i18n.ts.agree }}</MkSwitch>
 			</MkFolder>
 
 			<MkFolder :defaultOpen="true">
