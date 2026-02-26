@@ -2070,7 +2070,7 @@ html[data-color-scheme=light] .preview {
 	max-width: 100%;
 	min-width: 100%;
 	width: 100%;
-	min-height: 140px;
+	min-height: 80px;
 	max-height: 500px;
 	field-sizing: content;
 }
