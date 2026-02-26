@@ -278,7 +278,7 @@ onUnmounted(() => {
 });
 
 uploader.events.on('itemUploaded', ctx => {
-	files.value.push(ctx.item.uploaded!);
+	files.value = [...files.value, ctx.item.uploaded!];
 	uploader.removeItem(ctx.item);
 });
 
@@ -578,7 +578,7 @@ function chooseFileFromDrive(ev: MouseEvent) {
 	if (props.mock) return;
 
 	chooseDriveFile({ multiple: true }).then(driveFiles => {
-		files.value.push(...driveFiles);
+		files.value = [...files.value, ...driveFiles];
 	});
 }
 
