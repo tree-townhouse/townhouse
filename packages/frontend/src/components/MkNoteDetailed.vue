@@ -295,7 +295,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div>
 			<div v-if="tab === 'replies'">
 				<MkPostForm v-if="$i && !note.isHidden && !isMobile && prefer.s.showFixedPostFormInReplies" class="post-form _panel" fixed :reply="appearNote"></MkPostForm>
-				<MkNoteSub v-for="note in replies" :key="note.id" :note="note" :class="$style.reply" :detail="true"/>
+				<component
+					:is="prefer.s.animation ? TransitionGroup : 'div'"
+					:enterActiveClass="$style.transition_x_enterActive"
+					:leaveActiveClass="$style.transition_x_leaveActive"
+					:enterFromClass="$style.transition_x_enterFrom"
+					:leaveToClass="$style.transition_x_leaveTo"
+					:moveClass="$style.transition_x_move"
+				>
+					<MkNoteSub v-for="note in replies" :key="note.id" :note="note" :class="$style.reply" :detail="true"/>
+				</component>
 				<div v-if="replies.length > 2 && !repliesLoaded" style="padding: 16px">
 					<MkButton style="margin: 0 auto;" primary rounded @click="loadReplies">{{ i18n.ts.loadMore }}</MkButton>
 				</div>
@@ -366,7 +375,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, inject, markRaw, onMounted, provide, ref, useTemplateRef } from 'vue';
+import { computed, inject, markRaw, onMounted, provide, ref, useTemplateRef, TransitionGroup } from 'vue';
 import * as mfm from 'mfc-js';
 import * as Misskey from 'cherrypick-js';
 import { isLink } from '@@/js/is-link.js';
@@ -498,9 +507,22 @@ const history_raw = ref(false);
 useGlobalEvent('noteDeleted', (noteId) => {
 	if (noteId === note.id || noteId === appearNote.id) {
 		isDeleted.value = true;
+	} else if (tab.value === 'replies' && replies.value) {
+		const index = replies.value.findIndex(r => r.id === noteId);
+		if (index !== -1) {
+			replies.value.splice(index, 1);
+			appearNote.repliesCount--;
+		}
 	}
-	replies.value = replies.value.filter(x => x.id !== noteId);
-	conversation.value = conversation.value.filter(x => x.id !== noteId);
+});
+
+useGlobalEvent('notePosted', (newNote) => {
+	if (newNote.replyId === appearNote.id) {
+		appearNote.repliesCount++;
+		if (tab.value === 'replies') {
+			replies.value.unshift(newNote);
+		}
+	}
 });
 
 const pleaseLoginContext = computed<OpenOnRemoteOptions>(() => ({
@@ -1427,5 +1449,39 @@ function loadHistories() {
 
 .deleteAt {
 	margin: 0 0 8px 0;
+}
+
+.transition_x_move {
+	transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.transition_x_enterActive {
+	transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+
+	&.reply,
+	.reply {
+		/* Skip Note Rendering有効時、TransitionGroupでnoteを追加するときに一瞬がくっとなる問題を抑制する */
+		content-visibility: visible !important;
+	}
+}
+
+.transition_x_leaveActive {
+	transition: height 0.2s cubic-bezier(0,.5,.5,1), opacity 0.2s cubic-bezier(0,.5,.5,1);
+}
+
+.transition_x_enterFrom {
+	opacity: 0;
+	transform: translateY(max(-64px, -100%));
+}
+
+@supports (interpolate-size: allow-keywords) {
+	.transition_x_leaveTo {
+		interpolate-size: allow-keywords; // heightのtransitionを動作させるために必要
+		height: 0;
+	}
+}
+
+.transition_x_leaveTo {
+	opacity: 0;
 }
 </style>
