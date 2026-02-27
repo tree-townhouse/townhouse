@@ -499,6 +499,8 @@ useGlobalEvent('noteDeleted', (noteId) => {
 	if (noteId === note.id || noteId === appearNote.id) {
 		isDeleted.value = true;
 	}
+	replies.value = replies.value.filter(x => x.id !== noteId);
+	conversation.value = conversation.value.filter(x => x.id !== noteId);
 });
 
 const pleaseLoginContext = computed<OpenOnRemoteOptions>(() => ({
