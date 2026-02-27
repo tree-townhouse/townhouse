@@ -299,16 +299,6 @@ export async function mainBoot() {
 		}
 		miLocalStorage.setItem('lastUsed', Date.now().toString());
 
-		const latestDonationInfoShownAt = miLocalStorage.getItem('latestDonationInfoShownAt');
-		const neverShowDonationInfo = miLocalStorage.getItem('neverShowDonationInfo');
-		if (neverShowDonationInfo !== 'true' && (createdAt.getTime() < (Date.now() - (1000 * 60 * 60 * 24 * 3))) && !window.location.pathname.startsWith('/miauth')) {
-			if (latestDonationInfoShownAt == null || (new Date(latestDonationInfoShownAt).getTime() < (Date.now() - (1000 * 60 * 60 * 24 * 30)))) {
-				const { dispose } = popup(defineAsyncComponent(() => import('@/components/MkDonation.vue')), {}, {
-					closed: () => dispose(),
-				});
-			}
-		}
-
 		if (store.s.realtimeMode) {
 			const stream = useStream();
 
