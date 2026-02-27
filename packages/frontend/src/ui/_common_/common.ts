@@ -153,6 +153,14 @@ export function openInstanceMenu(ev: MouseEvent) {
 		});
 	}
 
+	menuItems.push({
+		type: 'a',
+		text: i18n.ts.serverStatus,
+		icon: 'ti ti-server-cog',
+		href: 'https://status.townhouse.work/',
+		target: '_blank',
+	});
+
 	if (instance.impressumUrl != null || instance.tosUrl != null || instance.privacyPolicyUrl != null) {
 		menuItems.push({ type: 'divider' });
 	}
@@ -197,12 +205,6 @@ export function openInstanceMenu(ev: MouseEvent) {
 			},
 		});
 	}
-
-	menuItems.push({
-		type: 'link',
-		text: i18n.ts.aboutMisskey,
-		to: '/about-misskey',
-	});
 
 	os.popupMenu(menuItems, ev.currentTarget ?? ev.target, {
 		align: 'left',
