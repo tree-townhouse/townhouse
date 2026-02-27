@@ -73,24 +73,6 @@ function detachMedia(id: string) {
 	}
 }
 
-async function detachAndDeleteMedia(file: Misskey.entities.DriveFile) {
-	if (mock) return;
-
-	detachMedia(file.id);
-
-	const { canceled } = await os.confirm({
-		type: 'warning',
-		text: i18n.tsx.driveFileDeleteConfirm({ name: file.name }),
-	});
-	if (canceled) return;
-
-	await os.apiWithDialog('drive/files/delete', {
-		fileId: file.id,
-	});
-
-	globalEvents.emit('driveFilesDeleted', [file]);
-}
-
 function toggleSensitive(file) {
 	if (mock) {
 		emit('changeSensitive', file, !file.isSensitive);
@@ -184,11 +166,6 @@ function showFileMenu(file: Misskey.entities.DriveFile, ev: MouseEvent | Keyboar
 		text: i18n.ts.attachCancel,
 		icon: 'ti ti-circle-x',
 		action: () => { detachMedia(file.id); },
-	}, {
-		text: i18n.ts.deleteFile,
-		icon: 'ti ti-trash',
-		danger: true,
-		action: () => { detachAndDeleteMedia(file); },
 	});
 
 	if (prefer.s.devMode) {
