@@ -1316,7 +1316,9 @@ async function post(ev?: MouseEvent) {
 			text: `${err.message}\n${(err as any).id}`,
 		});
 	});
-	if (textareaEl.value) textareaEl.value.style.height = '140px';
+	if (textareaEl.value) {
+		textareaEl.value.style.height = '';
+	}
 	if (props.updateMode) sound.playMisskeySfx('noteEdited');
 	haptic();
 }
