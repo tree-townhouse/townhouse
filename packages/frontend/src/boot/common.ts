@@ -109,6 +109,10 @@ export async function common(createVue: () => Promise<App<Element>>) {
 	}
 	//#endregion
 
+	window.addEventListener('vite:preloadError', () => {
+		window.location.reload();
+	});
+
 	// タッチデバイスでCSSの:hoverを機能させる
 	window.document.addEventListener('touchend', () => {}, { passive: true });
 
