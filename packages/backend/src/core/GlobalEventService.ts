@@ -115,10 +115,10 @@ export interface NoteEventTypes {
 		deletedAt: Date;
 	};
 	updated: {
-		cw: string | null;
-		text: string | null;
-		disableRightClick: boolean | null;
-		deleteAt: Date | null;
+		cw?: string | null;
+		text?: string | null;
+		disableRightClick?: boolean | null;
+		deleteAt?: Date | null;
 		isBlinded?: boolean | null;
 		fileIds?: MiNote['fileIds'];
 		files?: Packed<'DriveFile'>[];

@@ -151,8 +151,8 @@ function realtimeSubscribe(props: {
 
 			case 'updated': {
 				note.updatedAt = new Date().toISOString();
-				note.cw = body.cw;
-				note.text = body.text;
+				if (body.cw !== undefined) note.cw = body.cw;
+				if (body.text !== undefined) note.text = body.text;
 				if (body.isBlinded !== undefined) {
 					note.isBlinded = body.isBlinded;
 
@@ -194,6 +194,7 @@ function realtimeSubscribe(props: {
 						note.isHidden = false;
 					}
 				}
+				noteEvents.emit(`updated:${id}`, { isBlinded: note.isBlinded });
 				break;
 			}
 
@@ -233,6 +234,8 @@ export type ReactiveNoteData = {
 	reactionEmojis: Misskey.entities.Note['reactionEmojis'];
 	myReaction: Misskey.entities.Note['myReaction'];
 	pollChoices: NonNullable<Misskey.entities.Note['poll']>['choices'];
+	isBlinded: boolean;
+	updatedRev: number;
 };
 
 const noReaction = Symbol();
@@ -262,11 +265,14 @@ export function useNoteCapture(props: {
 		reactionEmojis: note.reactionEmojis,
 		myReaction: note.myReaction,
 		pollChoices: note.poll?.choices ?? [],
+		isBlinded: note.isBlinded || false,
+		updatedRev: 0,
 	});
 
 	noteEvents.on(`reacted:${note.id}`, onReacted);
 	noteEvents.on(`unreacted:${note.id}`, onUnreacted);
 	noteEvents.on(`pollVoted:${note.id}`, onPollVoted);
+	noteEvents.on(`updated:${note.id}`, onUpdated);
 
 	// 操作がダブっていないかどうかを簡易的に記録するためのMap
 	const reactionUserMap = new Map<Misskey.entities.User['id'], string | typeof noReaction>();
@@ -328,6 +334,13 @@ export function useNoteCapture(props: {
 		$note.pollChoices = choices;
 	}
 
+	function onUpdated(payload: { isBlinded?: boolean }) {
+		$note.updatedRev++;
+		if (payload.isBlinded !== undefined) {
+			$note.isBlinded = payload.isBlinded;
+		}
+	}
+
 	function subscribe() {
 		if (mock) {
 			// モックモードでは購読しない
@@ -350,6 +363,7 @@ export function useNoteCapture(props: {
 		noteEvents.off(`reacted:${note.id}`, onReacted);
 		noteEvents.off(`unreacted:${note.id}`, onUnreacted);
 		noteEvents.off(`pollVoted:${note.id}`, onPollVoted);
+		noteEvents.off(`updated:${note.id}`, onUpdated);
 	});
 
 	// 投稿からある程度経過している(=タイムラインを遡って表示した)ノートは、イベントが発生する可能性が低いためそもそも購読しない

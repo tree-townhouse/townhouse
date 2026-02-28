@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 >
 <div
 	v-if="!hardMuted && !hideByPlugin && muted === false"
-	:key="appearNote.isBlinded ? 'blinded' : 'unblinded'"
+	:key="$appearNote.updatedRev"
 	ref="rootEl"
 	v-hotkey="keymap"
 	:class="[$style.root, { [$style.showActionsOnlyHover]: prefer.s.showNoteActionsOnlyHover, [$style.skipRender]: prefer.s.skipNoteRender }]"
@@ -103,8 +103,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</p>
 					<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 						<div :class="$style.text">
-							<span v-if="appearNote.isBlinded && appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.blindedNoteMessage }})</span>
-							<span v-else-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
+							<div v-if="appearNote.isBlinded" style="opacity: 0.5; margin-bottom: 4px;">({{ i18n.ts.blindedNoteMessage }})</div>
+							<span v-if="appearNote.isHidden && !appearNote.isBlinded" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
 							<MkA v-if="appearNote.replyId && (forceShowReplyTargetNote || prefer.s.showReplyTargetNote)" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`" @click.stop><i class="ti ti-arrow-back-up"></i></MkA>
 							<Mfm
 								v-if="appearNote.text"

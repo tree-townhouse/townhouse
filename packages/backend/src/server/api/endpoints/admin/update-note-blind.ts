@@ -99,13 +99,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			this.globalEventService.publishNoteStream(note.id, 'updated', {
-				cw: note.cw,
-				text: note.text,
-				disableRightClick: note.disableRightClick,
 				deleteAt: note.deleteAt ?? null,
 				isBlinded: note.isBlinded,
-				fileIds: fileIdsPayload,
-				files: filesPayload,
+				...(note.isBlinded ? {} : {
+					cw: note.cw,
+					text: note.text,
+					fileIds: fileIdsPayload,
+					files: filesPayload,
+				}),
 			});
 		});
 	}
