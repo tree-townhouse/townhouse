@@ -161,6 +161,8 @@ function realtimeSubscribe(props: {
 						note.text = null;
 						note.fileIds = [];
 						note.files = [];
+					} else if (body.isBlinded === false) {
+						note.isHidden = false;
 					}
 				}
 				if (body.visibility !== undefined) {
@@ -334,6 +336,8 @@ export function useNoteCapture(props: {
 				note.text = null;
 				note.fileIds = [];
 				note.files = [];
+			} else if (payload.isBlinded === false) {
+				note.isHidden = false;
 			}
 		}
 		if (payload.fileIds !== undefined) {

@@ -721,6 +721,7 @@ export function getNoteMenu(props: {
 				icon: appearNote.isBlinded ? 'ti ti-eye' : 'ti ti-eye-off',
 				text: appearNote.isBlinded ? i18n.ts.unblind : i18n.ts.blind,
 				action: async () => {
+					const targetBlindState = !appearNote.isBlinded;
 					const { canceled } = await os.confirm({
 						type: 'warning',
 						text: appearNote.isBlinded ? i18n.ts.unblindConfirm : i18n.ts.blindConfirm,
@@ -729,11 +730,11 @@ export function getNoteMenu(props: {
 
 					misskeyApi('admin/update-note-blind', {
 						noteId: appearNote.id,
-						isBlinded: !appearNote.isBlinded,
+						isBlinded: targetBlindState,
 					}).then(() => {
-						appearNote.isBlinded = !appearNote.isBlinded;
+						appearNote.isBlinded = targetBlindState;
 						noteEvents.emit(`updated:${appearNote.id}`, {
-							isBlinded: appearNote.isBlinded,
+							isBlinded: targetBlindState,
 						});
 					});
 				},
