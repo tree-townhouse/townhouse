@@ -120,6 +120,8 @@ export interface NoteEventTypes {
 		disableRightClick: boolean | null;
 		deleteAt: Date | null;
 		isBlinded?: boolean | null;
+		fileIds?: MiNote['fileIds'];
+		files?: Packed<'DriveFile'>[];
 	};
 	reacted: {
 		reaction: string;

@@ -10,6 +10,8 @@ import { DI } from '@/di-symbols.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { SearchService } from '@/core/SearchService.js';
+import type { DriveFilesRepository } from '@/models/_.js';
+import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -37,9 +39,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
+		@Inject(DI.driveFilesRepository)
+		private driveFilesRepository: DriveFilesRepository,
+
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
 		private searchService: SearchService,
+		private driveFileEntityService: DriveFileEntityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const note = await this.notesRepository.findOneBy({ id: ps.noteId });
@@ -78,12 +84,28 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			this.searchService.unindexNote(note);
 			this.searchService.indexNote(note);
 
+			let filesPayload = undefined;
+			let fileIdsPayload = undefined;
+
+			// If unblinding, we should supply the original files so the client can restore them without a reload.
+			if (!afterBlinded && note.fileIds && note.fileIds.length > 0) {
+				fileIdsPayload = note.fileIds;
+				const files = await this.driveFilesRepository.createQueryBuilder('file')
+					.where('file.id IN (:...fileIds)', { fileIds: note.fileIds })
+					.orderBy('array_position(ARRAY[:...fileIds], "file"."id"::text)')
+					.setParameters({ fileIds: note.fileIds })
+					.getMany();
+				filesPayload = await this.driveFileEntityService.packMany(files);
+			}
+
 			this.globalEventService.publishNoteStream(note.id, 'updated', {
 				cw: note.cw,
 				text: note.text,
 				disableRightClick: note.disableRightClick,
 				deleteAt: note.deleteAt ?? null,
 				isBlinded: note.isBlinded,
+				fileIds: fileIdsPayload,
+				files: filesPayload,
 			});
 		});
 	}

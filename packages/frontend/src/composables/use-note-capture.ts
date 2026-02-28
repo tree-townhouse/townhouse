@@ -112,7 +112,7 @@ function pollingSubscribe(props: {
 }
 
 function realtimeSubscribe(props: {
-	note: Pick<Misskey.entities.Note, 'id' | 'createdAt' | 'updatedAt' | 'cw' | 'text' | 'isBlinded'>;
+	note: Pick<Misskey.entities.Note, 'id' | 'createdAt' | 'updatedAt' | 'cw' | 'text' | 'isBlinded' | 'userId' | 'files' | 'fileIds'> & { isHidden?: boolean };
 }): void {
 	const note = props.note;
 	const connection = useStream();
@@ -155,6 +155,44 @@ function realtimeSubscribe(props: {
 				note.text = body.text;
 				if (body.isBlinded !== undefined) {
 					note.isBlinded = body.isBlinded;
+
+					// Re-evaluate visibility for the current user in realtime
+					if (note.isBlinded) {
+						let hide = false;
+
+						const iAmModerator = $i && ($i.isAdmin || $i.policies?.canHideNote);
+						if (!iAmModerator) {
+							// For regular users, they shouldn't see blinded note contents unless they are a follower of the author
+							if ($i == null) {
+								hide = true; // Guest
+							} else if ($i.id !== note.userId) {
+								// We can't synchronously check following status here via DB,
+								// but usually if they shouldn't see it they wouldn't have been packed with the text anyway.
+								// For safety and immediate UI response, we hide it immediately. For followers, it might temporarily hide until refresh,
+								// but preventing leak is more important.
+								hide = true;
+							}
+						}
+
+						if (hide) {
+							note.text = null;
+							note.cw = null;
+							note.files = [];
+							note.fileIds = [];
+							note.isHidden = true;
+						}
+					} else {
+						// Unblinded: we might not have the original text if it wasn't packed.
+						// The UI will re-render, but usually requires a reload to fetch original text if it was hidden.
+						// However, if the text is in the stream payload, we just restored it above!
+						if (body.files !== undefined) {
+							note.files = body.files;
+						}
+						if (body.fileIds !== undefined) {
+							note.fileIds = body.fileIds;
+						}
+						note.isHidden = false;
+					}
 				}
 				break;
 			}
