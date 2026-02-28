@@ -310,12 +310,25 @@ export function useNoteCapture(props: {
 
 	function onUpdated(payload: Partial<Misskey.entities.Note>) {
 		$note.updatedRev++;
-		Object.assign(note, payload);
-		if (payload.isBlinded !== undefined) {
-			$note.isBlinded = payload.isBlinded;
+		if (payload.text !== undefined) {
+			note.text = payload.text;
 		}
 		if (payload.visibility !== undefined) {
-			$note.visibility = payload.visibility;
+			note.visibility = payload.visibility;
+		}
+		if (payload.cw !== undefined) {
+			note.cw = payload.cw;
+		}
+		if (payload.isBlinded !== undefined) {
+			note.isBlinded = payload.isBlinded;
+		}
+
+		if (payload.visibility !== undefined || payload.isBlinded !== undefined) {
+			globalEvents.emit('noteVisibilityChanged', {
+				noteId: note.id,
+				visibility: note.visibility as string,
+				isBlinded: note.isBlinded || false,
+			});
 		}
 	}
 

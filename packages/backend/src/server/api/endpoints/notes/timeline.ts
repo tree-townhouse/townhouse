@@ -116,8 +116,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				excludePureRenotes: !ps.withRenotes,
 				withCats: ps.withCats,
 				noteFilter: note => {
-					if (note.reply && note.reply.visibility === 'followers') {
+					if (note.visibility === 'followers' || note.visibility === 'home') {
+						if (note.userId !== me.id && !Object.hasOwn(followings, note.userId)) return false;
+					}
+					if (note.reply && (note.reply.visibility === 'followers' || note.reply.visibility === 'home')) {
 						if (!Object.hasOwn(followings, note.reply.userId) && note.reply.userId !== me.id) return false;
+					}
+					if (note.renote && (note.renote.visibility === 'followers' || note.renote.visibility === 'home')) {
+						if (!Object.hasOwn(followings, note.renote.userId) && note.renote.userId !== me.id) return false;
 					}
 
 					return true;

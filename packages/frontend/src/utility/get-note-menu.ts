@@ -702,10 +702,12 @@ export function getNoteMenu(props: {
 					os.apiWithDialog('admin/update-note-visibility', {
 						noteId: appearNote.id,
 						visibility: result,
-						// We pass the existing localOnly value since the endpoint requires it
 						localOnly: appearNote.localOnly,
 					}).then(() => {
 						appearNote.visibility = result;
+						noteEvents.emit(`updated:${appearNote.id}`, {
+							visibility: result,
+						});
 					});
 				},
 			});
