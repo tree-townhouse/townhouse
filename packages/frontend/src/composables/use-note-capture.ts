@@ -18,6 +18,7 @@ export const noteEvents = new EventEmitter<{
 	[ev: `reacted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; reaction: string; emoji?: { name: string; url: string; }; }) => void;
 	[ev: `unreacted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; reaction: string; emoji?: { name: string; url: string; }; }) => void;
 	[ev: `pollVoted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; choice: string; }) => void;
+	[ev: `updated:${string}`]: (ctx: Partial<Misskey.entities.Note>) => void;
 }>();
 
 const fetchEvent = new EventEmitter<{
@@ -323,6 +324,12 @@ export function useNoteCapture(props: {
 		if (payload.isBlinded !== undefined) {
 			note.isBlinded = payload.isBlinded;
 			$note.isBlinded = payload.isBlinded;
+		}
+		if (payload.fileIds !== undefined) {
+			note.fileIds = payload.fileIds;
+		}
+		if (payload.files !== undefined) {
+			note.files = payload.files;
 		}
 
 		if (payload.visibility !== undefined || payload.isBlinded !== undefined) {
