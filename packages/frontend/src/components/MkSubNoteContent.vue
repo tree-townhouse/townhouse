@@ -253,7 +253,7 @@ const parsed = props.note.text ? parseMfmCached(props.note.text) : null;
 const isLong = shouldCollapsed(props.note, []);
 const isMFM = shouldMfmCollapsed(props.note);
 
-const isBlindedInThisContext = computed(() => $note.isBlinded && inGlobalTimeline.value);
+const isBlindedInThisContext = computed(() => $note.isBlinded && inGlobalTimeline.value && inGlobalTimeline.value);
 const iAmModerator = computed(() => $i && ($i.isAdmin || $i.policies?.canHideNote));
 const isEffectivelyHidden = computed(() => props.note.isHidden || (isBlindedInThisContext.value && !iAmModerator.value));
 
