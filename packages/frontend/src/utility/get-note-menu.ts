@@ -724,7 +724,7 @@ export function getNoteMenu(props: {
 					});
 					if (canceled) return;
 
-					os.apiWithDialog('admin/update-note-blind', {
+					misskeyApi('admin/update-note-blind', {
 						noteId: appearNote.id,
 						isBlinded: !appearNote.isBlinded,
 					}).then(() => {

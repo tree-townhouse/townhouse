@@ -5,7 +5,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div ref="rootEl" :class="[$style.root, { [$style.collapsed]: collapsed }]">
-	<div>
+	<Transition
+		:enterActiveClass="prefer.s.animation ? $style.transition_x_enterActive : ''"
+		:leaveActiveClass="prefer.s.animation ? $style.transition_x_leaveActive : ''"
+		:enterFromClass="prefer.s.animation ? $style.transition_x_enterFrom : ''"
+		:leaveToClass="prefer.s.animation ? $style.transition_x_leaveTo : ''"
+		mode="out-in"
+	>
+	<div :key="isEffectivelyHidden ? 'hidden' : 'visible'">
 		<span v-if="isBlindedInThisContext && isEffectivelyHidden" style="opacity: 0.5">({{ i18n.ts.blindedNoteMessage }})</span>
 		<span v-else-if="isEffectivelyHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 		<span v-if="note.deletedAt" style="opacity: 0.5">({{ i18n.ts.deletedNote }})</span>
@@ -80,6 +87,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 		</div>
 	</div>
+	</Transition>
 	<button v-if="((isLong && prefer.s.collapseLongNoteContent) || (isMFM && prefer.s.collapseDefault) || (note.files && note.files.length > 0) || !!note.poll) && collapsed" :class="$style.fade" class="_button" @click.stop="collapsed = false">
 		<span :class="$style.fadeLabel">
 			{{ i18n.ts.showMore }}

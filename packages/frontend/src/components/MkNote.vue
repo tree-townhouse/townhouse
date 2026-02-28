@@ -218,7 +218,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll" style="margin: 4px 0;" @click.stop/>
 			</p>
 			<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
-				<div :class="$style.text">
+				<Transition
+					:enterActiveClass="prefer.s.animation ? $style.transition_x_enterActive : ''"
+					:leaveActiveClass="prefer.s.animation ? $style.transition_x_leaveActive : ''"
+					:enterFromClass="prefer.s.animation ? $style.transition_x_enterFrom : ''"
+					:leaveToClass="prefer.s.animation ? $style.transition_x_leaveTo : ''"
+					mode="out-in"
+				>
+				<div :key="isEffectivelyHidden ? 'hidden' : 'visible'" :class="$style.text">
 					<span v-if="isBlindedInThisContext && isEffectivelyHidden" style="opacity: 0.5">({{ i18n.ts.blindedNoteMessage }})</span>
 					<span v-else-if="isEffectivelyHidden" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
 					<MkA v-if="appearNote.replyId && (forceShowReplyTargetNote || prefer.s.showReplyTargetNote)" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`" @click.stop><i class="ti ti-arrow-back-up"></i></MkA>
@@ -292,6 +299,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div v-if="isEnabledUrlPreview && !isEffectivelyHidden">
 					<MkUrlPreview v-for="url in urls" :key="url" :url="url" :compact="true" :detail="false" :class="$style.urlPreview"/>
 				</div>
+				</Transition>
 				<button v-if="((isLong && prefer.s.collapseLongNoteContent) || (isMFM && prefer.s.collapseDefault) || (appearNote.files && appearNote.files.length > 0 && prefer.s.allMediaNoteCollapse)) && collapsed" :class="$style.collapsed" class="_button" @click.stop="collapsed = false">
 					<span :class="$style.collapsedLabel">
 						{{ i18n.ts.showMore }}
