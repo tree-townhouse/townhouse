@@ -344,6 +344,18 @@ useGlobalEvent('noteDeleted', (noteId) => {
 	paginator.removeItem(noteId);
 });
 
+useGlobalEvent('noteVisibilityChanged', ({ noteId, visibility, isBlinded }) => {
+	if (props.src === 'global') {
+		if (isBlinded || visibility !== 'public') {
+			paginator.removeItem(noteId);
+		}
+	} else if (props.src === 'local' || props.src === 'social') {
+		if (visibility === 'followers' || visibility === 'specified') {
+			paginator.removeItem(noteId);
+		}
+	}
+});
+
 function releaseQueue() {
 	haptic();
 	paginator.releaseQueue();

@@ -159,6 +159,13 @@ function realtimeSubscribe(props: {
 				if (body.visibility !== undefined) {
 					note.visibility = body.visibility;
 				}
+				if (body.visibility !== undefined || body.isBlinded !== undefined) {
+					globalEvents.emit('noteVisibilityChanged', {
+						noteId: id,
+						visibility: note.visibility as string,
+						isBlinded: note.isBlinded || false,
+					});
+				}
 				noteEvents.emit(`updated:${id}`, { ...body });
 				break;
 			}
