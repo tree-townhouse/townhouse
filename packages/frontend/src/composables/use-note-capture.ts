@@ -315,12 +315,14 @@ export function useNoteCapture(props: {
 		}
 		if (payload.visibility !== undefined) {
 			note.visibility = payload.visibility;
+			$note.visibility = payload.visibility;
 		}
 		if (payload.cw !== undefined) {
 			note.cw = payload.cw;
 		}
 		if (payload.isBlinded !== undefined) {
 			note.isBlinded = payload.isBlinded;
+			$note.isBlinded = payload.isBlinded;
 		}
 
 		if (payload.visibility !== undefined || payload.isBlinded !== undefined) {
