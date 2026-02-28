@@ -156,6 +156,12 @@ function realtimeSubscribe(props: {
 				if (body.text !== undefined) note.text = body.text;
 				if (body.isBlinded !== undefined) {
 					note.isBlinded = body.isBlinded;
+					// When blinding, clear content to match server-side hideNote() behavior
+					if (body.isBlinded && body.text === undefined) {
+						note.text = null;
+						note.fileIds = [];
+						note.files = [];
+					}
 				}
 				if (body.visibility !== undefined) {
 					note.visibility = body.visibility;
@@ -310,7 +316,6 @@ export function useNoteCapture(props: {
 	}
 
 	function onUpdated(payload: Partial<Misskey.entities.Note>) {
-		$note.updatedRev++;
 		if (payload.text !== undefined) {
 			note.text = payload.text;
 		}
@@ -324,6 +329,12 @@ export function useNoteCapture(props: {
 		if (payload.isBlinded !== undefined) {
 			note.isBlinded = payload.isBlinded;
 			$note.isBlinded = payload.isBlinded;
+			// When blinding, clear content to match server-side hideNote() behavior
+			if (payload.isBlinded && payload.text === undefined) {
+				note.text = null;
+				note.fileIds = [];
+				note.files = [];
+			}
 		}
 		if (payload.fileIds !== undefined) {
 			note.fileIds = payload.fileIds;
@@ -339,6 +350,8 @@ export function useNoteCapture(props: {
 				isBlinded: note.isBlinded || false,
 			});
 		}
+
+		$note.updatedRev++;
 	}
 
 	function subscribe() {
