@@ -104,6 +104,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				isBlinded: note.isBlinded,
 				...contentPayload,
 			});
+
+			this.globalEventService.publishBroadcastStream('noteUpdated', {
+				id: note.id,
+				type: 'updated',
+				body: {
+					deleteAt: note.deleteAt ?? null,
+					isBlinded: note.isBlinded,
+					...contentPayload,
+				},
+			});
 		});
 	}
 }

@@ -88,6 +88,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				visibility: afterVisibility,
 				localOnly: afterLocalOnly,
 			});
+
+			this.globalEventService.publishBroadcastStream('noteUpdated', {
+				id: note.id,
+				type: 'updated',
+				body: {
+					visibility: afterVisibility,
+					localOnly: afterLocalOnly,
+				},
+			});
+
 			this.searchService.unindexNote(note);
 			this.searchService.indexNote(note);
 		});

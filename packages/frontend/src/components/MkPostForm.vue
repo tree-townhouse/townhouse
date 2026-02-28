@@ -180,6 +180,7 @@ import { prefer } from '@/preferences.js';
 import { getPluginHandlers } from '@/plugin.js';
 import { DI } from '@/di.js';
 import { globalEvents } from '@/events.js';
+import { noteEvents } from '@/composables/use-note-capture.js';
 import { checkDragDataType, getDragData } from '@/drag-and-drop.js';
 import { useUploader } from '@/composables/use-uploader.js';
 import { startTour } from '@/utility/tour.js';
@@ -1244,6 +1245,8 @@ async function post(ev?: MouseEvent) {
 
 		if (res.createdNote) {
 			globalEvents.emit('notePosted', res.createdNote);
+		} else if (res.updatedNote) {
+			noteEvents.emit(`updated:${res.updatedNote.id}`, res.updatedNote);
 		}
 
 		nextTick(() => {

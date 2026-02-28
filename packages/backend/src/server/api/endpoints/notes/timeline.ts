@@ -120,10 +120,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						if (note.userId !== me.id && !Object.hasOwn(followings, note.userId)) return false;
 					}
 					if (note.reply && (note.reply.visibility === 'followers' || note.reply.visibility === 'home')) {
-						if (!Object.hasOwn(followings, note.reply.userId) && note.reply.userId !== me.id) return false;
+						const replyUserId = note.reply.userId || note.replyUserId;
+						if (replyUserId !== me.id && !Object.hasOwn(followings, replyUserId)) return false;
 					}
 					if (note.renote && (note.renote.visibility === 'followers' || note.renote.visibility === 'home')) {
-						if (!Object.hasOwn(followings, note.renote.userId) && note.renote.userId !== me.id) return false;
+						const renoteUserId = note.renote.userId || note.renoteUserId;
+						if (renoteUserId !== me.id && !Object.hasOwn(followings, renoteUserId)) return false;
 					}
 
 					return true;
@@ -217,6 +219,52 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					qb // 返信だけど投稿者自身への返信
 						.where('note.replyId IS NOT NULL')
 						.andWhere('note.replyUserId = note.userId');
+				}));
+		}));
+
+		// Hide 'home' and 'followers' visibility notes on the home timeline for non-followers
+		// For the primary note
+		query.andWhere(new Brackets((qb: any) => {
+			qb
+				.where('note.visibility IN (\'public\', \'specified\')')
+				.orWhere('note.userId = :meId')
+				.orWhere(new Brackets((qb2: any) => {
+					qb2
+						.where('note.visibility IN (\'home\', \'followers\')')
+						.andWhere(new Brackets((qb3: any) => {
+							qb3
+								.where(`note.userId IN (SELECT followeeId FROM following WHERE followerId = :meId)`);
+						}));
+				}));
+		}));
+		// For replies (if not caught by above)
+		query.andWhere(new Brackets((qb: any) => {
+			qb
+				.where('reply.id IS NULL')
+				.orWhere('reply.visibility IN (\'public\', \'specified\')')
+				.orWhere('reply.userId = :meId')
+				.orWhere(new Brackets((qb2: any) => {
+					qb2
+						.where('reply.visibility IN (\'home\', \'followers\')')
+						.andWhere(new Brackets((qb3: any) => {
+							qb3
+								.where(`reply.userId IN (SELECT followeeId FROM following WHERE followerId = :meId)`);
+						}));
+				}));
+		}));
+		// For renotes
+		query.andWhere(new Brackets((qb: any) => {
+			qb
+				.where('renote.id IS NULL')
+				.orWhere('renote.visibility IN (\'public\', \'specified\')')
+				.orWhere('renote.userId = :meId')
+				.orWhere(new Brackets((qb2: any) => {
+					qb2
+						.where('renote.visibility IN (\'home\', \'followers\')')
+						.andWhere(new Brackets((qb3: any) => {
+							qb3
+								.where(`renote.userId IN (SELECT followeeId FROM following WHERE followerId = :meId)`);
+						}));
 				}));
 		}));
 

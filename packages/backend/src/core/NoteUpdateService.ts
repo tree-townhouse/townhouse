@@ -45,6 +45,9 @@ type Option = {
 	poll?: IPoll | null;
 	event?: IEvent | null;
 	deleteAt?: Date | null;
+	visibility?: 'public' | 'home' | 'followers' | 'specified';
+	visibleUserIds?: string[];
+	localOnly?: boolean;
 };
 
 @Injectable()
@@ -135,6 +138,9 @@ export class NoteUpdateService implements OnApplicationShutdown {
 			hasPoll: data.poll != null,
 			hasEvent: data.event != null,
 			cw: data.cw ?? null,
+			visibility: data.visibility ?? note.visibility,
+			visibleUserIds: data.visibleUserIds ?? note.visibleUserIds,
+			localOnly: data.localOnly ?? note.localOnly,
 			tags: tags.map(tag => normalizeForSearch(tag)),
 			emojis,
 			disableRightClick: data.disableRightClick!,

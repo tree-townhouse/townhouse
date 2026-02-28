@@ -274,7 +274,7 @@ export function getNoteMenu(props: {
 			}
 		}
 
-		await os.post({ initialNote: appearNote, renote: appearNote.renote, reply: appearNote.reply, channel: appearNote.channel, updateMode: true });
+		await os.post({ initialNote: appearNote, renote: appearNote.renote, reply: appearNote.reply, channel: appearNote.channel, initialVisibility: appearNote.visibility, initialLocalOnly: appearNote.localOnly, updateMode: true });
 	}
 
 	function copyEdit(): void {

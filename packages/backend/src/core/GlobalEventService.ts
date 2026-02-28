@@ -48,6 +48,11 @@ export interface BroadcastTypes {
 	announcementCreated: {
 		announcement: Packed<'Announcement'>;
 	};
+	noteUpdated: {
+		id: MiNote['id'];
+		type: 'updated';
+		body: NoteEventTypes['updated'];
+	};
 }
 
 export interface MainEventTypes {

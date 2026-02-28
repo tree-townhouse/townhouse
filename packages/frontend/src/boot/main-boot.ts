@@ -32,6 +32,7 @@ import { unisonReload } from '@/utility/unison-reload.js';
 import { userName } from '@/filters/user.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import * as os from '@/os.js';
+import { noteEvents } from '@/composables/use-note-capture.js';
 
 export async function mainBoot() {
 	const { isClientUpdated, isClientMigrated, lastVersion } = await common(async () => {
@@ -331,6 +332,11 @@ export async function mainBoot() {
 
 			stream.on('emojiDeleted', emojiData => {
 				removeCustomEmojis(emojiData.emojis);
+			});
+
+			stream.on('noteUpdated', data => {
+				const { id, body } = data;
+				noteEvents.emit(`updated:${id}`, { ...body });
 			});
 
 			stream.on('announcementCreated', onAnnouncementCreated);
