@@ -346,7 +346,7 @@ useGlobalEvent('noteDeleted', (noteId) => {
 
 useGlobalEvent('noteVisibilityChanged', ({ noteId, visibility, isBlinded }) => {
 	if (props.src === 'global') {
-		if (isBlinded || visibility !== 'public') {
+		if (visibility !== 'public') {
 			paginator.removeItem(noteId);
 		}
 	} else if (props.src === 'local' || props.src === 'social') {
