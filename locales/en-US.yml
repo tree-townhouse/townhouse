@@ -3902,3 +3902,9 @@ _deliveryTargetControl:
   deliveryTargetsInclude: "Public only to some servers"
   deliveryTargetsExclude: "Not public to some servers"
   hasDeliveryTargets: "Delivery targets are selected"
+
+blindedNoteMessage: "This note is blinded."
+blind: "Blind"
+unblind: "Unblind"
+blindConfirm: "Are you sure you want to blind this note?"
+unblindConfirm: "Are you sure you want to unblind this note?"

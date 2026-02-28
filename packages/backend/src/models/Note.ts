@@ -235,6 +235,11 @@ export class MiNote {
 	})
 	public hasPoll: boolean;
 
+	@Column('boolean', {
+		default: false,
+	})
+	public isBlinded: boolean;
+
 	@Index()
 	@Column({
 		...id(),

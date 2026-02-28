@@ -134,7 +134,7 @@ export class NoteEntityService implements OnModuleInit {
 	}
 
 	@bindThis
-	private async hideNote(packedNote: Packed<'Note'>, meId: MiUser['id'] | null): Promise<void> {
+	private async hideNote(packedNote: Packed<'Note'>, meId: MiUser['id'] | null, iAmModerator = false): Promise<void> {
 		if (meId === packedNote.userId) return;
 
 		// TODO: isVisibleForMe を使うようにしても良さそう(型違うけど)
@@ -190,6 +190,20 @@ export class NoteEntityService implements OnModuleInit {
 
 					hide = !isFollowing;
 				}
+			}
+		}
+
+		if (!hide && packedNote.isBlinded && !iAmModerator) {
+			if (meId == null) {
+				hide = true;
+			} else {
+				const isFollowing = await this.followingsRepository.exists({
+					where: {
+						followeeId: packedNote.userId,
+						followerId: meId,
+					},
+				});
+				hide = !isFollowing;
 			}
 		}
 
@@ -432,6 +446,7 @@ export class NoteEntityService implements OnModuleInit {
 			cw: note.cw,
 			visibility: note.visibility,
 			localOnly: note.localOnly,
+			isBlinded: note.isBlinded || undefined,
 			reactionAcceptance: note.reactionAcceptance,
 			visibleUserIds: note.visibility === 'specified' ? note.visibleUserIds : undefined,
 			disableRightClick: note.disableRightClick || undefined,
@@ -514,7 +529,7 @@ export class NoteEntityService implements OnModuleInit {
 		this.treatVisibility(packed);
 
 		if (!opts.skipHide) {
-			await this.hideNote(packed, meId);
+			await this.hideNote(packed, meId, iAmModerator);
 		}
 
 		return packed;

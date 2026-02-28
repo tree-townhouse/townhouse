@@ -710,6 +710,30 @@ export function getNoteMenu(props: {
 			});
 		}
 
+		if (isAdminOrModerator && appearNote.user.host != null) {
+			// dividers are handled nicely by UI but let's be safe
+			if (!isOtherLocalUser) menuItems.push({ type: 'divider' });
+
+			menuItems.push({
+				icon: appearNote.isBlinded ? 'ti ti-eye' : 'ti ti-eye-off',
+				text: appearNote.isBlinded ? i18n.ts.unblind : i18n.ts.blind,
+				action: async () => {
+					const { canceled } = await os.confirm({
+						type: 'warning',
+						text: appearNote.isBlinded ? i18n.ts.unblindConfirm : i18n.ts.blindConfirm,
+					});
+					if (canceled) return;
+
+					os.apiWithDialog('admin/update-note-blind', {
+						noteId: appearNote.id,
+						isBlinded: !appearNote.isBlinded,
+					}).then(() => {
+						appearNote.isBlinded = !appearNote.isBlinded;
+					});
+				},
+			});
+		}
+
 		if (isOwner || (isAdminOrModerator && isOtherLocalUser)) {
 			// Owner gets edit / delete & edit
 			// Admin/Mod on other local users' notes only get delete

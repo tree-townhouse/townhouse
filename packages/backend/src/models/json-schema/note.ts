@@ -282,6 +282,10 @@ export const packedNoteSchema = {
 			type: 'boolean',
 			optional: true, nullable: false,
 		},
+		isBlinded: {
+			type: 'boolean',
+			optional: true, nullable: false,
+		},
 
 		myReaction: {
 			type: 'string',

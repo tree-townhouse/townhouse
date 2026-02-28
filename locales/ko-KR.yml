@@ -3906,3 +3906,9 @@ _deliveryTargetControl:
   deliveryTargetsInclude: "일부 서버에서만 공개됨"
   deliveryTargetsExclude: "일부 서버에서 비공개됨"
   hasDeliveryTargets: "배포 대상이 선택되어 있어요"
+
+blindedNoteMessage: "블라인드된 노트입니다."
+blind: "블라인드"
+unblind: "블라인드 해제"
+blindConfirm: "이 노트를 블라인드하시겠습니까?"
+unblindConfirm: "이 노트의 블라인드를 해제하시겠습니까?"

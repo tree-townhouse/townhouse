@@ -95,7 +95,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</p>
 					<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 						<div :class="$style.text">
-							<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
+							<span v-if="appearNote.isBlinded && appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.blindedNoteMessage }})</span>
+							<span v-else-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
 							<MkA v-if="appearNote.replyId && (forceShowReplyTargetNote || prefer.s.showReplyTargetNote)" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`" @click.stop><i class="ti ti-arrow-back-up"></i></MkA>
 							<Mfm
 								v-if="appearNote.text"
@@ -189,6 +190,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</template>
 				</I18n>
 			</MkInfo>
+			<MkInfo v-if="appearNote.isBlinded && !appearNote.isHidden" warn style="margin-bottom: 8px;">
+				{{ i18n.ts.blindedNoteMessage }}
+			</MkInfo>
 			<MkEvent v-if="appearNote.event" :note="appearNote"/>
 			<div v-if="appearNote.replyId && appearNote.reply && !(forceShowReplyTargetNote || prefer.s.showReplyTargetNote)" style="margin-bottom: 4px;">
 				<MkA :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`" @click.stop><i class="ti ti-arrow-back-up"></i></MkA>
@@ -207,7 +211,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</p>
 			<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 				<div :class="$style.text">
-					<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
+					<span v-if="appearNote.isBlinded && appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.blindedNoteMessage }})</span>
+					<span v-else-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
 					<MkA v-if="appearNote.replyId && (forceShowReplyTargetNote || prefer.s.showReplyTargetNote)" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`" @click.stop><i class="ti ti-arrow-back-up"></i></MkA>
 					<Mfm
 						v-if="appearNote.text"
