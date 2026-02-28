@@ -90,7 +90,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkA :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`" @click.stop><i class="ti ti-arrow-back-up"></i></MkA>
 						<MkA v-user-preview="appearNote.reply.userId" :class="$style.replyToText" :to="userPage(appearNote.reply.user)" @click.stop><span v-html="replyTo"></span></MkA>
 					</div>
-					<p v-if="appearNote.cw != null" :class="$style.cw">
+					<p v-if="appearNote.cw != null && !isEffectivelyHidden" :class="$style.cw">
 						<Mfm
 							v-if="appearNote.cw != ''"
 							:text="appearNote.cw"
@@ -103,11 +103,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</p>
 					<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 						<div :class="$style.text">
-							<div v-if="appearNote.isBlinded" style="opacity: 0.5; margin-bottom: 4px;">({{ i18n.ts.blindedNoteMessage }})</div>
-							<span v-if="appearNote.isHidden && !appearNote.isBlinded" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
+							<div v-if="isBlindedInThisContext" style="opacity: 0.5; margin-bottom: 4px;">({{ i18n.ts.blindedNoteMessage }})</div>
+							<span v-if="isEffectivelyHidden && !isBlindedInThisContext" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
 							<MkA v-if="appearNote.replyId && (forceShowReplyTargetNote || prefer.s.showReplyTargetNote)" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`" @click.stop><i class="ti ti-arrow-back-up"></i></MkA>
 							<Mfm
-								v-if="appearNote.text"
+								v-if="appearNote.text && !isEffectivelyHidden"
 								:parsedNodes="parsed"
 								:text="appearNote.text"
 								:author="appearNote.user"
@@ -117,7 +117,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 								:enableEmojiMenuReaction="!!$i"
 								class="_selectable"
 							/>
-							<div v-if="prefer.s.showTranslateButtonInNote && $i && (!prefer.s.useAutoTranslate || (!$i.policies.canUseAutoTranslate || (prefer.s.useAutoTranslate && (isLong || appearNote.cw != null || !showContent)))) && instance.translatorAvailable && $i.policies.canUseTranslator && appearNote.text && isForeignLanguage" style="padding: 5px 0; color: var(--MI_THEME-accent);">
+							<div v-if="prefer.s.showTranslateButtonInNote && $i && (!prefer.s.useAutoTranslate || (!$i.policies.canUseAutoTranslate || (prefer.s.useAutoTranslate && (isLong || appearNote.cw != null || !showContent)))) && instance.translatorAvailable && $i.policies.canUseTranslator && appearNote.text && !isEffectivelyHidden && isForeignLanguage" style="padding: 5px 0; color: var(--MI_THEME-accent);">
 								<button v-if="!(translating || translation)" ref="translateButton" class="_button" @click.stop="translate()">{{ i18n.ts.translateNote }}</button>
 								<button v-else class="_button" @click.stop="translation = null">{{ i18n.ts.close }}</button>
 							</div>
@@ -153,17 +153,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 									</div>
 								</div>
 							</div>
-							<div v-if="viewTextSource">
+							<div v-if="viewTextSource && !isEffectivelyHidden">
 								<hr style="margin: 10px 0;">
 								<pre style="margin: initial; white-space: pre-wrap; word-wrap: break-word;"><small>{{ appearNote.text }}</small></pre>
 								<button class="_button" style="padding: 5px 0; color: var(--MI_THEME-accent);" @click.stop="viewTextSource = false"><small>{{ i18n.ts.close }}</small></button>
 							</div>
 						</div>
-						<div v-if="appearNote.files && appearNote.files.length > 0" style="margin-top: 8px;">
+						<div v-if="appearNote.files && appearNote.files.length > 0 && !isEffectivelyHidden" style="margin-top: 8px;">
 							<MkMediaList ref="galleryEl" :mediaList="appearNote.files" :disableRightClick="appearNote.disableRightClick" @click.stop @contextmenu="disableRightClickHandler"/>
 						</div>
 						<MkPoll
-							v-if="appearNote.poll"
+							v-if="appearNote.poll && !isEffectivelyHidden"
 							:noteId="appearNote.id"
 							:multiple="appearNote.poll.multiple"
 							:expiresAt="appearNote.poll.expiresAt"
@@ -173,7 +173,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							:class="$style.poll"
 							@click.stop
 						/>
-						<div v-if="isEnabledUrlPreview">
+						<div v-if="isEnabledUrlPreview && !isEffectivelyHidden">
 							<MkUrlPreview v-for="url in urls" :key="url" :url="url" :compact="true" :detail="false" :class="$style.urlPreview"/>
 						</div>
 						<button v-if="((isLong && prefer.s.collapseLongNoteContent) || (isMFM && prefer.s.collapseDefault) || (appearNote.files && appearNote.files.length > 0 && prefer.s.allMediaNoteCollapse)) && collapsed" :class="$style.collapsed" class="_button" @click.stop="collapsed = false">
@@ -198,7 +198,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</template>
 				</I18n>
 			</MkInfo>
-			<MkInfo v-if="appearNote.isBlinded && !appearNote.isHidden" warn style="margin-bottom: 8px;">
+			<MkInfo v-if="isBlindedInThisContext && !isEffectivelyHidden" warn style="margin-bottom: 8px;">
 				{{ i18n.ts.blindedNoteMessage }}
 			</MkInfo>
 			<MkEvent v-if="appearNote.event" :note="appearNote"/>
@@ -206,7 +206,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkA :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`" @click.stop><i class="ti ti-arrow-back-up"></i></MkA>
 				<MkA v-user-preview="appearNote.reply.userId" :class="$style.replyToText" :to="userPage(appearNote.reply.user)" @click.stop><span v-html="replyTo"></span></MkA>
 			</div>
-			<p v-if="appearNote.cw != null" :class="$style.cw">
+			<p v-if="appearNote.cw != null && !isEffectivelyHidden" :class="$style.cw">
 				<Mfm
 					v-if="appearNote.cw != ''"
 					:text="appearNote.cw"
@@ -219,11 +219,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</p>
 			<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 				<div :class="$style.text">
-					<span v-if="appearNote.isBlinded && appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.blindedNoteMessage }})</span>
-					<span v-else-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
+					<span v-if="isBlindedInThisContext && isEffectivelyHidden" style="opacity: 0.5">({{ i18n.ts.blindedNoteMessage }})</span>
+					<span v-else-if="isEffectivelyHidden" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
 					<MkA v-if="appearNote.replyId && (forceShowReplyTargetNote || prefer.s.showReplyTargetNote)" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`" @click.stop><i class="ti ti-arrow-back-up"></i></MkA>
 					<Mfm
-						v-if="appearNote.text"
+						v-if="appearNote.text && !isEffectivelyHidden"
 						:parsedNodes="parsed"
 						:text="appearNote.text"
 						:author="appearNote.user"
@@ -233,7 +233,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						:enableEmojiMenuReaction="!!$i"
 						class="_selectable"
 					/>
-					<div v-if="prefer.s.showTranslateButtonInNote && $i && (!prefer.s.useAutoTranslate || (!$i.policies.canUseAutoTranslate || (prefer.s.useAutoTranslate && (isLong || appearNote.cw != null || !showContent)))) && instance.translatorAvailable && $i.policies.canUseTranslator && appearNote.text && isForeignLanguage" style="padding: 5px 0; color: var(--MI_THEME-accent);">
+					<div v-if="prefer.s.showTranslateButtonInNote && $i && (!prefer.s.useAutoTranslate || (!$i.policies.canUseAutoTranslate || (prefer.s.useAutoTranslate && (isLong || appearNote.cw != null || !showContent)))) && instance.translatorAvailable && $i.policies.canUseTranslator && appearNote.text && !isEffectivelyHidden && isForeignLanguage" style="padding: 5px 0; color: var(--MI_THEME-accent);">
 						<button v-if="!(translating || translation)" ref="translateButton" class="_button" @click.stop="translate()">{{ i18n.ts.translateNote }}</button>
 						<button v-else class="_button" @click.stop="translation = null">{{ i18n.ts.close }}</button>
 					</div>
@@ -269,17 +269,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</div>
 						</div>
 					</div>
-					<div v-if="viewTextSource">
+					<div v-if="viewTextSource && !isEffectivelyHidden">
 						<hr style="margin: 10px 0;">
 						<pre style="margin: initial; white-space: pre-wrap; word-wrap: break-word;"><small>{{ appearNote.text }}</small></pre>
 						<button class="_button" style="padding: 5px 0; color: var(--MI_THEME-accent);" @click.stop="viewTextSource = false"><small>{{ i18n.ts.close }}</small></button>
 					</div>
 				</div>
-				<div v-if="appearNote.files && appearNote.files.length > 0">
+				<div v-if="appearNote.files && appearNote.files.length > 0 && !isEffectivelyHidden">
 					<MkMediaList ref="galleryEl" :mediaList="appearNote.files" :disableRightClick="appearNote.disableRightClick" @click.stop @contextmenu="disableRightClickHandler"/>
 				</div>
 				<MkPoll
-					v-if="appearNote.poll"
+					v-if="appearNote.poll && !isEffectivelyHidden"
 					:noteId="appearNote.id"
 					:multiple="appearNote.poll.multiple"
 					:expiresAt="appearNote.poll.expiresAt"
@@ -289,7 +289,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					:class="$style.poll"
 					@click.stop
 				/>
-				<div v-if="isEnabledUrlPreview">
+				<div v-if="isEnabledUrlPreview && !isEffectivelyHidden">
 					<MkUrlPreview v-for="url in urls" :key="url" :url="url" :compact="true" :detail="false" :class="$style.urlPreview"/>
 				</div>
 				<button v-if="((isLong && prefer.s.collapseLongNoteContent) || (isMFM && prefer.s.collapseDefault) || (appearNote.files && appearNote.files.length > 0 && prefer.s.allMediaNoteCollapse)) && collapsed" :class="$style.collapsed" class="_button" @click.stop="collapsed = false">
@@ -325,11 +325,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkReactionsViewer>
 			<footer :class="$style.footer">
 				<template v-if="prefer.s.showReplyButtonInNoteFooter">
-					<button v-if="!note.isHidden" v-tooltip="i18n.ts.reply" :class="$style.footerButton" class="_button" @click.stop="reply()">
+					<button v-if="!(note.isHidden || isEffectivelyHidden)" v-tooltip="i18n.ts.reply" :class="$style.footerButton" class="_button" @click.stop="reply()">
 						<i class="ti ti-arrow-back-up"></i>
 						<p v-if="appearNote.repliesCount > 0" :class="$style.footerButtonCount">{{ number(appearNote.repliesCount) }}</p>
 					</button>
-					<button v-else-if="note.isHidden" :class="$style.footerButton" class="_button" disabled>
+					<button v-else-if="note.isHidden || isEffectivelyHidden" :class="$style.footerButton" class="_button" disabled>
 						<i class="ti ti-ban"></i>
 					</button>
 				</template>
@@ -494,6 +494,7 @@ const emit = defineEmits<{
 const inTimeline = inject<boolean>('inTimeline', false);
 const tl_withSensitive = inject<Ref<boolean>>('tl_withSensitive', ref(true));
 const inChannel = inject('inChannel', null);
+const inGlobalTimeline = inject<Ref<boolean>>('inGlobalTimeline', computed(() => false));
 const currentClip = inject<Ref<Misskey.entities.Clip> | null>('currentClip', null);
 
 let note = deepClone(props.note);
@@ -540,6 +541,9 @@ const parsed = computed(() => appearNote.text ? parseMfmCached(appearNote.text) 
 const urls = computed(() => parsed.value ? extractUrlFromMfm(parsed.value).filter((url) => appearNote.renote?.url !== url && appearNote.renote?.uri !== url) : null);
 const isLong = shouldCollapsed(appearNote, urls.value ?? []);
 const isMFM = shouldMfmCollapsed(appearNote);
+const isBlindedInThisContext = computed(() => appearNote.isBlinded && inGlobalTimeline.value);
+const iAmModerator = computed(() => $i && ($i.isAdmin || $i.policies?.canHideNote));
+const isEffectivelyHidden = computed(() => appearNote.isHidden || (isBlindedInThisContext.value && !iAmModerator.value));
 const collapsed = ref(appearNote.cw == null && ((isLong && prefer.s.collapseLongNoteContent) || (isMFM && prefer.s.collapseDefault) || ((appearNote.files?.length ?? 0) > 0 && prefer.s.allMediaNoteCollapse)));
 const muted = ref(checkMute(appearNote, $i?.mutedWords));
 const hardMuted = ref(props.withHardMute && checkMute(appearNote, $i?.hardMutedWords, true));

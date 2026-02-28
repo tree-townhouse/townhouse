@@ -150,6 +150,7 @@ const props = withDefaults(defineProps<{
 provide('inTimeline', true);
 provide('tl_withSensitive', computed(() => props.withSensitive));
 provide('inChannel', computed(() => props.src === 'channel'));
+provide('inGlobalTimeline', computed(() => props.src === 'global'));
 
 let paginator: IPaginator<Misskey.entities.Note>;
 

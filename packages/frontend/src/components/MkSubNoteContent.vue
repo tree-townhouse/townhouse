@@ -6,11 +6,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div ref="rootEl" :class="[$style.root, { [$style.collapsed]: collapsed }]">
 	<div>
-		<span v-if="note.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
+		<span v-if="isBlindedInThisContext && isEffectivelyHidden" style="opacity: 0.5">({{ i18n.ts.blindedNoteMessage }})</span>
+		<span v-else-if="isEffectivelyHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 		<span v-if="note.deletedAt" style="opacity: 0.5">({{ i18n.ts.deletedNote }})</span>
-		<MkA v-if="note.replyId" :class="$style.reply" :to="`/notes/${note.replyId}`" @click.stop><i class="ti ti-arrow-back-up"></i></MkA>
+		<MkA v-if="note.replyId && !isEffectivelyHidden" :class="$style.reply" :to="`/notes/${note.replyId}`" @click.stop><i class="ti ti-arrow-back-up"></i></MkA>
 		<Mfm
-			v-if="note.text"
+			v-if="note.text && !isEffectivelyHidden"
 			:parsedNodes="parsed"
 			:text="note.text"
 			:author="note.user"
@@ -21,7 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			class="_selectable"
 		/>
 		<MkA v-if="note.renoteId" :class="$style.rp" :to="`/notes/${note.renoteId}`">RN: ...</MkA>
-		<div v-if="prefer.s.showTranslateButtonInNote && $i && (!prefer.s.useAutoTranslate || (!$i.policies.canUseAutoTranslate || (prefer.s.useAutoTranslate && (isLong || note.cw != null || !showContent)))) && instance.translatorAvailable && $i.policies.canUseTranslator && note.text && isForeignLanguage" style="padding: 5px 0; color: var(--MI_THEME-accent);">
+		<div v-if="prefer.s.showTranslateButtonInNote && $i && (!prefer.s.useAutoTranslate || (!$i.policies.canUseAutoTranslate || (prefer.s.useAutoTranslate && (isLong || note.cw != null || !showContent)))) && instance.translatorAvailable && $i.policies.canUseTranslator && note.text && !isEffectivelyHidden && isForeignLanguage" style="padding: 5px 0; color: var(--MI_THEME-accent);">
 			<button v-if="!(translating || translation)" ref="translateButton" class="_button" @click.stop="translate()">{{ i18n.ts.translateNote }}</button>
 			<button v-else class="_button" @click.stop="translation = null">{{ i18n.ts.close }}</button>
 		</div>
@@ -57,16 +58,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</div>
 		</div>
-		<div v-if="viewTextSource">
+		<div v-if="viewTextSource && !isEffectivelyHidden">
 			<hr style="margin: 10px 0;">
 			<pre style="margin: initial; white-space: pre-wrap; word-wrap: break-word;"><small>{{ note.text }}</small></pre>
 			<button class="_button" style="padding: 5px 0; color: var(--MI_THEME-accent);" @click.stop="viewTextSource = false"><small>{{ i18n.ts.close }}</small></button>
 		</div>
 		<div v-show="showContent">
-			<div v-if="note.files && note.files.length > 0">
+			<div v-if="note.files && note.files.length > 0 && !isEffectivelyHidden">
 				<MkMediaList :mediaList="note.files" :disableRightClick="note.disableRightClick" @click.stop @contextmenu="disableRightClickHandler"/>
 			</div>
-			<div v-if="note.poll">
+			<div v-if="note.poll && !isEffectivelyHidden">
 				<MkPoll
 					:noteId="note.id"
 					:multiple="note.poll.multiple"
@@ -108,11 +109,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</MkReactionsViewer>
 		<footer :class="$style.footer">
 			<template v-if="prefer.s.showReplyButtonInNoteFooter">
-				<button v-if="!note.isHidden" v-tooltip="i18n.ts.reply" :class="$style.footerButton" class="_button" @click.stop="reply()">
+				<button v-if="!(note.isHidden || isEffectivelyHidden)" v-tooltip="i18n.ts.reply" :class="$style.footerButton" class="_button" @click.stop="reply()">
 					<i class="ti ti-arrow-back-up"></i>
 					<p v-if="note.repliesCount > 0" :class="$style.footerButtonCount">{{ note.repliesCount }}</p>
 				</button>
-				<button v-else-if="note.isHidden" :class="$style.footerButton" class="_button" disabled>
+				<button v-else-if="note.isHidden || isEffectivelyHidden" :class="$style.footerButton" class="_button" disabled>
 					<i class="ti ti-ban"></i>
 				</button>
 			</template>
@@ -222,6 +223,7 @@ const { $note: $note, subscribe: subscribeManuallyToNoteCapture } = useNoteCaptu
 });
 
 const rootEl = useTemplateRef('rootEl');
+const inGlobalTimeline = inject<Ref<boolean>>('inGlobalTimeline', computed(() => false));
 const menuButton = useTemplateRef('menuButton');
 const renoteButton = useTemplateRef('renoteButton');
 const reactButton = useTemplateRef('reactButton');
@@ -242,6 +244,10 @@ const parsed = props.note.text ? parseMfmCached(props.note.text) : null;
 
 const isLong = shouldCollapsed(props.note, []);
 const isMFM = shouldMfmCollapsed(props.note);
+
+const isBlindedInThisContext = computed(() => props.note.isBlinded && inGlobalTimeline.value);
+const iAmModerator = computed(() => $i && ($i.isAdmin || $i.policies?.canHideNote));
+const isEffectivelyHidden = computed(() => props.note.isHidden || (isBlindedInThisContext.value && !iAmModerator.value));
 
 const collapsed = ref((isLong && prefer.s.collapseLongNoteContent) || (isMFM && prefer.s.collapseDefault) || (props.note.files && props.note.files.length > 0) || !!props.note.poll);
 
