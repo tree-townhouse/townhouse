@@ -112,7 +112,7 @@ function pollingSubscribe(props: {
 }
 
 function realtimeSubscribe(props: {
-	note: Pick<Misskey.entities.Note, 'id' | 'createdAt' | 'updatedAt' | 'cw' | 'text' | 'isBlinded' | 'userId' | 'files' | 'fileIds'> & { isHidden?: boolean };
+	note: Pick<Misskey.entities.Note, 'id' | 'createdAt' | 'updatedAt' | 'cw' | 'text' | 'isBlinded' | 'visibility' | 'userId' | 'files' | 'fileIds'> & { isHidden?: boolean };
 }): void {
 	const note = props.note;
 	const connection = useStream();
@@ -156,7 +156,10 @@ function realtimeSubscribe(props: {
 				if (body.isBlinded !== undefined) {
 					note.isBlinded = body.isBlinded;
 				}
-				noteEvents.emit(`updated:${id}`, { isBlinded: note.isBlinded });
+				if (body.visibility !== undefined) {
+					note.visibility = body.visibility;
+				}
+				noteEvents.emit(`updated:${id}`, { ...body });
 				break;
 			}
 
@@ -197,6 +200,7 @@ export type ReactiveNoteData = {
 	myReaction: Misskey.entities.Note['myReaction'];
 	pollChoices: NonNullable<Misskey.entities.Note['poll']>['choices'];
 	isBlinded: boolean;
+	visibility: Misskey.entities.Note['visibility'];
 	updatedRev: number;
 };
 
@@ -228,6 +232,7 @@ export function useNoteCapture(props: {
 		myReaction: note.myReaction,
 		pollChoices: note.poll?.choices ?? [],
 		isBlinded: note.isBlinded || false,
+		visibility: note.visibility,
 		updatedRev: 0,
 	});
 
@@ -301,6 +306,9 @@ export function useNoteCapture(props: {
 		Object.assign(note, payload);
 		if (payload.isBlinded !== undefined) {
 			$note.isBlinded = payload.isBlinded;
+		}
+		if (payload.visibility !== undefined) {
+			$note.visibility = payload.visibility;
 		}
 	}
 

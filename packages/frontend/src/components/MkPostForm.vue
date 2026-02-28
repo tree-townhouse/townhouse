@@ -1242,7 +1242,9 @@ async function post(ev?: MouseEvent) {
 			clear();
 		}
 
-		globalEvents.emit('notePosted', res.createdNote);
+		if (res.createdNote) {
+			globalEvents.emit('notePosted', res.createdNote);
+		}
 
 		nextTick(() => {
 			deleteDraft();

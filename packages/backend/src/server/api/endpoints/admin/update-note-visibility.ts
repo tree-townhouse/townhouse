@@ -84,6 +84,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			note.visibility = afterVisibility;
 			note.localOnly = afterLocalOnly;
+			this.globalEventService.publishNoteStream(note.id, 'updated', {
+				visibility: afterVisibility,
+				localOnly: afterLocalOnly,
+			});
 			this.searchService.unindexNote(note);
 			this.searchService.indexNote(note);
 		});
