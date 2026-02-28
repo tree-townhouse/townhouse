@@ -12,6 +12,7 @@ import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { SearchService } from '@/core/SearchService.js';
 import type { DriveFilesRepository } from '@/models/_.js';
 import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
+import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -45,7 +46,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
 		private searchService: SearchService,
-		private driveFileEntityService: DriveFileEntityService,
+		private noteEntityService: NoteEntityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const note = await this.notesRepository.findOneBy({ id: ps.noteId });
@@ -76,37 +77,32 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				noteUserId: user.id,
 				noteUserUsername: user.username,
 				noteUserHost: user.host,
-				beforeBlinded,
-				afterBlinded,
+				before: beforeBlinded ? 'blinded' : 'public',
+				after: afterBlinded ? 'blinded' : 'public',
 			});
 
 			note.isBlinded = afterBlinded;
 			this.searchService.unindexNote(note);
 			this.searchService.indexNote(note);
 
-			let filesPayload = undefined;
-			let fileIdsPayload = undefined;
-
-			// If unblinding, we should supply the original files so the client can restore them without a reload.
-			if (!afterBlinded && note.fileIds && note.fileIds.length > 0) {
-				fileIdsPayload = note.fileIds;
-				const files = await this.driveFilesRepository.createQueryBuilder('file')
-					.where('file.id IN (:...fileIds)', { fileIds: note.fileIds })
-					.orderBy('array_position(ARRAY[:...fileIds], "file"."id"::text)')
-					.setParameters({ fileIds: note.fileIds })
-					.getMany();
-				filesPayload = await this.driveFileEntityService.packMany(files);
+			// If unblinding, we should supply the original content so the client can restore it without a reload.
+			let contentPayload = {};
+			if (!afterBlinded) {
+				const packed = await this.noteEntityService.pack(note, null, { skipHide: true });
+				contentPayload = {
+					cw: packed.cw,
+					text: packed.text,
+					fileIds: packed.fileIds,
+					files: packed.files,
+					poll: packed.poll,
+					event: packed.event,
+				};
 			}
 
 			this.globalEventService.publishNoteStream(note.id, 'updated', {
 				deleteAt: note.deleteAt ?? null,
 				isBlinded: note.isBlinded,
-				...(note.isBlinded ? {} : {
-					cw: note.cw,
-					text: note.text,
-					fileIds: fileIdsPayload,
-					files: filesPayload,
-				}),
+				...contentPayload,
 			});
 		});
 	}

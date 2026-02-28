@@ -334,8 +334,9 @@ export function useNoteCapture(props: {
 		$note.pollChoices = choices;
 	}
 
-	function onUpdated(payload: { isBlinded?: boolean }) {
+	function onUpdated(payload: Partial<Misskey.entities.Note>) {
 		$note.updatedRev++;
+		Object.assign(note, payload);
 		if (payload.isBlinded !== undefined) {
 			$note.isBlinded = payload.isBlinded;
 		}
