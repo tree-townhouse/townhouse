@@ -27,6 +27,7 @@ import { genEmbedCode } from '@/utility/get-embed-code.js';
 import { prefer } from '@/preferences.js';
 import { getPluginHandlers } from '@/plugin.js';
 import { globalEvents } from '@/events.js';
+import { noteEvents } from '@/composables/use-note-capture.js';
 import { addDividersBetweenMenuSections } from '@/utility/add-dividers-between-menu-sections.js';
 import { popup } from '@/os.js';
 
@@ -729,6 +730,9 @@ export function getNoteMenu(props: {
 						isBlinded: !appearNote.isBlinded,
 					}).then(() => {
 						appearNote.isBlinded = !appearNote.isBlinded;
+						noteEvents.emit(`updated:${appearNote.id}`, {
+							isBlinded: appearNote.isBlinded,
+						});
 					});
 				},
 			});

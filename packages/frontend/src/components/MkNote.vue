@@ -549,7 +549,7 @@ const parsed = computed(() => appearNote.text ? parseMfmCached(appearNote.text) 
 const urls = computed(() => parsed.value ? extractUrlFromMfm(parsed.value).filter((url) => appearNote.renote?.url !== url && appearNote.renote?.uri !== url) : null);
 const isLong = shouldCollapsed(appearNote, urls.value ?? []);
 const isMFM = shouldMfmCollapsed(appearNote);
-const isBlindedInThisContext = computed(() => appearNote.isBlinded && inGlobalTimeline.value);
+const isBlindedInThisContext = computed(() => $appearNote.isBlinded && inGlobalTimeline.value);
 const iAmModerator = computed(() => $i && ($i.isAdmin || $i.policies?.canHideNote));
 const isEffectivelyHidden = computed(() => appearNote.isHidden || (isBlindedInThisContext.value && !iAmModerator.value));
 const collapsed = ref(appearNote.cw == null && ((isLong && prefer.s.collapseLongNoteContent) || (isMFM && prefer.s.collapseDefault) || ((appearNote.files?.length ?? 0) > 0 && prefer.s.allMediaNoteCollapse)));
