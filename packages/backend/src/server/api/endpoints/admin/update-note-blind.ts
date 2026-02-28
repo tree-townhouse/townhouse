@@ -77,6 +77,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			note.isBlinded = afterBlinded;
 			this.searchService.unindexNote(note);
 			this.searchService.indexNote(note);
+
+			this.globalEventService.publishNoteStream(note.id, 'updated', {
+				cw: note.cw,
+				text: note.text,
+				disableRightClick: note.disableRightClick,
+				deleteAt: note.deleteAt ?? null,
+				isBlinded: note.isBlinded,
+			});
 		});
 	}
 }

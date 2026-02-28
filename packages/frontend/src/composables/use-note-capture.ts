@@ -112,7 +112,7 @@ function pollingSubscribe(props: {
 }
 
 function realtimeSubscribe(props: {
-	note: Pick<Misskey.entities.Note, 'id' | 'createdAt' | 'updatedAt' | 'cw' | 'text'>;
+	note: Pick<Misskey.entities.Note, 'id' | 'createdAt' | 'updatedAt' | 'cw' | 'text' | 'isBlinded'>;
 }): void {
 	const note = props.note;
 	const connection = useStream();
@@ -153,6 +153,9 @@ function realtimeSubscribe(props: {
 				note.updatedAt = new Date().toISOString();
 				note.cw = body.cw;
 				note.text = body.text;
+				if (body.isBlinded !== undefined) {
+					note.isBlinded = body.isBlinded;
+				}
 				break;
 			}
 

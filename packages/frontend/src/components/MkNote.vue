@@ -4,8 +4,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
+<Transition
+	:enterActiveClass="prefer.s.animation ? $style.transition_x_enterActive : ''"
+	:leaveActiveClass="prefer.s.animation ? $style.transition_x_leaveActive : ''"
+	:enterFromClass="prefer.s.animation ? $style.transition_x_enterFrom : ''"
+	:leaveToClass="prefer.s.animation ? $style.transition_x_leaveTo : ''"
+	mode="out-in"
+>
 <div
 	v-if="!hardMuted && !hideByPlugin && muted === false"
+	:key="appearNote.isBlinded ? 'blinded' : 'unblinded'"
 	ref="rootEl"
 	v-hotkey="keymap"
 	:class="[$style.root, { [$style.showActionsOnlyHover]: prefer.s.showNoteActionsOnlyHover, [$style.skipRender]: prefer.s.skipNoteRender }]"
@@ -393,12 +401,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</template>
 	</I18n>
 </div>
-<div v-else>
+<div v-else key="empty">
 	<!--
 		MkDateSeparatedList uses TransitionGroup which requires single element in the child elements
 		so MkNote create empty div instead of no elements
 	-->
 </div>
+</Transition>
 </template>
 
 <script lang="ts" setup>
@@ -1644,5 +1653,29 @@ function emitUpdReaction(emoji: string, delta: number) {
 	background-size: auto auto;
 	background-image: repeating-linear-gradient(135deg, transparent, transparent 10px, var(--color) 4px, var(--color) 14px);
 	border-radius: 8px;
+}
+
+.transition_x_enterActive {
+	transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.transition_x_leaveActive {
+	transition: height 0.2s cubic-bezier(0,.5,.5,1), opacity 0.2s cubic-bezier(0,.5,.5,1);
+}
+
+.transition_x_enterFrom {
+	opacity: 0;
+	transform: translateY(max(-64px, -100%));
+}
+
+@supports (interpolate-size: allow-keywords) {
+	.transition_x_leaveTo {
+		interpolate-size: allow-keywords;
+		height: 0;
+	}
+}
+
+.transition_x_leaveTo {
+	opacity: 0;
 }
 </style>

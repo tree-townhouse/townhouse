@@ -119,6 +119,7 @@ export interface NoteEventTypes {
 		text: string | null;
 		disableRightClick: boolean | null;
 		deleteAt: Date | null;
+		isBlinded?: boolean | null;
 	};
 	reacted: {
 		reaction: string;
