@@ -43,14 +43,17 @@ export class UserSilenceService {
 		const meta = await this.metaService.fetch();
 		const periodText = this.formatPeriod(expiresAt);
 		const dateText = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+		const endDateText = expiresAt ? expiresAt.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '무기한';
 		const title = (meta.silenceAnnouncementTitle ?? '{reason}')
 			.replace('{reason}', reason)
 			.replace('{period}', periodText)
-			.replace('{date}', dateText);
+			.replace('{date}', dateText)
+			.replace('{enddate}', endDateText);
 		const text = (meta.silenceAnnouncementText ?? '{reason}\n\n{period}')
 			.replace('{reason}', reason)
 			.replace('{period}', periodText)
-			.replace('{date}', dateText);
+			.replace('{date}', dateText)
+			.replace('{enddate}', endDateText);
 
 		await this.announcementService.create({
 			title: title,
