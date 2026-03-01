@@ -682,7 +682,13 @@ export function getNoteMenu(props: {
 		if (isAdminOrModerator && isOtherLocalUser) {
 			menuItems.push({ type: 'divider' });
 
-			const updateNoteVisibility = (newVisibility: 'public' | 'home' | 'followers') => {
+			const updateNoteVisibility = async (newVisibility: 'public' | 'home' | 'followers') => {
+				const { canceled } = await os.confirm({
+					type: 'warning',
+					text: i18n.ts.areYouSure,
+				});
+				if (canceled) return;
+
 				os.apiWithDialog('admin/update-note-visibility', {
 					noteId: appearNote.id,
 					visibility: newVisibility,
