@@ -119,11 +119,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					if (note.visibility === 'followers' || note.visibility === 'home') {
 						if (note.userId !== me.id && !Object.hasOwn(followings, note.userId)) return false;
 					}
-					if (note.reply && (note.reply.visibility === 'followers' || note.reply.visibility === 'home')) {
+					if (note.reply && note.reply.visibility === 'followers') {
 						const replyUserId = note.reply.userId || note.replyUserId;
 						if (replyUserId !== me.id && !Object.hasOwn(followings, replyUserId)) return false;
 					}
-					if (note.renote && (note.renote.visibility === 'followers' || note.renote.visibility === 'home')) {
+					if (note.renote && note.renote.visibility === 'followers') {
 						const renoteUserId = note.renote.userId || note.renoteUserId;
 						if (renoteUserId !== me.id && !Object.hasOwn(followings, renoteUserId)) return false;
 					}
@@ -241,11 +241,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		query.andWhere(new Brackets((qb: any) => {
 			qb
 				.where('reply.id IS NULL')
-				.orWhere('reply.visibility IN (\'public\', \'specified\')')
+				.orWhere('reply.visibility IN (\'public\', \'specified\', \'home\')')
 				.orWhere('reply.userId = :meId')
 				.orWhere(new Brackets((qb2: any) => {
 					qb2
-						.where('reply.visibility IN (\'home\', \'followers\')')
+						.where('reply.visibility = \'followers\'')
 						.andWhere(new Brackets((qb3: any) => {
 							qb3
 								.where(`reply.userId IN (SELECT followeeId FROM following WHERE followerId = :meId)`);
@@ -256,11 +256,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		query.andWhere(new Brackets((qb: any) => {
 			qb
 				.where('renote.id IS NULL')
-				.orWhere('renote.visibility IN (\'public\', \'specified\')')
+				.orWhere('renote.visibility IN (\'public\', \'specified\', \'home\')')
 				.orWhere('renote.userId = :meId')
 				.orWhere(new Brackets((qb2: any) => {
 					qb2
-						.where('renote.visibility IN (\'home\', \'followers\')')
+						.where('renote.visibility = \'followers\'')
 						.andWhere(new Brackets((qb3: any) => {
 							qb3
 								.where(`renote.userId IN (SELECT followeeId FROM following WHERE followerId = :meId)`);
