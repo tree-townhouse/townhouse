@@ -699,22 +699,25 @@ export function getNoteMenu(props: {
 				type: 'parent',
 				icon: 'ti ti-eye',
 				text: i18n.ts.visibility || '공개 범위',
-				children: [{
-					icon: 'ti ti-world',
-					text: i18n.ts._visibility.public,
-					active: appearNote.visibility === 'public',
-					action: () => updateNoteVisibility('public'),
-				}, {
-					icon: 'ti ti-home',
-					text: i18n.ts._visibility.home,
-					active: appearNote.visibility === 'home',
-					action: () => updateNoteVisibility('home'),
-				}, {
-					icon: 'ti ti-lock',
-					text: i18n.ts._visibility.followers,
-					active: appearNote.visibility === 'followers',
-					action: () => updateNoteVisibility('followers'),
-				}],
+				children: async () => {
+					const visibilityChildMenu = [] as MenuItem[];
+
+					visibilityChildMenu.push({
+						icon: 'ti ti-world',
+						text: i18n.ts._visibility.public,
+						action: () => updateNoteVisibility('public'),
+					}, {
+						icon: 'ti ti-home',
+						text: i18n.ts._visibility.home,
+						action: () => updateNoteVisibility('home'),
+					}, {
+						icon: 'ti ti-lock',
+						text: i18n.ts._visibility.followers,
+						action: () => updateNoteVisibility('followers'),
+					});
+
+					return visibilityChildMenu;
+				},
 			});
 		}
 
