@@ -213,6 +213,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkFolder>
 				</SearchMarker>
 
+				<SearchMarker :keywords="['suspend', 'announcement', 'template']">
+					<MkFolder>
+						<template #icon><SearchIcon><i class="ti ti-user-x"></i></SearchIcon></template>
+						<template #label><SearchLabel>{{ i18n.ts.suspendAnnouncementTemplate }}</SearchLabel></template>
+
+						<div class="_gaps">
+							<MkInput v-model="suspendAnnouncementTitle">
+								<template #label>{{ i18n.ts.suspendAnnouncementTitleLabel }}</template>
+							</MkInput>
+							<MkTextarea v-model="suspendAnnouncementText">
+								<template #label>{{ i18n.ts.suspendAnnouncementTextLabel }}</template>
+								<template #caption>{{ i18n.ts.suspendAnnouncementTemplateDescription }}</template>
+							</MkTextarea>
+							<MkButton primary @click="save_suspendAnnouncementTemplate">{{ i18n.ts.save }}</MkButton>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
 				<SearchMarker :keywords="['blocked', 'servers', 'hosts']">
 					<MkFolder>
 						<template #icon><SearchIcon><i class="ti ti-ban"></i></SearchIcon></template>
@@ -297,6 +315,8 @@ const silenceAnnouncementTitle = ref(meta.silenceAnnouncementTitle ?? '');
 const silenceAnnouncementText = ref(meta.silenceAnnouncementText ?? '');
 const warningAnnouncementTitle = ref(meta.warningAnnouncementTitle ?? '');
 const warningAnnouncementText = ref(meta.warningAnnouncementText ?? '');
+const suspendAnnouncementTitle = ref(meta.suspendAnnouncementTitle ?? '');
+const suspendAnnouncementText = ref(meta.suspendAnnouncementText ?? '');
 
 async function onChange_enableRegistration(value: boolean) {
 	if (value) {
@@ -460,6 +480,15 @@ function save_warningAnnouncementTemplate() {
 	os.apiWithDialog('admin/update-meta', {
 		warningAnnouncementTitle: warningAnnouncementTitle.value || null,
 		warningAnnouncementText: warningAnnouncementText.value || null,
+	}).then(() => {
+		fetchInstance(true);
+	});
+}
+
+function save_suspendAnnouncementTemplate() {
+	os.apiWithDialog('admin/update-meta', {
+		suspendAnnouncementTitle: suspendAnnouncementTitle.value || null,
+		suspendAnnouncementText: suspendAnnouncementText.value || null,
 	}).then(() => {
 		fetchInstance(true);
 	});

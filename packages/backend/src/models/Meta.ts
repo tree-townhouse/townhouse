@@ -949,6 +949,18 @@ export class MiMeta {
 		comment: 'Custom text for the warning announcement sent to users. Supports {reason} placeholder.',
 	})
 	public warningAnnouncementText: string | null;
+
+	@Column('varchar', {
+		length: 256, nullable: true,
+		comment: 'Custom title for the suspend announcement sent to users.',
+	})
+	public suspendAnnouncementTitle: string | null;
+
+	@Column('varchar', {
+		length: 2048, nullable: true,
+		comment: 'Custom text for the suspend announcement sent to users. Supports {reason} and {date} placeholders.',
+	})
+	public suspendAnnouncementText: string | null;
 }
 
 export type SoftwareSuspension = {

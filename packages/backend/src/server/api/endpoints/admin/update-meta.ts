@@ -259,6 +259,8 @@ export const paramDef = {
 		silenceAnnouncementText: { type: 'string', nullable: true },
 		warningAnnouncementTitle: { type: 'string', nullable: true },
 		warningAnnouncementText: { type: 'string', nullable: true },
+		suspendAnnouncementTitle: { type: 'string', nullable: true },
+		suspendAnnouncementText: { type: 'string', nullable: true },
 	},
 	required: [],
 } as const;
@@ -956,6 +958,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.warningAnnouncementText !== undefined) {
 				set.warningAnnouncementText = ps.warningAnnouncementText;
+			}
+
+			if (ps.suspendAnnouncementTitle !== undefined) {
+				set.suspendAnnouncementTitle = ps.suspendAnnouncementTitle;
+			}
+
+			if (ps.suspendAnnouncementText !== undefined) {
+				set.suspendAnnouncementText = ps.suspendAnnouncementText;
 			}
 
 			const before = await this.metaService.fetch(true);

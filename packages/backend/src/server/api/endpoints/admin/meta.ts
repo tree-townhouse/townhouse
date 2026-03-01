@@ -763,6 +763,14 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			suspendAnnouncementTitle: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			suspendAnnouncementText: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 		},
 	},
 } as const;
@@ -962,6 +970,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				silenceAnnouncementText: instance.silenceAnnouncementText,
 				warningAnnouncementTitle: instance.warningAnnouncementTitle,
 				warningAnnouncementText: instance.warningAnnouncementText,
+				suspendAnnouncementTitle: instance.suspendAnnouncementTitle,
+				suspendAnnouncementText: instance.suspendAnnouncementText,
 			};
 		});
 	}

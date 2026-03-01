@@ -353,15 +353,39 @@ async function resetPassword() {
 }
 
 async function toggleSuspend(v) {
-	const confirm = await os.confirm({
-		type: 'warning',
-		text: v ? i18n.ts.suspendConfirm : i18n.ts.unsuspendConfirm,
-	});
-	if (confirm.canceled) {
-		suspended.value = !v;
-	} else {
-		await misskeyApi(v ? 'admin/suspend-user' : 'admin/unsuspend-user', { userId: user.value.id });
+	if (v) {
+		const { canceled: canceled1, result: reason } = await os.inputText({
+			type: 'text',
+			title: i18n.ts.suspendReason,
+			text: i18n.ts.suspendReasonDescription,
+		});
+		if (canceled1) {
+			suspended.value = false;
+			return;
+		}
+
+		const confirm = await os.confirm({
+			type: 'warning',
+			text: i18n.ts.suspendConfirm,
+		});
+		if (confirm.canceled) {
+			suspended.value = false;
+			return;
+		}
+
+		await misskeyApi('admin/suspend-user', { userId: user.value.id, reason: reason });
 		await refreshUser();
+	} else {
+		const confirm = await os.confirm({
+			type: 'warning',
+			text: i18n.ts.unsuspendConfirm,
+		});
+		if (confirm.canceled) {
+			suspended.value = true;
+		} else {
+			await misskeyApi('admin/unsuspend-user', { userId: user.value.id });
+			await refreshUser();
+		}
 	}
 }
 
