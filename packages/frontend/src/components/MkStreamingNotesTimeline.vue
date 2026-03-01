@@ -406,15 +406,8 @@ if (store.s.realtimeMode && stream) {
 				if (body.isBlinded !== undefined) updated.isBlinded = body.isBlinded;
 				if (body.visibility !== undefined) updated.visibility = body.visibility;
 
-				// If the note is blinded, clear visible contents for normal users so
-				// the UI shows the standard blinded placeholder rather than an empty card.
+				// Control visibility with isHidden flag only, preserve content for restoration
 				if (body.isBlinded === true) {
-					updated.text = null;
-					updated.cw = null;
-					updated.fileIds = [];
-					updated.files = [];
-					updated.poll = undefined;
-					updated.event = undefined;
 					updated.isHidden = true;
 				} else if (body.isBlinded === false) {
 					// When unblinded, restore isHidden flag so content displays properly

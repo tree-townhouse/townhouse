@@ -92,10 +92,15 @@ window.setInterval(() => {
 }, POLLING_INTERVAL);
 
 function pollingSubscribe(props: {
-	note: Pick<Misskey.entities.Note, 'id' | 'createdAt'>;
+	note: Pick<Misskey.entities.Note, 'id' | 'createdAt'> & { isBlinded?: boolean };
 	$note: ReactiveNoteData;
 }) {
 	const { note, $note } = props;
+
+	// Skip polling for blinded notes to avoid unnecessary API calls
+	if (note.isBlinded) {
+		return;
+	}
 
 	function onFetched(data: Pick<Misskey.entities.Note, 'reactions' | 'reactionEmojis'>): void {
 		$note.reactions = data.reactions;
@@ -154,6 +159,13 @@ function realtimeSubscribe(props: {
 				note.updatedAt = new Date().toISOString();
 				if (body.cw !== undefined) note.cw = body.cw;
 				if (body.text !== undefined) note.text = body.text;
+				if (body.fileIds !== undefined) note.fileIds = body.fileIds;
+				if (body.files !== undefined) note.files = body.files;
+				if (body.poll !== undefined) {
+					note.poll = body.poll;
+					$note.pollChoices = body.poll?.choices ?? [];
+				}
+				if (body.event !== undefined) note.event = body.event;
 				if (body.isBlinded !== undefined) {
 					note.isBlinded = body.isBlinded;
 				}
@@ -250,8 +262,13 @@ export function useNoteCapture(props: {
 	noteEvents.on(`updated:${note.id}`, onUpdated);
 
 	// Listen for visibility/blind changes from timeline broadcast (e.g. admin unblind action)
+	// Use debouncing to prevent duplicate processing from stream + broadcast event cycle
+	let lastVisibilityChangeTime = 0;
 	const onGlobalVisibilityChanged = ({ noteId, visibility, isBlinded }: { noteId: string; visibility: string; isBlinded: boolean }) => {
 		if (noteId !== note.id) return;
+		const now = Date.now();
+		if (now - lastVisibilityChangeTime < 100) return; // Prevent duplicate updates within 100ms
+		lastVisibilityChangeTime = now;
 		onUpdated({ visibility: visibility as any, isBlinded });
 	};
 	useGlobalEvent('noteVisibilityChanged', onGlobalVisibilityChanged);
@@ -331,25 +348,15 @@ export function useNoteCapture(props: {
 			note.isBlinded = payload.isBlinded;
 			$note.isBlinded = payload.isBlinded;
 
-			// If the note is blinded, clear visible contents for normal users so
-			// the UI shows the standard blinded placeholder. Moderators and the
-			// note owner should still see the content.
+			// Control visibility with isHidden flag only, preserve content for restoration
 			const iAmModerator = $i && ($i.isAdmin || $i.policies?.canHideNote);
 			const iAmOwner = $i && $i.id === note.userId;
 			if (payload.isBlinded === true && !(iAmModerator || iAmOwner)) {
-				note.text = null;
-				note.cw = null;
-				note.fileIds = [];
-				note.files = [] as any;
-				note.poll = undefined;
-				note.event = undefined;
+				// Only hide content, don't delete it - we need it for unblind restoration
 				note.isHidden = true;
-				$note.pollChoices = [];
 			} else if (payload.isBlinded === false) {
-				// When unblinded, restore isHidden flag so content displays properly
+				// Simply unhide - content already intact from blind state
 				note.isHidden = false;
-				// Content restoration will be handled by stream update or polling mechanism
-				// Do NOT make API calls here to avoid infinite loops
 			}
 		}
 		if (payload.fileIds !== undefined) {
