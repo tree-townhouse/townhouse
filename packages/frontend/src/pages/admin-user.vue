@@ -97,7 +97,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div>
 						<MkButton v-if="user.host == null && !info.isDirectlySilenced" inline style="margin-right: 8px;" @click="silenceUser"><i class="ti ti-volume-off"></i> {{ i18n.ts.silence }}</MkButton>
 						<MkButton v-if="user.host == null && info.isDirectlySilenced" inline style="margin-right: 8px;" @click="unsilenceUser"><i class="ti ti-volume"></i> {{ i18n.ts.unsilence }}</MkButton>
+						<MkButton v-if="user.host == null" inline style="margin-right: 8px;" @click="warnUser"><i class="ti ti-alert-triangle"></i> {{ i18n.ts.warn }}</MkButton>
 						<span v-if="info.isDirectlySilenced && info.silencedUntil" style="font-size: 0.85em; opacity: 0.7;">{{ i18n.tsx.silencedUntil({ date: new Date(info.silencedUntil).toLocaleString() }) }}</span>
+						<span v-if="info.warningCount > 0" style="font-size: 0.85em; opacity: 0.7; margin-left: 8px;">{{ i18n.tsx.warningCount({ count: info.warningCount }) }}</span>
 					</div>
 
 					<div>
@@ -410,6 +412,20 @@ async function unsilenceUser() {
 	if (confirm.canceled) return;
 
 	await os.apiWithDialog('admin/unsilence-user', { userId: user.value.id });
+	await refreshUser();
+}
+
+async function warnUser() {
+	const { canceled, result: reason } = await os.inputText({
+		title: i18n.ts.warnReason,
+		text: i18n.ts.warnReasonDescription,
+	});
+	if (canceled) return;
+
+	await os.apiWithDialog('admin/warn-user', {
+		userId: user.value.id,
+		reason: reason ?? '',
+	});
 	await refreshUser();
 }
 

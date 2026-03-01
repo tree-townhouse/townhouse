@@ -184,6 +184,12 @@ export class MiUser {
 	})
 	public silencedUntil: Date | null;
 
+	@Column('integer', {
+		default: 0,
+		comment: 'The number of warnings the user has received.',
+	})
+	public warningCount: number;
+
 	@Column('boolean', {
 		default: false,
 		comment: 'Whether the User is locked.',

@@ -140,6 +140,7 @@ export const moderationLogTypes = [
 	'updateNoteVisibility',
 	'silence',
 	'unsilence',
+	'warn',
 ] as const;
 
 export type ModerationLogPayloads = {
@@ -429,6 +430,12 @@ export type ModerationLogPayloads = {
 		userId: string;
 		userUsername: string;
 		userHost: string | null;
+	};
+	warn: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+		reason: string;
 	};
 };
 

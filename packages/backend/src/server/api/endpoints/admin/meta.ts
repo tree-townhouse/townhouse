@@ -755,6 +755,14 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			warningAnnouncementTitle: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			warningAnnouncementText: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 		},
 	},
 } as const;
@@ -952,6 +960,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				approvalRequiredForSignup: instance.approvalRequiredForSignup,
 				silenceAnnouncementTitle: instance.silenceAnnouncementTitle,
 				silenceAnnouncementText: instance.silenceAnnouncementText,
+				warningAnnouncementTitle: instance.warningAnnouncementTitle,
+				warningAnnouncementText: instance.warningAnnouncementText,
 			};
 		});
 	}

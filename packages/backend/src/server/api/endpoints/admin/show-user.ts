@@ -131,6 +131,10 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			warningCount: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
 			isSuspended: {
 				type: 'boolean',
 				optional: false, nullable: false,
@@ -274,6 +278,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				isSilenced: isSilenced,
 				isDirectlySilenced: user.isSilenced,
 				silencedUntil: user.silencedUntil ? user.silencedUntil.toISOString() : null,
+				warningCount: user.warningCount,
 				isSuspended: user.isSuspended,
 				isHibernated: user.isHibernated,
 				lastActiveDate: user.lastActiveDate ? user.lastActiveDate.toISOString() : null,
