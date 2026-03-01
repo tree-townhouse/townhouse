@@ -70,8 +70,13 @@ const ro = new ResizeObserver((entries, observer) => {
 	setPosition();
 });
 
+function onScroll() {
+	setPosition();
+}
+
 onMounted(() => {
 	if (el.value) ro.observe(el.value);
+	props.rootElement.addEventListener('scroll', onScroll, { passive: true });
 	setPosition();
 	nextTick(() => {
 		setPosition();
@@ -80,6 +85,7 @@ onMounted(() => {
 
 onUnmounted(() => {
 	ro.disconnect();
+	props.rootElement.removeEventListener('scroll', onScroll);
 });
 
 defineExpose({
