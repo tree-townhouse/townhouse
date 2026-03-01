@@ -387,6 +387,51 @@ function prepend(note: Misskey.entities.Note & MisskeyEntity) {
 
 const stream = store.s.realtimeMode ? useStream() : null;
 
+// Ensure broadcasted note updates (e.g. blind/unblind) update timeline items
+if (store.s.realtimeMode && stream) {
+	const onBroadcastNoteUpdated = (noteData: { id: string; type: string; body: any }) => {
+		try {
+			const { id, type, body } = noteData as any;
+			if (type !== 'updated') return;
+			if (props.src !== 'global') return; // only apply to global timeline
+
+			paginator.updateItem(id, (item) => {
+				const updated = { ...item } as any;
+				if (body.cw !== undefined) updated.cw = body.cw;
+				if (body.text !== undefined) updated.text = body.text;
+				if (body.fileIds !== undefined) updated.fileIds = body.fileIds;
+				if (body.files !== undefined) updated.files = body.files;
+				if (body.poll !== undefined) updated.poll = body.poll;
+				if (body.event !== undefined) updated.event = body.event;
+				if (body.isBlinded !== undefined) updated.isBlinded = body.isBlinded;
+				if (body.visibility !== undefined) updated.visibility = body.visibility;
+
+				// If the note is blinded, clear visible contents for normal users so
+				// the UI shows the standard blinded placeholder rather than an empty card.
+				if (body.isBlinded === true) {
+					updated.text = null;
+					updated.cw = null;
+					updated.fileIds = [];
+					updated.files = [];
+					updated.poll = undefined;
+					updated.event = undefined;
+					updated.isHidden = true;
+				}
+
+				return updated;
+			});
+		} catch (err) {
+			console.error('Failed to apply broadcast noteUpdated to paginator', err);
+		}
+	};
+
+	stream.on && stream.on('noteUpdated', onBroadcastNoteUpdated);
+
+	onUnmounted(() => {
+		stream.off && stream.off('noteUpdated', onBroadcastNoteUpdated);
+	});
+}
+
 const connections = {
 	antenna: null as Misskey.IChannelConnection<Misskey.Channels['antenna']> | null,
 	homeTimeline: null as Misskey.IChannelConnection<Misskey.Channels['homeTimeline']> | null,

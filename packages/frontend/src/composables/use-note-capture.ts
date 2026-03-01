@@ -323,12 +323,32 @@ export function useNoteCapture(props: {
 		if (payload.isBlinded !== undefined) {
 			note.isBlinded = payload.isBlinded;
 			$note.isBlinded = payload.isBlinded;
+
+			// If the note is blinded, clear visible contents for normal users so
+			// the UI shows the standard blinded placeholder. Moderators and the
+			// note owner should still see the content.
+			const iAmModerator = $i && ($i.isAdmin || $i.policies?.canHideNote);
+			const iAmOwner = $i && $i.id === note.userId;
+			if (payload.isBlinded === true && !(iAmModerator || iAmOwner)) {
+				note.text = null;
+				note.cw = null;
+				note.fileIds = [];
+				note.files = [] as any;
+				note.poll = undefined;
+				note.event = undefined;
+				note.isHidden = true;
+				$note.pollChoices = [];
+			}
 		}
 		if (payload.fileIds !== undefined) {
 			note.fileIds = payload.fileIds;
 		}
 		if (payload.files !== undefined) {
 			note.files = payload.files;
+		}
+		if (payload.poll !== undefined) {
+			note.poll = payload.poll as any;
+			$note.pollChoices = (payload.poll as any)?.choices ?? [];
 		}
 
 		if (payload.visibility !== undefined || payload.isBlinded !== undefined) {
