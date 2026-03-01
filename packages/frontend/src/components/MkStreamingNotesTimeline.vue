@@ -423,6 +423,15 @@ if (store.s.realtimeMode && stream) {
 
 				return updated;
 			});
+
+			// Emit event to sync MkNote components' internal state (useNoteCapture) with timeline item update
+			if (body.isBlinded !== undefined || body.visibility !== undefined) {
+				globalEvents.emit('noteVisibilityChanged', {
+					noteId: id,
+					visibility: body.visibility ?? 'public',
+					isBlinded: body.isBlinded ?? false,
+				});
+			}
 		} catch (err) {
 			console.error('Failed to apply broadcast noteUpdated to paginator', err);
 		}

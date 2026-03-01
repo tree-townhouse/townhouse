@@ -12,7 +12,7 @@ import { $i } from '@/i.js';
 import { store } from '@/store.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { prefer } from '@/preferences.js';
-import { globalEvents } from '@/events.js';
+import { globalEvents, useGlobalEvent } from '@/events.js';
 
 export const noteEvents = new EventEmitter<{
 	[ev: `reacted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; reaction: string; emoji?: { name: string; url: string; }; }) => void;
@@ -248,6 +248,13 @@ export function useNoteCapture(props: {
 	noteEvents.on(`unreacted:${note.id}`, onUnreacted);
 	noteEvents.on(`pollVoted:${note.id}`, onPollVoted);
 	noteEvents.on(`updated:${note.id}`, onUpdated);
+
+	// Listen for visibility/blind changes from timeline broadcast (e.g. admin unblind action)
+	const onGlobalVisibilityChanged = ({ noteId, visibility, isBlinded }: { noteId: string; visibility: string; isBlinded: boolean }) => {
+		if (noteId !== note.id) return;
+		onUpdated({ visibility: visibility as any, isBlinded });
+	};
+	useGlobalEvent('noteVisibilityChanged', onGlobalVisibilityChanged);
 
 	// 操作がダブっていないかどうかを簡易的に記録するためのMap
 	const reactionUserMap = new Map<Misskey.entities.User['id'], string | typeof noReaction>();
