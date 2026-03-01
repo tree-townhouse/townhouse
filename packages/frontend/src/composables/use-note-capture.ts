@@ -338,6 +338,9 @@ export function useNoteCapture(props: {
 				note.event = undefined;
 				note.isHidden = true;
 				$note.pollChoices = [];
+			} else if (payload.isBlinded === false) {
+				// When unblinded, restore isHidden flag so content displays properly
+				note.isHidden = false;
 			}
 		}
 		if (payload.fileIds !== undefined) {

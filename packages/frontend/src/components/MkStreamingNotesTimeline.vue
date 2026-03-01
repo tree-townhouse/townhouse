@@ -416,6 +416,9 @@ if (store.s.realtimeMode && stream) {
 					updated.poll = undefined;
 					updated.event = undefined;
 					updated.isHidden = true;
+				} else if (body.isBlinded === false) {
+					// When unblinded, restore isHidden flag so content displays properly
+					updated.isHidden = false;
 				}
 
 				return updated;
