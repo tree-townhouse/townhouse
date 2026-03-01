@@ -682,34 +682,39 @@ export function getNoteMenu(props: {
 		if (isAdminOrModerator && isOtherLocalUser) {
 			menuItems.push({ type: 'divider' });
 
+			const updateNoteVisibility = (newVisibility: 'public' | 'home' | 'followers') => {
+				os.apiWithDialog('admin/update-note-visibility', {
+					noteId: appearNote.id,
+					visibility: newVisibility,
+					localOnly: appearNote.localOnly,
+				}).then(() => {
+					appearNote.visibility = newVisibility;
+					noteEvents.emit(`updated:${appearNote.id}`, {
+						visibility: newVisibility,
+					});
+				});
+			};
+
 			menuItems.push({
+				type: 'parent',
 				icon: 'ti ti-eye',
 				text: i18n.ts.visibility || '공개 범위',
-				action: async () => {
-					const { canceled, result } = await os.select({
-						title: i18n.ts.visibility || '공개 범위',
-						default: appearNote.visibility,
-						items: [{
-							value: 'public', label: i18n.ts._visibility.public,
-						}, {
-							value: 'home', label: i18n.ts._visibility.home,
-						}, {
-							value: 'followers', label: i18n.ts._visibility.followers,
-						}],
-					});
-					if (canceled || result == null) return;
-
-					os.apiWithDialog('admin/update-note-visibility', {
-						noteId: appearNote.id,
-						visibility: result,
-						localOnly: appearNote.localOnly,
-					}).then(() => {
-						appearNote.visibility = result;
-						noteEvents.emit(`updated:${appearNote.id}`, {
-							visibility: result,
-						});
-					});
-				},
+				children: [{
+					icon: 'ti ti-world',
+					text: i18n.ts._visibility.public,
+					active: appearNote.visibility === 'public',
+					action: () => updateNoteVisibility('public'),
+				}, {
+					icon: 'ti ti-home',
+					text: i18n.ts._visibility.home,
+					active: appearNote.visibility === 'home',
+					action: () => updateNoteVisibility('home'),
+				}, {
+					icon: 'ti ti-lock',
+					text: i18n.ts._visibility.followers,
+					active: appearNote.visibility === 'followers',
+					action: () => updateNoteVisibility('followers'),
+				}],
 			});
 		}
 
