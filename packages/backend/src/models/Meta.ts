@@ -925,6 +925,18 @@ export class MiMeta {
 		default: false,
 	})
 	public approvalRequiredForSignup: boolean;
+
+	@Column('varchar', {
+		length: 256, nullable: true,
+		comment: 'Custom title for the silence announcement sent to users.',
+	})
+	public silenceAnnouncementTitle: string | null;
+
+	@Column('varchar', {
+		length: 2048, nullable: true,
+		comment: 'Custom text for the silence announcement sent to users. Supports {reason} and {period} placeholders.',
+	})
+	public silenceAnnouncementText: string | null;
 }
 
 export type SoftwareSuspension = {

@@ -67,6 +67,7 @@ import { UserListService } from './UserListService.js';
 import { UserMutingService } from './UserMutingService.js';
 import { UserRenoteMutingService } from './UserRenoteMutingService.js';
 import { UserSuspendService } from './UserSuspendService.js';
+import { UserSilenceService } from './UserSilenceService.js';
 import { UserAuthService } from './UserAuthService.js';
 import { VideoProcessingService } from './VideoProcessingService.js';
 import { UserWebhookService } from './UserWebhookService.js';
@@ -220,6 +221,7 @@ const $UserMutingService: Provider = { provide: 'UserMutingService', useExisting
 const $UserRenoteMutingService: Provider = { provide: 'UserRenoteMutingService', useExisting: UserRenoteMutingService };
 const $UserSearchService: Provider = { provide: 'UserSearchService', useExisting: UserSearchService };
 const $UserSuspendService: Provider = { provide: 'UserSuspendService', useExisting: UserSuspendService };
+const $UserSilenceService: Provider = { provide: 'UserSilenceService', useExisting: UserSilenceService };
 const $UserAuthService: Provider = { provide: 'UserAuthService', useExisting: UserAuthService };
 const $VideoProcessingService: Provider = { provide: 'VideoProcessingService', useExisting: VideoProcessingService };
 const $UserWebhookService: Provider = { provide: 'UserWebhookService', useExisting: UserWebhookService };
@@ -380,6 +382,7 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		UserRenoteMutingService,
 		UserSearchService,
 		UserSuspendService,
+		UserSilenceService,
 		UserAuthService,
 		VideoProcessingService,
 		UserWebhookService,
@@ -537,6 +540,7 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		$UserRenoteMutingService,
 		$UserSearchService,
 		$UserSuspendService,
+		$UserSilenceService,
 		$UserAuthService,
 		$VideoProcessingService,
 		$UserWebhookService,
@@ -694,6 +698,7 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		UserRenoteMutingService,
 		UserSearchService,
 		UserSuspendService,
+		UserSilenceService,
 		UserAuthService,
 		VideoProcessingService,
 		UserWebhookService,
@@ -850,6 +855,7 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		$UserRenoteMutingService,
 		$UserSearchService,
 		$UserSuspendService,
+		$UserSilenceService,
 		$UserAuthService,
 		$VideoProcessingService,
 		$UserWebhookService,

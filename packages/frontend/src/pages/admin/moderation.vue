@@ -177,6 +177,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkFolder>
 				</SearchMarker>
 
+				<SearchMarker :keywords="['silence', 'announcement', 'template']">
+					<MkFolder>
+						<template #icon><SearchIcon><i class="ti ti-volume-off"></i></SearchIcon></template>
+						<template #label><SearchLabel>{{ i18n.ts.silenceAnnouncementTemplate }}</SearchLabel></template>
+
+						<div class="_gaps">
+							<MkInput v-model="silenceAnnouncementTitle">
+								<template #label>{{ i18n.ts.silenceAnnouncementTitleLabel }}</template>
+							</MkInput>
+							<MkTextarea v-model="silenceAnnouncementText">
+								<template #label>{{ i18n.ts.silenceAnnouncementTextLabel }}</template>
+								<template #caption>{{ i18n.ts.silenceAnnouncementTemplateDescription }}</template>
+							</MkTextarea>
+							<MkButton primary @click="save_silenceAnnouncementTemplate">{{ i18n.ts.save }}</MkButton>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
 				<SearchMarker :keywords="['blocked', 'servers', 'hosts']">
 					<MkFolder>
 						<template #icon><SearchIcon><i class="ti ti-ban"></i></SearchIcon></template>
@@ -257,6 +275,8 @@ const silencedHosts = ref(meta.silencedHosts?.join('\n') ?? '');
 const mediaSilencedHosts = ref(meta.mediaSilencedHosts.join('\n'));
 const trustedLinkUrlPatterns = ref(meta.trustedLinkUrlPatterns.join('\n'));
 const bubbleTimeline = ref(meta.bubbleInstances.join('\n'));
+const silenceAnnouncementTitle = ref(meta.silenceAnnouncementTitle ?? '');
+const silenceAnnouncementText = ref(meta.silenceAnnouncementText ?? '');
 
 async function onChange_enableRegistration(value: boolean) {
 	if (value) {
@@ -402,6 +422,15 @@ function save_mediaSilencedHosts() {
 function save_bubbleTimeline() {
 	os.apiWithDialog('admin/update-meta', {
 		bubbleInstances: bubbleTimeline.value.split('\n') || [],
+	}).then(() => {
+		fetchInstance(true);
+	});
+}
+
+function save_silenceAnnouncementTemplate() {
+	os.apiWithDialog('admin/update-meta', {
+		silenceAnnouncementTitle: silenceAnnouncementTitle.value || null,
+		silenceAnnouncementText: silenceAnnouncementText.value || null,
 	}).then(() => {
 		fetchInstance(true);
 	});

@@ -383,7 +383,13 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 
 		if (userId == null) return basePolicies;
 
-		const roles = await this.getUserRoles(userId);
+		const [roles, user] = await Promise.all([
+			this.getUserRoles(userId),
+			this.usersRepository.findOneBy({ id: userId }),
+		]);
+
+		// Check if user is directly silenced (and silence hasn't expired)
+		const isDirectlySilenced = user != null && user.isSilenced && (user.silencedUntil == null || user.silencedUntil > new Date());
 
 		function calc<T extends keyof RolePolicies>(name: T, aggregate: (values: RolePolicies[T][]) => RolePolicies[T]) {
 			if (roles.length === 0) return basePolicies[name];
@@ -409,7 +415,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			gtlAvailable: calc('gtlAvailable', vs => vs.some(v => v === true)),
 			ltlAvailable: calc('ltlAvailable', vs => vs.some(v => v === true)),
 			btlAvailable: calc('btlAvailable', vs => vs.some(v => v === true)),
-			canPublicNote: calc('canPublicNote', vs => vs.some(v => v === true)),
+			canPublicNote: isDirectlySilenced ? false : calc('canPublicNote', vs => vs.some(v => v === true)),
 			canEditNote: calc('canEditNote', vs => vs.some(v => v === true)),
 			mentionLimit: calc('mentionLimit', vs => Math.max(...vs)),
 			canInvite: calc('canInvite', vs => vs.some(v => v === true)),

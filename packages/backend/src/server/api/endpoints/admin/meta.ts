@@ -747,6 +747,14 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			silenceAnnouncementTitle: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			silenceAnnouncementText: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 		},
 	},
 } as const;
@@ -942,6 +950,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				bubbleInstances: instance.bubbleInstances,
 				customRobotsTxt: instance.customRobotsTxt,
 				approvalRequiredForSignup: instance.approvalRequiredForSignup,
+				silenceAnnouncementTitle: instance.silenceAnnouncementTitle,
+				silenceAnnouncementText: instance.silenceAnnouncementText,
 			};
 		});
 	}

@@ -123,6 +123,14 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			isDirectlySilenced: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			silencedUntil: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 			isSuspended: {
 				type: 'boolean',
 				optional: false, nullable: false,
@@ -264,6 +272,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				notificationRecieveConfig: profile.notificationRecieveConfig,
 				isModerator: isModerator,
 				isSilenced: isSilenced,
+				isDirectlySilenced: user.isSilenced,
+				silencedUntil: user.silencedUntil ? user.silencedUntil.toISOString() : null,
 				isSuspended: user.isSuspended,
 				isHibernated: user.isHibernated,
 				lastActiveDate: user.lastActiveDate ? user.lastActiveDate.toISOString() : null,

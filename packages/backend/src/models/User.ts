@@ -174,6 +174,18 @@ export class MiUser {
 
 	@Column('boolean', {
 		default: false,
+		comment: 'Whether the User is silenced.',
+	})
+	public isSilenced: boolean;
+
+	@Column('timestamp with time zone', {
+		nullable: true,
+		comment: 'The expiry date of the silence. Null means indefinite.',
+	})
+	public silencedUntil: Date | null;
+
+	@Column('boolean', {
+		default: false,
 		comment: 'Whether the User is locked.',
 	})
 	public isLocked: boolean;

@@ -95,6 +95,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkSwitch v-model="suspended" @update:modelValue="toggleSuspend">{{ i18n.ts.suspend }}</MkSwitch>
 
 					<div>
+						<MkButton v-if="user.host == null && !info.isDirectlySilenced" inline style="margin-right: 8px;" @click="silenceUser"><i class="ti ti-volume-off"></i> {{ i18n.ts.silence }}</MkButton>
+						<MkButton v-if="user.host == null && info.isDirectlySilenced" inline style="margin-right: 8px;" @click="unsilenceUser"><i class="ti ti-volume"></i> {{ i18n.ts.unsilence }}</MkButton>
+						<span v-if="info.isDirectlySilenced && info.silencedUntil" style="font-size: 0.85em; opacity: 0.7;">{{ i18n.tsx.silencedUntil({ date: new Date(info.silencedUntil).toLocaleString() }) }}</span>
+					</div>
+
+					<div>
 						<MkButton v-if="user.host == null" inline style="margin-right: 8px;" @click="resetPassword"><i class="ti ti-key"></i> {{ i18n.ts.resetPassword }}</MkButton>
 					</div>
 
@@ -355,6 +361,56 @@ async function toggleSuspend(v) {
 		await misskeyApi(v ? 'admin/suspend-user' : 'admin/unsuspend-user', { userId: user.value.id });
 		await refreshUser();
 	}
+}
+
+async function silenceUser() {
+	const { canceled: canceled1, result: period } = await os.select({
+		title: i18n.ts.silencePeriod,
+		items: [{
+			value: 'indefinitely', label: i18n.ts.indefinitely,
+		}, {
+			value: 'oneHour', label: i18n.ts.oneHour,
+		}, {
+			value: 'oneDay', label: i18n.ts.oneDay,
+		}, {
+			value: 'oneWeek', label: i18n.ts.oneWeek,
+		}, {
+			value: 'oneMonth', label: i18n.ts.oneMonth,
+		}],
+		default: 'indefinitely',
+	});
+	if (canceled1) return;
+
+	const { canceled: canceled2, result: reason } = await os.inputText({
+		title: i18n.ts.silenceReason,
+		text: i18n.ts.silenceReasonDescription,
+	});
+	if (canceled2) return;
+
+	const expiresAt = period === 'indefinitely' ? null
+		: period === 'oneHour' ? Date.now() + (1000 * 60 * 60)
+		: period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
+		: period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
+		: period === 'oneMonth' ? Date.now() + (1000 * 60 * 60 * 24 * 30)
+		: null;
+
+	await os.apiWithDialog('admin/silence-user', {
+		userId: user.value.id,
+		reason: reason ?? '',
+		expiresAt,
+	});
+	await refreshUser();
+}
+
+async function unsilenceUser() {
+	const confirm = await os.confirm({
+		type: 'warning',
+		text: i18n.ts.unsilenceConfirm,
+	});
+	if (confirm.canceled) return;
+
+	await os.apiWithDialog('admin/unsilence-user', { userId: user.value.id });
+	await refreshUser();
 }
 
 async function unsetUserAvatar() {

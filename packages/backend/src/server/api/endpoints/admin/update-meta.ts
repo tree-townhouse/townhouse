@@ -255,6 +255,8 @@ export const paramDef = {
 		bubbleInstances: { type: 'array', items: { type: 'string' } },
 		customRobotsTxt: { type: 'string', nullable: true },
 		approvalRequiredForSignup: { type: 'boolean' },
+		silenceAnnouncementTitle: { type: 'string', nullable: true },
+		silenceAnnouncementText: { type: 'string', nullable: true },
 	},
 	required: [],
 } as const;
@@ -936,6 +938,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.approvalRequiredForSignup !== undefined) {
 				set.approvalRequiredForSignup = ps.approvalRequiredForSignup;
+			}
+
+			if (ps.silenceAnnouncementTitle !== undefined) {
+				set.silenceAnnouncementTitle = ps.silenceAnnouncementTitle;
+			}
+
+			if (ps.silenceAnnouncementText !== undefined) {
+				set.silenceAnnouncementText = ps.silenceAnnouncementText;
 			}
 
 			const before = await this.metaService.fetch(true);
