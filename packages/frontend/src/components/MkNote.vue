@@ -534,19 +534,42 @@ const { $note: $appearNote, subscribe: subscribeManuallyToNoteCapture } = useNot
 	mock: props.mock,
 });
 
-// Sync props.note changes (e.g., blind/unblind from timeline) to appearNote
+// Sync props.note changes (e.g., blind/unblind from timeline) to both appearNote and $appearNote
+// Use flush: 'post' to ensure updates after parent component updates
 watch(() => props.note, (newNote) => {
 	if (newNote == null) return;
+	// Track if any blind-related fields changed to trigger reactivity updates
+	let hasBlindStateChange = false;
+	
 	// Sync critical fields that can change from timeline broadcasts (blind/unblind)
-	if (newNote.isHidden !== undefined) appearNote.isHidden = newNote.isHidden;
-	if (newNote.isBlinded !== undefined) appearNote.isBlinded = newNote.isBlinded;
-	if (newNote.cw !== undefined) appearNote.cw = newNote.cw;
-	if (newNote.text !== undefined) appearNote.text = newNote.text;
+	if (newNote.isHidden !== undefined && newNote.isHidden !== appearNote.isHidden) {
+		appearNote.isHidden = newNote.isHidden;
+		hasBlindStateChange = true;
+	}
+	if (newNote.isBlinded !== undefined && newNote.isBlinded !== appearNote.isBlinded) {
+		appearNote.isBlinded = newNote.isBlinded;
+		$appearNote.isBlinded = newNote.isBlinded;
+		hasBlindStateChange = true;
+	}
+	if (newNote.cw !== undefined && newNote.cw !== appearNote.cw) {
+		appearNote.cw = newNote.cw;
+	}
+	if (newNote.text !== undefined && newNote.text !== appearNote.text) {
+		appearNote.text = newNote.text;
+	}
 	if (newNote.fileIds !== undefined) appearNote.fileIds = newNote.fileIds;
 	if (newNote.files !== undefined) appearNote.files = newNote.files;
-	if (newNote.poll !== undefined) appearNote.poll = newNote.poll;
+	if (newNote.poll !== undefined) {
+		appearNote.poll = newNote.poll;
+		$appearNote.pollChoices = newNote.poll?.choices ?? [];
+	}
 	if (newNote.event !== undefined) appearNote.event = newNote.event;
-}, { deep: true });
+	
+	// Trigger Vue reactivity system to re-evaluate computeds
+	if (hasBlindStateChange && $appearNote.updatedRev !== undefined) {
+		$appearNote.updatedRev++;
+	}
+}, { deep: true, flush: 'post' });
 
 // Trigger computed updates by depending on props.note changes
 const syncedNote = computed(() => ({ ...props.note })); // Computed that depends on props.note
