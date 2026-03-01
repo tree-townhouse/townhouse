@@ -138,6 +138,7 @@ export const moderationLogTypes = [
 	'deleteChatRoom',
 	'updateProxyAccountDescription',
 	'updateNoteVisibility',
+	'updateNoteBlind',
 	'silence',
 	'unsilence',
 	'warn',
@@ -418,6 +419,14 @@ export type ModerationLogPayloads = {
 		noteUserHost: string | null;
 		before: string;
 		after: string;
+	};
+	updateNoteBlind: {
+		noteId: string;
+		noteUserId: string;
+		noteUserUsername: string;
+		noteUserHost: string | null;
+		before: boolean;
+		after: boolean;
 	};
 	silence: {
 		userId: string;

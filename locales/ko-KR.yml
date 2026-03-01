@@ -3333,6 +3333,7 @@ _moderationLogTypes:
   updateCustomEmoji: "커스텀 이모지 편집"
   deleteCustomEmoji: "커스텀 이모지 삭제"
   updateNoteVisibility: "노트 공개 범위 변경"
+  updateNoteBlind: "노트 블라인드"
   updateServerSettings: "서버 설정 갱신"
   updateUserNote: "모더레이션 노트 갱신"
   deleteDriveFile: "파일 삭제"

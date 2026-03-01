@@ -3471,6 +3471,8 @@ _moderationLogTypes:
   deleteGalleryPost: "ギャラリーの投稿を削除"
   deleteChatRoom: "ダイレクトメッセージのグループを削除"
   updateProxyAccountDescription: "プロキシアカウントの説明を更新"
+  updateNoteVisibility: "ノートの公開範囲を変更"
+  updateNoteBlind: "ノートをブラインド"
   approve: "承認済み"
   decline: "拒否"
   silence: "サイレンス"

@@ -72,13 +72,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				isBlinded: afterBlinded,
 			});
 
-			this.moderationLogService.log(me, 'updateNoteVisibility', {
+			this.moderationLogService.log(me, 'updateNoteBlind', {
 				noteId: note.id,
 				noteUserId: user.id,
 				noteUserUsername: user.username,
 				noteUserHost: user.host,
-				before: beforeBlinded ? 'blinded' : 'public',
-				after: afterBlinded ? 'blinded' : 'public',
+				before: beforeBlinded,
+				after: afterBlinded,
 			});
 
 			note.isBlinded = afterBlinded;

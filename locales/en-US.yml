@@ -3365,6 +3365,8 @@ _moderationLogTypes:
   deleteGalleryPost: "Gallery post deleted"
   deleteChatRoom: "Deleted Chat Room"
   updateProxyAccountDescription: "Update the description of the proxy account"
+  updateNoteVisibility: "Note visibility changed"
+  updateNoteBlind: "Note blinded"
   approve: "Approved"
   decline: "Declined"
   silence: "Silenced"
