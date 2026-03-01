@@ -90,6 +90,14 @@ const router = useRouter();
 const onGlobalVisibilityChanged = ({ noteId, isBlinded }) => {
 	if (props.note && noteId === props.note.id) {
 		props.note.isBlinded = isBlinded;
+		// Also update isHidden to match blind state for non-moderator/non-owner users
+		const iAmModerator = $i && ($i.isAdmin || $i.policies?.canHideNote);
+		const iAmOwner = $i && $i.id === props.note.userId;
+		if (isBlinded === true && !(iAmModerator || iAmOwner)) {
+			props.note.isHidden = true;
+		} else if (isBlinded === false) {
+			props.note.isHidden = false;
+		}
 	}
 };
 useGlobalEvent('noteVisibilityChanged', onGlobalVisibilityChanged);
