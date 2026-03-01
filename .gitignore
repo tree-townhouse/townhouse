@@ -85,4 +85,4 @@ vite.config.local-dev.ts.timestamp-*
 .serena
 
 # TaskSync
-tasksync.instructions.md
+TaskSync.agent.md
