@@ -284,6 +284,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<button class="_button" style="padding: 5px 0; color: var(--MI_THEME-accent);" @click.stop="viewTextSource = false"><small>{{ i18n.ts.close }}</small></button>
 					</div>
 				</div>
+				</Transition>
 				<div v-if="appearNote.files && appearNote.files.length > 0 && !isEffectivelyHidden">
 					<MkMediaList ref="galleryEl" :mediaList="appearNote.files" :disableRightClick="appearNote.disableRightClick" @click.stop @contextmenu="disableRightClickHandler"/>
 				</div>
@@ -301,7 +302,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div v-if="isEnabledUrlPreview && !isEffectivelyHidden">
 					<MkUrlPreview v-for="url in urls" :key="url" :url="url" :compact="true" :detail="false" :class="$style.urlPreview"/>
 				</div>
-				</Transition>
 				<button v-if="((isLong && prefer.s.collapseLongNoteContent) || (isMFM && prefer.s.collapseDefault) || (appearNote.files && appearNote.files.length > 0 && prefer.s.allMediaNoteCollapse)) && collapsed" :class="$style.collapsed" class="_button" @click.stop="collapsed = false">
 					<span :class="$style.collapsedLabel">
 						{{ i18n.ts.showMore }}
