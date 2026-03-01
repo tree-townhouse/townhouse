@@ -7,6 +7,7 @@ import { setImmediate } from 'node:timers/promises';
 import util from 'util';
 import { In, DataSource } from 'typeorm';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import * as Redis from 'ioredis';
 import * as mfm from 'mfc-js';
 import type { IMentionedRemoteUsers } from '@/models/Note.js';
 import { MiNote } from '@/models/Note.js';
@@ -14,6 +15,7 @@ import { MiEvent } from '@/models/Event.js';
 import type { IEvent } from '@/models/Event.js';
 import type { NotesRepository, UsersRepository } from '@/models/_.js';
 import type { MiUser, MiLocalUser, MiRemoteUser } from '@/models/User.js';
+import type { MiMeta } from '@/models/Meta.js';
 import { RelayService } from '@/core/RelayService.js';
 import { DI } from '@/di-symbols.js';
 import ActiveUsersChart from '@/core/chart/charts/active-users.js';
@@ -25,6 +27,7 @@ import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerServ
 import { bindThis } from '@/decorators.js';
 import { DB_MAX_NOTE_TEXT_LENGTH } from '@/const.js';
 import { SearchService } from '@/core/SearchService.js';
+import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import { MiDriveFile } from '@/models/_.js';
 import { MiPoll, IPoll } from '@/models/Poll.js';
@@ -64,6 +67,12 @@ export class NoteUpdateService implements OnApplicationShutdown {
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
+		@Inject(DI.redisForTimelines)
+		private redisForTimelines: Redis.Redis,
+
+		@Inject(DI.meta)
+		private meta: MiMeta,
+
 		private userEntityService: UserEntityService,
 		private globalEventService: GlobalEventService,
 		private queueService: QueueService,
@@ -71,6 +80,7 @@ export class NoteUpdateService implements OnApplicationShutdown {
 		private apDeliverManagerService: ApDeliverManagerService,
 		private apRendererService: ApRendererService,
 		private searchService: SearchService,
+		private fanoutTimelineService: FanoutTimelineService,
 		private activeUsersChart: ActiveUsersChart,
 		private noteHistoryService: NoteHistorySerivce,
 	) { }
@@ -113,9 +123,17 @@ export class NoteUpdateService implements OnApplicationShutdown {
 
 		tags = tags.filter(tag => Array.from(tag ?? '').length <= 128).splice(0, 32);
 
+		const beforeVisibility = note.visibility;
+
 		const updatedNote = await this.updateNote(user, note, data, tags, emojis);
 
 		if (updatedNote) {
+			// Redis タイムラインキャッシュの更新（公開範囲が変更された場合）
+			const afterVisibility = updatedNote.visibility;
+			if (beforeVisibility !== afterVisibility) {
+				await this.updateTimelineCache(updatedNote, beforeVisibility, afterVisibility);
+			}
+
 			setImmediate('post updated', { signal: this.#shutdownController.signal }).then(
 				() => this.postNoteUpdated(updatedNote, user, silent),
 				() => { /* aborted, ignore this */ },
@@ -190,7 +208,7 @@ export class NoteUpdateService implements OnApplicationShutdown {
 								expiresAt: data.poll!.expiresAt,
 								multiple: data.poll!.multiple,
 								votes: new Array(data.poll!.choices.length).fill(0),
-								noteVisibility: note.visibility,
+								noteVisibility: values.visibility,
 								userId: user.id,
 								userHost: user.host,
 							});
@@ -203,7 +221,7 @@ export class NoteUpdateService implements OnApplicationShutdown {
 							expiresAt: data.poll!.expiresAt,
 							multiple: data.poll!.multiple,
 							votes: new Array(data.poll!.choices.length).fill(0),
-							noteVisibility: note.visibility,
+							noteVisibility: values.visibility,
 							userId: user.id,
 							userHost: user.host,
 						});
@@ -228,7 +246,7 @@ export class NoteUpdateService implements OnApplicationShutdown {
 								start: data.event!.start,
 								end: data.event!.end ?? undefined,
 								metadata: data.event!.metadata,
-								noteVisibility: note.visibility,
+								noteVisibility: values.visibility,
 								userId: user.id,
 								userHost: user.host,
 							});
@@ -241,7 +259,7 @@ export class NoteUpdateService implements OnApplicationShutdown {
 							start: data.event!.start,
 							end: data.event!.end ?? undefined,
 							metadata: data.event!.metadata,
-							noteVisibility: note.visibility,
+							noteVisibility: values.visibility,
 							userId: user.id,
 							userHost: user.host,
 						});
@@ -262,6 +280,54 @@ export class NoteUpdateService implements OnApplicationShutdown {
 
 			throw e;
 		}
+	}
+
+	@bindThis
+	private async updateTimelineCache(note: MiNote, beforeVisibility: string, afterVisibility: string) {
+		if (!this.meta.enableFanoutTimeline) return;
+
+		const pipeline = this.redisForTimelines.pipeline();
+
+		const wasPublicLocal = beforeVisibility === 'public' && note.userHost == null;
+		const isPublicLocal = afterVisibility === 'public' && note.userHost == null;
+
+		const isReply = note.replyId != null;
+		const hasFiles = note.fileIds != null && note.fileIds.length > 0;
+		const isChannelNote = note.channelId != null;
+
+		// ローカルタイムラインから削除（public → non-public の場合）
+		if (wasPublicLocal && !isPublicLocal) {
+			if (!isReply && !isChannelNote) {
+				pipeline.lrem('list:localTimeline', 0, note.id);
+			}
+			if (!isReply && !isChannelNote && hasFiles) {
+				pipeline.lrem('list:localTimelineWithFiles', 0, note.id);
+			}
+			if (isReply && !isChannelNote) {
+				pipeline.lrem('list:localTimelineWithReplies', 0, note.id);
+			}
+			if (isReply && !isChannelNote && note.replyUserHost == null && note.replyUserId != null) {
+				pipeline.lrem(`list:localTimelineWithReplyTo:${note.replyUserId}`, 0, note.id);
+			}
+		}
+
+		// ローカルタイムラインに追加（non-public → public の場合）
+		if (!wasPublicLocal && isPublicLocal) {
+			if (!isReply && !isChannelNote) {
+				this.fanoutTimelineService.push('localTimeline', note.id, 1000, pipeline);
+			}
+			if (!isReply && !isChannelNote && hasFiles) {
+				this.fanoutTimelineService.push('localTimelineWithFiles', note.id, 500, pipeline);
+			}
+			if (isReply && !isChannelNote) {
+				this.fanoutTimelineService.push('localTimelineWithReplies', note.id, 300, pipeline);
+			}
+			if (isReply && !isChannelNote && note.replyUserHost == null && note.replyUserId != null) {
+				this.fanoutTimelineService.push(`localTimelineWithReplyTo:${note.replyUserId}`, note.id, 30, pipeline);
+			}
+		}
+
+		await pipeline.exec();
 	}
 
 	@bindThis
