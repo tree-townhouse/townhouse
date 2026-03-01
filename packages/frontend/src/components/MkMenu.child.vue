@@ -35,21 +35,27 @@ const SCROLLBAR_THICKNESS = 16;
 
 function setPosition() {
 	if (el.value == null) return;
-	const rootRect = props.rootElement.getBoundingClientRect();
 	const parentRect = props.anchorElement.getBoundingClientRect();
 	const myRect = el.value.getBoundingClientRect();
 
-	const parentLeft = parentRect.left - rootRect.left;
-	const parentRight = parentRect.right - rootRect.left;
+	// デフォルト: アンカーの右隣
+	let left = parentRect.right;
+	let top = parentRect.top - 8;
 
-	let left = parentRight;
-	let top = (parentRect.top - rootRect.top) - 8;
-	if (rootRect.left + left + myRect.width >= (window.innerWidth - SCROLLBAR_THICKNESS)) {
-		left = parentLeft - myRect.width;
+	// 右端を超える場合は左側に表示
+	if (left + myRect.width >= (window.innerWidth - SCROLLBAR_THICKNESS)) {
+		left = parentRect.left - myRect.width;
 	}
-	if (rootRect.top + top + myRect.height >= (window.innerHeight - SCROLLBAR_THICKNESS)) {
-		top = top - ((rootRect.top + top + myRect.height) - (window.innerHeight - SCROLLBAR_THICKNESS));
+
+	// 下端を超える場合は上にずらす
+	const maxTop = window.innerHeight - SCROLLBAR_THICKNESS - myRect.height;
+	if (top > maxTop) {
+		top = maxTop;
 	}
+	if (top < 0) {
+		top = 0;
+	}
+
 	el.value.style.left = left + 'px';
 	el.value.style.top = top + 'px';
 }
@@ -97,6 +103,9 @@ defineExpose({
 
 <style lang="scss" module>
 .root {
-	position: absolute;
+	position: fixed;
+	max-height: calc(100dvh - 32px);
+	overflow-y: auto;
+	overscroll-behavior: contain;
 }
 </style>
