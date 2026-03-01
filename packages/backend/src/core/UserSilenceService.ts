@@ -42,12 +42,15 @@ export class UserSilenceService {
 		// Send announcement to the silenced user
 		const meta = await this.metaService.fetch();
 		const periodText = this.formatPeriod(expiresAt);
+		const dateText = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 		const title = (meta.silenceAnnouncementTitle ?? '{reason}')
 			.replace('{reason}', reason)
-			.replace('{period}', periodText);
+			.replace('{period}', periodText)
+			.replace('{date}', dateText);
 		const text = (meta.silenceAnnouncementText ?? '{reason}\n\n{period}')
 			.replace('{reason}', reason)
-			.replace('{period}', periodText);
+			.replace('{period}', periodText)
+			.replace('{date}', dateText);
 
 		await this.announcementService.create({
 			title: title,

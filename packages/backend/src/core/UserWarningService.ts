@@ -37,10 +37,13 @@ export class UserWarningService {
 
 		// Send announcement to the warned user
 		const meta = await this.metaService.fetch();
+		const dateText = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 		const title = (meta.warningAnnouncementTitle ?? '{reason}')
-			.replace('{reason}', reason);
+			.replace('{reason}', reason)
+			.replace('{date}', dateText);
 		const text = (meta.warningAnnouncementText ?? '{reason}')
-			.replace('{reason}', reason);
+			.replace('{reason}', reason)
+			.replace('{date}', dateText);
 
 		await this.announcementService.create({
 			title: title,
