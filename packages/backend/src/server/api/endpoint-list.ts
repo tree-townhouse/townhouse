@@ -107,6 +107,7 @@ export * as 'admin/server-info' from './endpoints/admin/server-info.js';
 export * as 'admin/show-moderation-logs' from './endpoints/admin/show-moderation-logs.js';
 export * as 'admin/show-user' from './endpoints/admin/show-user.js';
 export * as 'admin/show-users' from './endpoints/admin/show-users.js';
+export * as 'admin/silence-user' from './endpoints/admin/silence-user.js';
 export * as 'admin/suspend-user' from './endpoints/admin/suspend-user.js';
 export * as 'admin/system-webhook/create' from './endpoints/admin/system-webhook/create.js';
 export * as 'admin/system-webhook/delete' from './endpoints/admin/system-webhook/delete.js';
@@ -116,6 +117,7 @@ export * as 'admin/system-webhook/test' from './endpoints/admin/system-webhook/t
 export * as 'admin/system-webhook/update' from './endpoints/admin/system-webhook/update.js';
 export * as 'admin/unset-user-avatar' from './endpoints/admin/unset-user-avatar.js';
 export * as 'admin/unset-user-banner' from './endpoints/admin/unset-user-banner.js';
+export * as 'admin/unsilence-user' from './endpoints/admin/unsilence-user.js';
 export * as 'admin/unsuspend-user' from './endpoints/admin/unsuspend-user.js';
 export * as 'admin/update-abuse-user-report' from './endpoints/admin/update-abuse-user-report.js';
 export * as 'admin/update-meta' from './endpoints/admin/update-meta.js';
