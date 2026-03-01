@@ -101,6 +101,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						/>
 						<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll" style="margin: 4px 0;" @click.stop/>
 					</p>
+					<div v-if="appearNote.cw != null && isEffectivelyHidden && isBlindedInThisContext" style="opacity: 0.5; margin-top: 4px;">({{ i18n.ts.blindedNoteMessage }})</div>
 					<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 						<div :class="$style.text">
 							<div v-if="isBlindedInThisContext" style="opacity: 0.5; margin-bottom: 4px;">({{ i18n.ts.blindedNoteMessage }})</div>
@@ -217,6 +218,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				/>
 				<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll" style="margin: 4px 0;" @click.stop/>
 			</p>
+			<div v-if="appearNote.cw != null && isEffectivelyHidden && isBlindedInThisContext" style="opacity: 0.5; margin-top: 4px;">({{ i18n.ts.blindedNoteMessage }})</div>
 			<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 				<Transition
 					:enterActiveClass="prefer.s.animation ? $style.transition_x_enterActive : ''"
