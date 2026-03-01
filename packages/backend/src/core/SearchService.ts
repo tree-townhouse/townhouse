@@ -133,6 +133,7 @@ export class SearchService {
 	public async indexNote(note: MiNote): Promise<void> {
 		if (!this.meilisearch) return;
 		if (note.text == null && note.cw == null) return;
+		// 검색 가능한 가시성만 인덱싱 (home, public)
 		if (!['home', 'public'].includes(note.visibility)) return;
 
 		switch (this.meilisearchIndexScope) {
@@ -167,8 +168,9 @@ export class SearchService {
 	@bindThis
 	public async unindexNote(note: MiNote): Promise<void> {
 		if (!this.meilisearch) return;
-		if (!['home', 'public'].includes(note.visibility)) return;
-
+		// visibility 상관없이 항상 인덱스에서 제거 시도
+		// (이전에 인덱싱되었을 수도 있으므로)
+		
 		await this.meilisearchNoteIndex?.deleteDocument(note.id);
 	}
 

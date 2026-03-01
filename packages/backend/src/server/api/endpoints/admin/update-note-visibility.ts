@@ -66,6 +66,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return;
 			}
 
+			// 구 가시성 상태에서 먼저 기존 검색 인덱스 제거
+			await this.searchService.unindexNote(note);
+
 			await this.notesRepository.update({ id: note.id }, {
 				visibility: afterVisibility,
 				localOnly: afterLocalOnly,
@@ -98,8 +101,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				},
 			});
 
-			this.searchService.unindexNote(note);
-			this.searchService.indexNote(note);
+			// 새 가시성 상태로 검색 인덱스 재구성
+			await this.searchService.indexNote(note);
 		});
 	}
 }
