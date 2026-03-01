@@ -67,6 +67,7 @@ import { checkWordMute } from '@/utility/check-word-mute.js';
 import { prefer } from '@/preferences.js';
 import { useRouter } from '@/router.js';
 import MkInfo from '@/components/MkInfo.vue';
+import { useGlobalEvent } from '@/events.js';
 
 const hideLine = ref(false);
 
@@ -84,6 +85,14 @@ const muted = ref(props.note && $i ? checkWordMute(props.note, $i, $i.mutedWords
 
 const expandOnNoteClick = prefer.s.expandOnNoteClick;
 const router = useRouter();
+
+// Listen for parent note blind state changes in reply context
+const onGlobalVisibilityChanged = ({ noteId, isBlinded }) => {
+	if (props.note && noteId === props.note.id) {
+		props.note.isBlinded = isBlinded;
+	}
+};
+useGlobalEvent('noteVisibilityChanged', onGlobalVisibilityChanged);
 
 const showContent = ref(false);
 const replies = ref<Misskey.entities.Note[]>([]);

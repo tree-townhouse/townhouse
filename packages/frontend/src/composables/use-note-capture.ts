@@ -348,6 +348,23 @@ export function useNoteCapture(props: {
 			} else if (payload.isBlinded === false) {
 				// When unblinded, restore isHidden flag so content displays properly
 				note.isHidden = false;
+				
+				// If content wasn't included in payload, fetch it from server
+				if (payload.text === undefined && payload.files === undefined && payload.poll === undefined) {
+					misskeyApi('notes/show', { noteId: note.id }).then((latestNote) => {
+						if (latestNote.text !== undefined) note.text = latestNote.text;
+						if (latestNote.cw !== undefined) note.cw = latestNote.cw;
+						if (latestNote.fileIds !== undefined) note.fileIds = latestNote.fileIds;
+						if (latestNote.files !== undefined) note.files = latestNote.files;
+						if (latestNote.poll !== undefined) {
+							note.poll = latestNote.poll;
+							$note.pollChoices = latestNote.poll.choices;
+						}
+						$note.updatedRev++;
+					}).catch(err => {
+						console.error('Failed to fetch unblinded note content:', err);
+					});
+				}
 			}
 		}
 		if (payload.fileIds !== undefined) {
