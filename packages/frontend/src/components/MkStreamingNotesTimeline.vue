@@ -407,8 +407,16 @@ if (store.s.realtimeMode && stream) {
 				if (body.visibility !== undefined) updated.visibility = body.visibility;
 
 				// Control visibility with isHidden flag only, preserve content for restoration
+				// Respect current user's privileges: moderators and the note owner should still see content
+				const iAmModerator = $i && ($i.isAdmin || $i.policies?.canHideNote);
+				const iAmOwner = $i && $i.id === updated.userId;
 				if (body.isBlinded === true) {
-					updated.isHidden = true;
+					if (!(iAmModerator || iAmOwner)) {
+						updated.isHidden = true;
+					} else {
+						// keep content visible for moderator/owner
+						updated.isHidden = false;
+					}
 				} else if (body.isBlinded === false) {
 					// When unblinded, restore isHidden flag so content displays properly
 					updated.isHidden = false;

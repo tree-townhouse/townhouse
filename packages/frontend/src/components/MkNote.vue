@@ -527,10 +527,13 @@ if (noteViewInterruptors.length > 0) {
 }
 
 const isRenote = Misskey.note.isPureRenote(note);
-const appearNote = getAppearNote(note) ?? note;
+// Use computed to get fresh appearNote whenever props.note changes
+// This ensures appearNote always references the correct note object
+const appearNote = computed(() => getAppearNote(props.note) ?? props.note).value;
+
 const { $note: $appearNote, subscribe: subscribeManuallyToNoteCapture } = useNoteCapture({
 	note: appearNote,
-	parentNote: note,
+	parentNote: props.note,
 	mock: props.mock,
 });
 
@@ -538,35 +541,47 @@ const { $note: $appearNote, subscribe: subscribeManuallyToNoteCapture } = useNot
 // Use flush: 'post' to ensure updates after parent component updates
 watch(() => props.note, (newNote) => {
 	if (newNote == null) return;
-	// Track if any blind-related fields changed to trigger reactivity updates
-	let hasBlindStateChange = false;
+	// Track if any relevant fields changed to trigger reactivity updates
+	let hasContentChange = false;
 	
 	// Sync critical fields that can change from timeline broadcasts (blind/unblind)
 	if (newNote.isHidden !== undefined && newNote.isHidden !== appearNote.isHidden) {
 		appearNote.isHidden = newNote.isHidden;
-		hasBlindStateChange = true;
+		hasContentChange = true;
 	}
 	if (newNote.isBlinded !== undefined && newNote.isBlinded !== appearNote.isBlinded) {
 		appearNote.isBlinded = newNote.isBlinded;
 		$appearNote.isBlinded = newNote.isBlinded;
-		hasBlindStateChange = true;
+		hasContentChange = true;
 	}
 	if (newNote.cw !== undefined && newNote.cw !== appearNote.cw) {
 		appearNote.cw = newNote.cw;
+		hasContentChange = true;
 	}
 	if (newNote.text !== undefined && newNote.text !== appearNote.text) {
 		appearNote.text = newNote.text;
+		hasContentChange = true;
 	}
-	if (newNote.fileIds !== undefined) appearNote.fileIds = newNote.fileIds;
-	if (newNote.files !== undefined) appearNote.files = newNote.files;
-	if (newNote.poll !== undefined) {
+	if (newNote.fileIds !== undefined && newNote.fileIds !== appearNote.fileIds) {
+		appearNote.fileIds = newNote.fileIds;
+		hasContentChange = true;
+	}
+	if (newNote.files !== undefined && newNote.files !== appearNote.files) {
+		appearNote.files = newNote.files;
+		hasContentChange = true;
+	}
+	if (newNote.poll !== undefined && newNote.poll !== appearNote.poll) {
 		appearNote.poll = newNote.poll;
 		$appearNote.pollChoices = newNote.poll?.choices ?? [];
+		hasContentChange = true;
 	}
-	if (newNote.event !== undefined) appearNote.event = newNote.event;
+	if (newNote.event !== undefined && newNote.event !== appearNote.event) {
+		appearNote.event = newNote.event;
+		hasContentChange = true;
+	}
 	
-	// Trigger Vue reactivity system to re-evaluate computeds
-	if (hasBlindStateChange && $appearNote.updatedRev !== undefined) {
+	// Increment updatedRev whenever ANY content field changes to ensure template updates
+	if (hasContentChange && $appearNote.updatedRev !== undefined) {
 		$appearNote.updatedRev++;
 	}
 }, { deep: true, flush: 'post' });

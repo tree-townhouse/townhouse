@@ -371,6 +371,19 @@ export function useNoteCapture(props: {
 		}
 
 		if (payload.visibility !== undefined || payload.isBlinded !== undefined) {
+			try {
+				if (typeof localStorage !== 'undefined' && localStorage.getItem('debugBlind') === '1') {
+					console.debug('[debugBlind] useNote onUpdated emit', note.id, {
+						visibility: note.visibility,
+						isBlinded: note.isBlinded,
+						cw: note.cw,
+						text: note.text,
+						files: note.files?.length ?? 0,
+					});
+				}
+			} catch (e) {
+				// ignore
+			}
 			globalEvents.emit('noteVisibilityChanged', {
 				noteId: note.id,
 				visibility: note.visibility as string,
