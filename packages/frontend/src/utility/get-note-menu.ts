@@ -728,6 +728,7 @@ export function getNoteMenu(props: {
 			menuItems.push({
 				icon: appearNote.isBlinded ? 'ti ti-eye' : 'ti ti-eye-off',
 				text: appearNote.isBlinded ? i18n.ts.unblind : i18n.ts.blind,
+				danger: true,
 				action: async () => {
 					const targetBlindState = !appearNote.isBlinded;
 					const { canceled } = await os.confirm({
