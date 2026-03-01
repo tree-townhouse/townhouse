@@ -6,10 +6,10 @@
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
 
-export function showSuspendedDialog() {
+export function showSuspendedDialog(opts?: { title?: string; text?: string }) {
 	return os.alert({
 		type: 'error',
-		title: i18n.ts.yourAccountSuspendedTitle,
-		text: i18n.ts.yourAccountSuspendedDescription,
+		title: opts?.title || i18n.ts.yourAccountSuspendedTitle,
+		text: opts?.text || i18n.ts.yourAccountSuspendedDescription,
 	});
 }

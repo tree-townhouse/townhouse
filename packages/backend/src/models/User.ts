@@ -172,6 +172,12 @@ export class MiUser {
 	})
 	public isSuspended: boolean;
 
+	@Column('varchar', {
+		length: 512, nullable: true,
+		comment: 'The reason for the suspension.',
+	})
+	public suspendReason: string | null;
+
 	@Column('boolean', {
 		default: false,
 		comment: 'Whether the User is silenced.',

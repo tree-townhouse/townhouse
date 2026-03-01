@@ -7,6 +7,7 @@ export class AddSuspendAnnouncement1769858500000 {
 	name = 'AddSuspendAnnouncement1769858500000'
 
 	async up(queryRunner) {
+		await queryRunner.query(`ALTER TABLE "user" ADD "suspendReason" character varying(512) NULL`);
 		await queryRunner.query(`ALTER TABLE "meta" ADD "suspendAnnouncementTitle" character varying(256) NULL`);
 		await queryRunner.query(`ALTER TABLE "meta" ADD "suspendAnnouncementText" character varying(2048) NULL`);
 	}
@@ -14,5 +15,6 @@ export class AddSuspendAnnouncement1769858500000 {
 	async down(queryRunner) {
 		await queryRunner.query(`ALTER TABLE "meta" DROP COLUMN "suspendAnnouncementText"`);
 		await queryRunner.query(`ALTER TABLE "meta" DROP COLUMN "suspendAnnouncementTitle"`);
+		await queryRunner.query(`ALTER TABLE "user" DROP COLUMN "suspendReason"`);
 	}
 }

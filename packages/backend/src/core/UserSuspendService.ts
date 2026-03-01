@@ -15,8 +15,6 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 import { RelationshipJobData } from '@/queue/types.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { AnnouncementService } from '@/core/AnnouncementService.js';
-import { MetaService } from '@/core/MetaService.js';
 
 @Injectable()
 export class UserSuspendService {
@@ -35,8 +33,6 @@ export class UserSuspendService {
 		private globalEventService: GlobalEventService,
 		private apRendererService: ApRendererService,
 		private moderationLogService: ModerationLogService,
-		private announcementService: AnnouncementService,
-		private metaService: MetaService,
 	) {
 	}
 
@@ -44,6 +40,7 @@ export class UserSuspendService {
 	public async suspend(user: MiUser, moderator: MiUser, reason: string): Promise<void> {
 		await this.usersRepository.update(user.id, {
 			isSuspended: true,
+			suspendReason: reason,
 		});
 
 		this.moderationLogService.log(moderator, 'suspend', {
@@ -52,27 +49,6 @@ export class UserSuspendService {
 			userHost: user.host,
 			reason: reason,
 		});
-
-		// Send announcement to the suspended user
-		const meta = await this.metaService.fetch();
-		const dateText = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
-		const title = (meta.suspendAnnouncementTitle ?? '{reason}')
-			.replace('{reason}', reason)
-			.replace('{date}', dateText);
-		const text = (meta.suspendAnnouncementText ?? '{reason}')
-			.replace('{reason}', reason)
-			.replace('{date}', dateText);
-
-		await this.announcementService.create({
-			title: title,
-			text: text,
-			icon: 'error',
-			display: 'dialog',
-			userId: user.id,
-			needConfirmationToRead: true,
-			forExistingUsers: false,
-			silence: false,
-		}, moderator);
 
 		(async () => {
 			await this.postSuspend(user).catch(e => {});
@@ -84,6 +60,7 @@ export class UserSuspendService {
 	public async unsuspend(user: MiUser, moderator: MiUser): Promise<void> {
 		await this.usersRepository.update(user.id, {
 			isSuspended: false,
+			suspendReason: null,
 		});
 
 		this.moderationLogService.log(moderator, 'unsuspend', {
