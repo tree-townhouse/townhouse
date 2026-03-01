@@ -39,10 +39,13 @@ function setPosition() {
 	const parentRect = props.anchorElement.getBoundingClientRect();
 	const myRect = el.value.getBoundingClientRect();
 
-	let left = props.anchorElement.offsetWidth;
+	const parentLeft = parentRect.left - rootRect.left;
+	const parentRight = parentRect.right - rootRect.left;
+
+	let left = parentRight;
 	let top = (parentRect.top - rootRect.top) - 8;
 	if (rootRect.left + left + myRect.width >= (window.innerWidth - SCROLLBAR_THICKNESS)) {
-		left = -myRect.width;
+		left = parentLeft - myRect.width;
 	}
 	if (rootRect.top + top + myRect.height >= (window.innerHeight - SCROLLBAR_THICKNESS)) {
 		top = top - ((rootRect.top + top + myRect.height) - (window.innerHeight - SCROLLBAR_THICKNESS));
