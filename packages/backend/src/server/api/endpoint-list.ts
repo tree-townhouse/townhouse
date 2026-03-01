@@ -126,6 +126,7 @@ export * as 'admin/update-user-note' from './endpoints/admin/update-user-note.js
 export * as 'admin/update-note-blind' from './endpoints/admin/update-note-blind.js';
 export * as 'admin/update-note-visibility' from './endpoints/admin/update-note-visibility.js';
 export * as 'admin/warn-user' from './endpoints/admin/warn-user.js';
+export * as 'admin/reset-user-warning' from './endpoints/admin/reset-user-warning.js';
 export * as 'announcements' from './endpoints/announcements.js';
 export * as 'announcements/show' from './endpoints/announcements/show.js';
 export * as 'antennas/create' from './endpoints/antennas/create.js';

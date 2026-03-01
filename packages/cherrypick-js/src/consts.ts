@@ -106,6 +106,7 @@ export const permissions = [
 	'write:admin:unsilence-user',
 	'write:admin:unsuspend-user',
 	'write:admin:warn-user',
+	'write:admin:reset-user-warning',
 	'write:admin:meta',
 	'write:admin:user-note',
 	'write:admin:roles',

@@ -142,6 +142,7 @@ export const moderationLogTypes = [
 	'silence',
 	'unsilence',
 	'warn',
+	'resetWarning',
 ] as const;
 
 export type ModerationLogPayloads = {
@@ -446,6 +447,12 @@ export type ModerationLogPayloads = {
 		userUsername: string;
 		userHost: string | null;
 		reason: string;
+	};
+	resetWarning: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+		previousCount: number;
 	};
 };
 

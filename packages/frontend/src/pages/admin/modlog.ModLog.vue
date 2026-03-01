@@ -25,6 +25,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'resetPassword',
 					'suspendRemoteInstance',
 					'updateNoteVisibility',
+					'resetWarning',
 				].includes(log.type),
 				[$style.logRed]: [
 					'suspend',
@@ -88,6 +89,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else-if="log.type === 'deleteFlash'">: @{{ log.info.flashUserUsername }}</span>
 		<span v-else-if="log.type === 'deleteGalleryPost'">: @{{ log.info.postUserUsername }}</span>
 		<span v-else-if="log.type === 'deleteChatRoom'">: @{{ log.info.room.name }}</span>
+		<span v-else-if="log.type === 'resetWarning'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
 	</template>
 	<template #icon>
 		<i v-if="log.type === 'updateServerSettings'" class="ti ti-settings"></i>
@@ -133,6 +135,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="log.type === 'deleteFlash'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'deleteGalleryPost'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'deleteChatRoom'" class="ti ti-trash"></i>
+		<i v-else-if="log.type === 'resetWarning'" class="ti ti-alert-triangle-off"></i>
 	</template>
 	<template #suffix>
 		<MkTime :time="log.createdAt"/>
@@ -178,6 +181,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template v-else-if="log.type === 'warn'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
 			<div>{{ i18n.ts.reason }}: {{ log.info.reason }}</div>
+		</template>
+		<template v-else-if="log.type === 'resetWarning'">
+			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
+			<div>{{ i18n.tsx.warningCount({ count: log.info.previousCount }) }}</div>
 		</template>
 		<template v-else-if="log.type === 'suspend'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
