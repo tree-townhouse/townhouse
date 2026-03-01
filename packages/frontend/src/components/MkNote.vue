@@ -534,6 +534,23 @@ const { $note: $appearNote, subscribe: subscribeManuallyToNoteCapture } = useNot
 	mock: props.mock,
 });
 
+// Sync props.note changes (e.g., blind/unblind from timeline) to appearNote
+watch(() => props.note, (newNote) => {
+	if (newNote == null) return;
+	// Sync critical fields that can change from timeline broadcasts (blind/unblind)
+	if (newNote.isHidden !== undefined) appearNote.isHidden = newNote.isHidden;
+	if (newNote.isBlinded !== undefined) appearNote.isBlinded = newNote.isBlinded;
+	if (newNote.cw !== undefined) appearNote.cw = newNote.cw;
+	if (newNote.text !== undefined) appearNote.text = newNote.text;
+	if (newNote.fileIds !== undefined) appearNote.fileIds = newNote.fileIds;
+	if (newNote.files !== undefined) appearNote.files = newNote.files;
+	if (newNote.poll !== undefined) appearNote.poll = newNote.poll;
+	if (newNote.event !== undefined) appearNote.event = newNote.event;
+}, { deep: true });
+
+// Trigger computed updates by depending on props.note changes
+const syncedNote = computed(() => ({ ...props.note })); // Computed that depends on props.note
+
 const rootEl = useTemplateRef('rootEl');
 const menuButton = useTemplateRef('menuButton');
 const renoteButton = useTemplateRef('renoteButton');
@@ -551,7 +568,11 @@ const isLong = shouldCollapsed(appearNote, urls.value ?? []);
 const isMFM = shouldMfmCollapsed(appearNote);
 const isBlindedInThisContext = computed(() => $appearNote.isBlinded && inGlobalTimeline.value);
 const iAmModerator = computed(() => $i && ($i.isAdmin || $i.policies?.canHideNote));
-const isEffectivelyHidden = computed(() => appearNote.isHidden || (isBlindedInThisContext.value && !iAmModerator.value));
+// Include syncedNote as dependency to ensure re-evaluation when props.note changes
+const isEffectivelyHidden = computed(() => {
+	syncedNote.value; // Establish dependency on props.note changes
+	return appearNote.isHidden || (isBlindedInThisContext.value && !iAmModerator.value);
+});
 const collapsed = ref(appearNote.cw == null && ((isLong && prefer.s.collapseLongNoteContent) || (isMFM && prefer.s.collapseDefault) || ((appearNote.files?.length ?? 0) > 0 && prefer.s.allMediaNoteCollapse)));
 const muted = ref(checkMute(appearNote, $i?.mutedWords));
 const hardMuted = ref(props.withHardMute && checkMute(appearNote, $i?.hardMutedWords, true));
