@@ -220,6 +220,7 @@ export type ReactiveNoteData = {
 	myReaction: Misskey.entities.Note['myReaction'];
 	pollChoices: NonNullable<Misskey.entities.Note['poll']>['choices'];
 	isBlinded: boolean;
+	isHidden: boolean;
 	visibility: Misskey.entities.Note['visibility'];
 	updatedRev: number;
 };
@@ -252,6 +253,7 @@ export function useNoteCapture(props: {
 		myReaction: note.myReaction,
 		pollChoices: note.poll?.choices ?? [],
 		isBlinded: note.isBlinded || false,
+		isHidden: (note as any).isHidden || false,
 		visibility: note.visibility,
 		updatedRev: 0,
 	});
@@ -354,9 +356,11 @@ export function useNoteCapture(props: {
 			if (payload.isBlinded === true && !(iAmModerator || iAmOwner)) {
 				// Only hide content, don't delete it - we need it for unblind restoration
 				note.isHidden = true;
+				$note.isHidden = true;
 			} else if (payload.isBlinded === false) {
 				// Simply unhide - content already intact from blind state
 				note.isHidden = false;
+				$note.isHidden = false;
 			}
 		}
 		if (payload.fileIds !== undefined) {

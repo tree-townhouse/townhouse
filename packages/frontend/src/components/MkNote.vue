@@ -549,6 +549,7 @@ watch(() => props.note, (newNote) => {
 	// Sync critical fields that can change from timeline broadcasts (blind/unblind)
 	if (newNote.isHidden !== undefined && newNote.isHidden !== appearNote.isHidden) {
 		appearNote.isHidden = newNote.isHidden;
+		$appearNote.isHidden = newNote.isHidden;
 		hasContentChange = true;
 	}
 	if (newNote.isBlinded !== undefined && newNote.isBlinded !== appearNote.isBlinded) {
@@ -611,7 +612,7 @@ const iAmModerator = computed(() => $i && ($i.isAdmin || $i.policies?.canHideNot
 // Include syncedNote as dependency to ensure re-evaluation when props.note changes
 const isEffectivelyHidden = computed(() => {
 	syncedNote.value; // Establish dependency on props.note changes
-	return appearNote.isHidden || (isBlindedInThisContext.value && !iAmModerator.value);
+	return $appearNote.isHidden || (isBlindedInThisContext.value && !iAmModerator.value);
 });
 const collapsed = ref(appearNote.cw == null && ((isLong && prefer.s.collapseLongNoteContent) || (isMFM && prefer.s.collapseDefault) || ((appearNote.files?.length ?? 0) > 0 && prefer.s.allMediaNoteCollapse)));
 const muted = ref(checkMute(appearNote, $i?.mutedWords));
