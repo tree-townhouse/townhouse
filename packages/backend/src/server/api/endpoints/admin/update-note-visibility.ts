@@ -12,6 +12,8 @@ import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { noteVisibilities } from '@/types.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { SearchService } from '@/core/SearchService.js';
+import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
+import type { MiMeta } from '@/models/Meta.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -27,6 +29,12 @@ export const paramDef = {
 		noteId: { type: 'string', format: 'misskey:id' },
 		visibility: { type: 'string', enum: noteVisibilities },
 		localOnly: { type: 'boolean' },
+		visibleUserIds: {
+			type: 'array',
+			uniqueItems: true,
+			items: { type: 'string', format: 'misskey:id' },
+			nullable: true,
+		},
 	},
 	required: ['noteId', 'visibility', 'localOnly'],
 } as const;
@@ -43,9 +51,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.redisForTimelines)
 		private redisForTimelines: Redis.Redis,
 
+		@Inject(DI.meta)
+		private metaService: MiMeta,
+
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
 		private searchService: SearchService,
+		private fanoutTimelineService: FanoutTimelineService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// 보유 중인 노트에 대한 version을 확인하여 동시성 제어
@@ -69,6 +81,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const beforeLocalOnly = note.localOnly;
 			const afterLocalOnly = ps.localOnly;
 
+			const specifiedVisibleUserIds = afterVisibility === 'specified'
+				? (() => {
+					const safeVisibleUserIds = ps.visibleUserIds ?? note.visibleUserIds ?? [];
+					const withAuthor = new Set(safeVisibleUserIds);
+					withAuthor.add(note.userId);
+					return Array.from(withAuthor);
+				})()
+				: note.visibleUserIds;
+
 			if (beforeVisibility === afterVisibility && beforeLocalOnly === afterLocalOnly) {
 				return;
 			}
@@ -85,10 +106,28 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			try {
 				// 2단계: DB를 먼저 업데이트 (Race Condition 방지)
-				await this.notesRepository.update({ id: note.id }, {
+				const updateResult = await this.notesRepository.update({
+					id: note.id,
+					visibility: beforeVisibility,
+					localOnly: beforeLocalOnly,
+				}, {
 					visibility: afterVisibility,
 					localOnly: afterLocalOnly,
+					visibleUserIds: specifiedVisibleUserIds,
 				});
+
+				if ((updateResult.affected ?? 0) === 0) {
+					const latest = await this.notesRepository.findOneBy({ id: note.id });
+					if (latest == null) {
+						throw new Error('note not found during update');
+					}
+
+					if (latest.visibility === afterVisibility && latest.localOnly === afterLocalOnly) {
+						return;
+					}
+
+					throw new Error('note visibility update conflict');
+				}
 			} catch (error) {
 				dbUpdateError = error instanceof Error ? error : new Error(String(error));
 				throw dbUpdateError;
@@ -97,62 +136,65 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// 메모리 객체 업데이트 (이후 작업에 사용)
 			note.visibility = afterVisibility;
 			note.localOnly = afterLocalOnly;
+			note.visibleUserIds = specifiedVisibleUserIds;
 
 			// 3단계: Redis 타임라인 캐시 처리 (DB 업데이트 이후)
 			try {
-				const pipeline = this.redisForTimelines.pipeline();
+				if (this.metaService.enableFanoutTimeline) {
+					const pipeline = this.redisForTimelines.pipeline();
 
-				// 공개 노트를 비공개로 변경할 때, Redis 타임라인 캐시에서 제거
-				if (beforeVisibility === 'public' && note.userHost == null) {
-					// 일반 로컬 타임라인에서 제거
-					pipeline.lrem('list:localTimeline', 0, note.id);
-					
-					// 파일이 있는 노트라면 localTimelineWithFiles에서도 제거
-					if (note.fileIds && note.fileIds.length > 0) {
+					const wasPublicLocal = beforeVisibility === 'public' && note.userHost == null;
+					const isPublicLocal = afterVisibility === 'public' && note.userHost == null;
+
+					const isReply = note.replyId != null;
+					const hasFiles = note.fileIds != null && note.fileIds.length > 0;
+					const isChannelNote = note.channelId != null;
+
+					const shouldBeInLocalTimeline = (visible: boolean) => visible && !isReply && !isChannelNote;
+					const shouldBeInLocalTimelineWithFiles = (visible: boolean) => visible && !isReply && !isChannelNote && hasFiles;
+					const shouldBeInLocalTimelineWithReplies = (visible: boolean) => visible && isReply && !isChannelNote;
+					const shouldBeInLocalTimelineWithReplyTo = (visible: boolean) => visible && isReply && !isChannelNote && note.replyUserHost == null && note.replyUserId != null;
+
+					if (wasPublicLocal && !shouldBeInLocalTimeline(isPublicLocal)) {
+						pipeline.lrem('list:localTimeline', 0, note.id);
+					}
+
+					if (wasPublicLocal && !shouldBeInLocalTimelineWithFiles(isPublicLocal)) {
 						pipeline.lrem('list:localTimelineWithFiles', 0, note.id);
 					}
-					
-					// 답글인 경우 답글 타임라인에서 제거 (공개 답글만 포함되므로)
-					if (note.replyId) {
+
+					if (wasPublicLocal && !shouldBeInLocalTimelineWithReplies(isPublicLocal)) {
 						pipeline.lrem('list:localTimelineWithReplies', 0, note.id);
-						// replyUserHost가 null인 경우만 (로컬 사용자 답글)
-						// DB에 직접 저장된 컬럼 사용
-						if (note.replyUserHost == null) {
-							pipeline.lrem(`list:localTimelineWithReplyTo:${note.replyUserId}`, 0, note.id);
-						}
 					}
-				}
 
-				// 비공개 노트를 공개로 변경할 때, Redis 타임라인 캐시에 추가
-				if (afterVisibility === 'public' && note.userHost == null && beforeVisibility !== 'public') {
-					// 일반 로컬 타임라인에 추가
-					pipeline.lpush('list:localTimeline', note.id);
-					
-					// 파일이 있는 노트라면 localTimelineWithFiles에도 추가
-					if (note.fileIds && note.fileIds.length > 0) {
-						pipeline.lpush('list:localTimelineWithFiles', note.id);
+					if (wasPublicLocal && !shouldBeInLocalTimelineWithReplyTo(isPublicLocal) && note.replyUserId != null) {
+						pipeline.lrem(`list:localTimelineWithReplyTo:${note.replyUserId}`, 0, note.id);
 					}
-					
-					// 답글인 경우 답글 타임라인에도 추가 (공개 답글만 포함)
-					if (note.replyId) {
-						pipeline.lpush('list:localTimelineWithReplies', note.id);
-						// replyUserHost가 null인 경우만 (로컬 사용자 답글)
-						if (note.replyUserHost == null) {
-							pipeline.lpush(`list:localTimelineWithReplyTo:${note.replyUserId}`, note.id);
-						}
-					}
-				}
 
-				// Pipeline 실행 결과 검증
-				const pipelineResults = await pipeline.exec();
-				
-				// Pipeline 실행 중 에러 확인
-				if (pipelineResults) {
-					for (const result of pipelineResults) {
-						if (result instanceof Error) {
-							redisExecError = result;
-							// Redis 에러 발생했으므로 로깅
-							break;
+					if (!wasPublicLocal && shouldBeInLocalTimeline(isPublicLocal)) {
+						this.fanoutTimelineService.push('localTimeline', note.id, 1000, pipeline);
+					}
+
+					if (!wasPublicLocal && shouldBeInLocalTimelineWithFiles(isPublicLocal)) {
+						this.fanoutTimelineService.push('localTimelineWithFiles', note.id, 500, pipeline);
+					}
+
+					if (!wasPublicLocal && shouldBeInLocalTimelineWithReplies(isPublicLocal)) {
+						this.fanoutTimelineService.push('localTimelineWithReplies', note.id, 300, pipeline);
+					}
+
+					if (!wasPublicLocal && shouldBeInLocalTimelineWithReplyTo(isPublicLocal) && note.replyUserId != null) {
+						this.fanoutTimelineService.push(`localTimelineWithReplyTo:${note.replyUserId}`, note.id, 30, pipeline);
+					}
+
+					const pipelineResults = await pipeline.exec();
+
+					if (pipelineResults) {
+						for (const result of pipelineResults) {
+							if (Array.isArray(result) && result[0] instanceof Error) {
+								redisExecError = result[0];
+								break;
+							}
 						}
 					}
 				}
@@ -162,15 +204,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			// 4단계: 로깅
-			if (beforeVisibility !== afterVisibility) {
+			if (beforeVisibility !== afterVisibility || beforeLocalOnly !== afterLocalOnly) {
 				try {
 					this.moderationLogService.log(me, 'updateNoteVisibility', {
 						noteId: note.id,
 						noteUserId: user.id,
 						noteUserUsername: user.username,
 						noteUserHost: user.host,
-						before: beforeVisibility,
-						after: afterVisibility,
+						before: `${beforeVisibility}${beforeLocalOnly ? '+localOnly' : ''}`,
+						after: `${afterVisibility}${afterLocalOnly ? '+localOnly' : ''}`,
 					});
 				} catch (logError) {
 					// 로깅 실패는 무시
