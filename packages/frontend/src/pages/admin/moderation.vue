@@ -241,12 +241,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<MkInput v-model="reason.text" :class="$style.reasonText">
 									<template #label>{{ i18n.ts.reason }}</template>
 								</MkInput>
-								<MkSelect v-model="reason.type" :class="$style.reasonType">
+								<MkSelect v-model="reason.type" :items="reasonTypeItems" :class="$style.reasonType">
 									<template #label>{{ i18n.ts.type }}</template>
-									<option value="all">{{ i18n.ts.all }}</option>
-									<option value="warn">{{ i18n.ts.warning }}</option>
-									<option value="silence">{{ i18n.ts.silence }}</option>
-									<option value="suspend">{{ i18n.ts.suspend }}</option>
 								</MkSelect>
 								<MkButton danger :class="$style.reasonDelete" @click="removeReason(i)">
 									<i class="ti ti-trash"></i>
@@ -347,6 +343,13 @@ const suspendAnnouncementText = ref(meta.suspendAnnouncementText ?? '');
 const moderationReasons = ref<{ text: string; type: 'all' | 'warn' | 'silence' | 'suspend' }[]>(
 	(meta.moderationReasons ?? []).map(r => ({ ...r })),
 );
+
+const reasonTypeItems = [
+	{ value: 'all', label: i18n.ts.all },
+	{ value: 'warn', label: i18n.ts.warning },
+	{ value: 'silence', label: i18n.ts.silence },
+	{ value: 'suspend', label: i18n.ts.suspend },
+] as const;
 
 async function onChange_enableRegistration(value: boolean) {
 	if (value) {
