@@ -201,11 +201,7 @@ function send() {
 			clear();
 		}).catch(err => {
 			console.error(err);
-			if (err.code === 'YOUR_ACCOUNT_RESTRICTED') {
-				os.alert({ type: 'error', text: i18n.ts.restrictedError });
-			} else {
-				os.alert({ type: 'error', text: err.message });
-			}
+			// YOUR_ACCOUNT_RESTRICTED is handled by global interceptor in misskey-api.ts
 		}).then(() => {
 			sending.value = false;
 		});
@@ -218,11 +214,7 @@ function send() {
 			clear();
 		}).catch(err => {
 			console.error(err);
-			if (err.code === 'YOUR_ACCOUNT_RESTRICTED') {
-				os.alert({ type: 'error', text: i18n.ts.restrictedError });
-			} else {
-				os.alert({ type: 'error', text: err.message });
-			}
+			// YOUR_ACCOUNT_RESTRICTED is handled by global interceptor in misskey-api.ts
 		}).then(() => {
 			sending.value = false;
 		});

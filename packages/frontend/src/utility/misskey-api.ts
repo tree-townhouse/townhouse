@@ -9,6 +9,16 @@ import { apiUrl } from '@@/js/config.js';
 import { $i } from '@/i.js';
 export const pendingApiRequestsCount = ref(0);
 
+let showRestrictedAlert: (() => void) | null = null;
+
+/**
+ * Register a callback to show an alert when a restricted account error is received.
+ * This avoids circular dependency with os.ts/i18n.
+ */
+export function registerRestrictedAlertHandler(handler: () => void) {
+	showRestrictedAlert = handler;
+}
+
 // Implements Misskey.api.ApiClient.request
 export function misskeyApi<
 	ResT = void,
@@ -51,6 +61,9 @@ export function misskeyApi<
 			} else if (res.status === 204) {
 				resolve(undefined as _ResT); // void -> undefined
 			} else {
+				if (body.error?.code === 'YOUR_ACCOUNT_RESTRICTED' && showRestrictedAlert) {
+					showRestrictedAlert();
+				}
 				reject(body.error);
 			}
 		}).catch(reject);

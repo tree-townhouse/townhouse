@@ -17,7 +17,7 @@ import type { UploaderFeatures } from '@/composables/use-uploader.js';
 import type { MkSelectItem, OptionValue } from '@/components/MkSelect.vue';
 import type MkRoleSelectDialog_TypeReferenceOnly from '@/components/MkRoleSelectDialog.vue';
 import type MkEmojiPickerDialog_TypeReferenceOnly from '@/components/MkEmojiPickerDialog.vue';
-import { misskeyApi } from '@/utility/misskey-api.js';
+import { misskeyApi, registerRestrictedAlertHandler } from '@/utility/misskey-api.js';
 import { prefer } from '@/preferences.js';
 import { i18n } from '@/i18n.js';
 import MkPostFormDialog from '@/components/MkPostFormDialog.vue';
@@ -34,6 +34,14 @@ import { getHTMLElementOrNull } from '@/utility/get-dom-node-or-null.js';
 import { focusParent } from '@/utility/focus.js';
 
 export const openingWindowsCount = ref(0);
+
+// Register global handler for restriction errors from misskeyApi
+registerRestrictedAlertHandler(() => {
+	alert({
+		type: 'error',
+		text: i18n.ts.restrictedError,
+	});
+});
 
 export type ApiWithDialogCustomErrors = Record<string, { title?: string; text: string; }>;
 export const apiWithDialog = (<E extends keyof Misskey.Endpoints>(
@@ -80,7 +88,7 @@ export const apiWithDialog = (<E extends keyof Misskey.Endpoints>(
 			title = i18n.ts.youCannotCreateAnymore;
 			text = `${i18n.ts.error}: ${err.id}`;
 		} else if (err.code === 'YOUR_ACCOUNT_RESTRICTED') {
-			text = i18n.ts.restrictedError;
+			return; // handled by global interceptor in misskey-api.ts
 		} else if (err.message.startsWith('Unexpected token')) {
 			title = i18n.ts.gotInvalidResponseError;
 			text = i18n.ts.gotInvalidResponseErrorDescription;

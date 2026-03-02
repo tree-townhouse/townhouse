@@ -1319,10 +1319,7 @@ async function post(ev?: MouseEvent) {
 	}).catch(err => {
 		posting.value = false;
 		if (err.code === 'YOUR_ACCOUNT_RESTRICTED') {
-			os.alert({
-				type: 'error',
-				text: i18n.ts.restrictedErrorNote,
-			});
+			// handled by global interceptor in misskey-api.ts
 		} else {
 			os.alert({
 				type: 'error',
