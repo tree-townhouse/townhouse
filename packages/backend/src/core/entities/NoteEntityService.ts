@@ -135,6 +135,37 @@ export class NoteEntityService implements OnModuleInit {
 
 	@bindThis
 	private async hideNote(packedNote: Packed<'Note'>, meId: MiUser['id'] | null, iAmModerator = false): Promise<void> {
+		// 블라인드 처리된 노트: 모더레이터가 아닌 모든 사용자에게 콘텐츠 숨김 (노트 작성자 및 팔로워 포함)
+		if (packedNote.isBlinded && !iAmModerator) {
+			packedNote.visibleUserIds = undefined;
+			packedNote.fileIds = [];
+			packedNote.files = [];
+			packedNote.text = null;
+			packedNote.poll = undefined;
+			packedNote.cw = null;
+			packedNote.isHidden = true;
+
+			// 노트 작성자 본인이 아닌 경우 유저 정보도 익명화
+			if (meId !== packedNote.userId) {
+				packedNote.userId = '0000000000';
+				packedNote.user = {
+					id: '0000000000',
+					name: null,
+					username: '***',
+					host: null,
+					avatarUrl: null,
+					avatarBlurhash: null,
+					avatarDecorations: [],
+					isBot: false,
+					isCat: false,
+					emojis: {},
+					onlineStatus: 'unknown',
+					badgeRoles: [],
+				} as any;
+			}
+			return;
+		}
+
 		if (meId === packedNote.userId) return;
 
 		// TODO: isVisibleForMe を使うようにしても良さそう(型違うけど)
@@ -193,20 +224,6 @@ export class NoteEntityService implements OnModuleInit {
 			}
 		}
 
-		if (!hide && packedNote.isBlinded && !iAmModerator) {
-			if (meId == null) {
-				hide = true;
-			} else {
-				const isFollowing = await this.followingsRepository.exists({
-					where: {
-						followeeId: packedNote.userId,
-						followerId: meId,
-					},
-				});
-				hide = !isFollowing;
-			}
-		}
-
 		if (hide) {
 			packedNote.visibleUserIds = undefined;
 			packedNote.fileIds = [];
@@ -216,24 +233,6 @@ export class NoteEntityService implements OnModuleInit {
 			packedNote.cw = null;
 			packedNote.isHidden = true;
 			// TODO: hiddenReason みたいなのを提供しても良さそう
-
-			if (packedNote.isBlinded) {
-				packedNote.userId = '0000000000';
-				packedNote.user = {
-					id: '0000000000',
-					name: null,
-					username: '***',
-					host: null,
-					avatarUrl: null,
-					avatarBlurhash: null,
-					avatarDecorations: [],
-					isBot: false,
-					isCat: false,
-					emojis: {},
-					onlineStatus: 'unknown',
-					badgeRoles: [],
-				} as any;
-			}
 		}
 	}
 

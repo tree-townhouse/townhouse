@@ -71,12 +71,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkAvatar v-if="!prefer.s.hideAvatarsInNote" :class="$style.collapsedRenoteTargetAvatar" :user="appearNote.user" link preview/>
 		<Mfm :text="getNoteSummary(appearNote)" :plain="true" :nowrap="true" :author="appearNote.user" :nyaize="'respect'" :class="[$style.collapsedRenoteTargetText, { [$style.showReplyTargetNoteInSemiTransparent]: prefer.s.showReplyTargetNoteInSemiTransparent }]" @click="renoteCollapsed ? renoteCollapsed = false : replyCollapsed ? replyCollapsed = false : ''"/>
 	</div>
-	<article v-else :class="$style.article" :style="{ cursor: (isBlindedInThisContext && isEffectivelyHidden) ? 'default' : expandOnNoteClick ? 'pointer' : '', paddingTop: prefer.s.showSubNoteFooterButton && appearNote.reply && (!renoteCollapsed && !replyCollapsed && ((!notification && (forceShowReplyTargetNote || prefer.s.showReplyTargetNote)) || (notification && prefer.s.showReplyInNotification))) ? '14px' : '' }" @click.stop="noteClick" @dblclick.stop="noteDblClick" @contextmenu.stop="onContextmenu">
+	<article v-else :class="$style.article" :style="{ cursor: ($appearNote.isBlinded && isEffectivelyHidden) ? 'default' : expandOnNoteClick ? 'pointer' : '', paddingTop: prefer.s.showSubNoteFooterButton && appearNote.reply && (!renoteCollapsed && !replyCollapsed && ((!notification && (forceShowReplyTargetNote || prefer.s.showReplyTargetNote)) || (notification && prefer.s.showReplyInNotification))) ? '14px' : '' }" @click.stop="noteClick" @dblclick.stop="noteDblClick" @contextmenu.stop="onContextmenu">
 		<div :style="prefer.s.showGapBodyOfTheNote ? null : 'padding-bottom: 10px;'" style="display: flex;">
 			<div v-if="appearNote.channel" :class="$style.colorBar" :style="{ background: appearNote.channel.color }"></div>
-			<MkAvatar v-if="!prefer.s.hideAvatarsInNote && !(isBlindedInThisContext && isEffectivelyHidden)" :class="[$style.avatar, prefer.s.useStickyIcons ? $style.useSticky : null, { [$style.avatarReplyTo]: appearNote.reply, [$style.showEl]: !appearNote.reply && (showEl && ['hideHeaderOnly', 'hideHeaderFloatBtn', 'hide'].includes(<string>prefer.s.displayHeaderNavBarWhenScroll)) && mainRouter.currentRoute.value.name === 'index', [$style.showElTab]: !appearNote.reply && (showEl && ['hideHeaderOnly', 'hideHeaderFloatBtn', 'hide'].includes(<string>prefer.s.displayHeaderNavBarWhenScroll)) && mainRouter.currentRoute.value.name !== 'index' }]" :user="appearNote.user" :link="!mock" :preview="!mock" noteClick/>
+			<MkAvatar v-if="!prefer.s.hideAvatarsInNote && !($appearNote.isBlinded && isEffectivelyHidden)" :class="[$style.avatar, prefer.s.useStickyIcons ? $style.useSticky : null, { [$style.avatarReplyTo]: appearNote.reply, [$style.showEl]: !appearNote.reply && (showEl && ['hideHeaderOnly', 'hideHeaderFloatBtn', 'hide'].includes(<string>prefer.s.displayHeaderNavBarWhenScroll)) && mainRouter.currentRoute.value.name === 'index', [$style.showElTab]: !appearNote.reply && (showEl && ['hideHeaderOnly', 'hideHeaderFloatBtn', 'hide'].includes(<string>prefer.s.displayHeaderNavBarWhenScroll)) && mainRouter.currentRoute.value.name !== 'index' }]" :user="appearNote.user" :link="!mock" :preview="!mock" noteClick/>
 			<div :class="$style.main">
-				<MkNoteHeader v-if="!(isBlindedInThisContext && isEffectivelyHidden)" :note="appearNote" :mini="true"/>
+				<MkNoteHeader v-if="!($appearNote.isBlinded && isEffectivelyHidden)" :note="appearNote" :mini="true"/>
 				<div v-if="prefer.s.showGapBodyOfTheNote" :style="prefer.s.showGapBodyOfTheNote ? 'margin-top: 4px;' : null" style="container-type: inline-size;">
 					<MkInfo v-if="appearNote.deleteAt != null" warn :class="$style.deleteAt">
 						<I18n :src="i18n.ts.scheduledToDeleteOnX" tag="span">
@@ -101,11 +101,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 						/>
 						<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll" style="margin: 4px 0;" @click.stop/>
 					</p>
-					<div v-if="appearNote.cw != null && isEffectivelyHidden && isBlindedInThisContext" style="opacity: 0.5; margin-top: 4px;">({{ i18n.ts.blindedNoteMessage }})</div>
+					<div v-if="appearNote.cw != null && isEffectivelyHidden && $appearNote.isBlinded" style="opacity: 0.5; margin-top: 4px;">({{ i18n.ts.blindedNoteMessage }})</div>
 					<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 						<div :class="$style.text">
-							<div v-if="isBlindedInThisContext" style="opacity: 0.5; margin-bottom: 4px;">({{ i18n.ts.blindedNoteMessage }})</div>
-							<span v-if="isEffectivelyHidden && !isBlindedInThisContext" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
+							<div v-if="$appearNote.isBlinded && isEffectivelyHidden" style="opacity: 0.5; margin-bottom: 4px;">({{ i18n.ts.blindedNoteMessage }})</div>
+							<span v-if="isEffectivelyHidden && !$appearNote.isBlinded" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
 							<MkA v-if="appearNote.replyId && (forceShowReplyTargetNote || prefer.s.showReplyTargetNote)" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`" @click.stop><i class="ti ti-arrow-back-up"></i></MkA>
 							<Mfm
 								v-if="appearNote.text && !isEffectivelyHidden"
@@ -199,7 +199,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</template>
 				</I18n>
 			</MkInfo>
-			<MkInfo v-if="isBlindedInThisContext && !isEffectivelyHidden" warn style="margin-bottom: 8px;">
+			<MkInfo v-if="$appearNote.isBlinded && !isEffectivelyHidden" warn style="margin-bottom: 8px;">
 				{{ i18n.ts.blindedNoteMessage }}
 			</MkInfo>
 			<MkEvent v-if="appearNote.event" :note="appearNote"/>
@@ -218,7 +218,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				/>
 				<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll" style="margin: 4px 0;" @click.stop/>
 			</p>
-			<div v-if="appearNote.cw != null && isEffectivelyHidden && isBlindedInThisContext" style="opacity: 0.5; margin-top: 4px;">({{ i18n.ts.blindedNoteMessage }})</div>
+			<div v-if="appearNote.cw != null && isEffectivelyHidden && $appearNote.isBlinded" style="opacity: 0.5; margin-top: 4px;">({{ i18n.ts.blindedNoteMessage }})</div>
 			<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 				<Transition
 					:enterActiveClass="prefer.s.animation ? $style.transition_x_enterActive : ''"
@@ -228,7 +228,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					mode="out-in"
 				>
 				<div :key="isEffectivelyHidden ? 'hidden' : 'visible'" :class="$style.text">
-					<span v-if="isBlindedInThisContext && isEffectivelyHidden" style="opacity: 0.5">({{ i18n.ts.blindedNoteMessage }})</span>
+					<span v-if="$appearNote.isBlinded && isEffectivelyHidden" style="opacity: 0.5">({{ i18n.ts.blindedNoteMessage }})</span>
 					<span v-else-if="isEffectivelyHidden" style="opacity: 0.5">({{ i18n.ts._ffVisibility.private }})</span>
 					<MkA v-if="appearNote.replyId && (forceShowReplyTargetNote || prefer.s.showReplyTargetNote)" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`" @click.stop><i class="ti ti-arrow-back-up"></i></MkA>
 					<Mfm
@@ -315,7 +315,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkA v-if="appearNote.channel && !inChannel" :class="$style.channel" :to="`/channels/${appearNote.channel.id}`"><i class="ti ti-device-tv"></i> {{ appearNote.channel.name }}</MkA>
 		</div>
 		<div v-if="appearNote.renoteId" :class="$style.quote"><MkNoteSimple :note="appearNote?.renote ?? null" :class="$style.quoteNote"/></div>
-		<div v-if="!(isBlindedInThisContext && isEffectivelyHidden)">
+		<div v-if="!($appearNote.isBlinded && isEffectivelyHidden)">
 			<MkReactionsViewer
 				v-if="appearNote.reactionAcceptance !== 'likeOnly'"
 				style="margin-top: 6px;"
@@ -333,7 +333,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkA :to="`/notes/${appearNote.id}/reactions`" :class="[$style.reactionOmitted]">{{ i18n.ts.more }}</MkA>
 				</template>
 			</MkReactionsViewer>
-			<footer v-if="!(isBlindedInThisContext && isEffectivelyHidden)" :class="$style.footer">
+			<footer v-if="!($appearNote.isBlinded && isEffectivelyHidden)" :class="$style.footer">
 				<template v-if="prefer.s.showReplyButtonInNoteFooter">
 					<button v-if="!(note.isHidden || isEffectivelyHidden)" v-tooltip="i18n.ts.reply" :class="$style.footerButton" class="_button" @click.stop="reply()">
 						<i class="ti ti-arrow-back-up"></i>
@@ -504,7 +504,6 @@ const emit = defineEmits<{
 const inTimeline = inject<boolean>('inTimeline', false);
 const tl_withSensitive = inject<Ref<boolean>>('tl_withSensitive', ref(true));
 const inChannel = inject('inChannel', null);
-const inGlobalTimeline = inject<Ref<boolean>>('inGlobalTimeline', computed(() => false));
 const currentClip = inject<Ref<Misskey.entities.Clip> | null>('currentClip', null);
 
 let note = deepClone(props.note);
@@ -582,6 +581,14 @@ watch(() => props.note, (newNote) => {
 		appearNote.event = newNote.event;
 		hasContentChange = true;
 	}
+	if (newNote.userId !== undefined && newNote.userId !== appearNote.userId) {
+		appearNote.userId = newNote.userId;
+		hasContentChange = true;
+	}
+	if (newNote.user !== undefined && newNote.user !== appearNote.user) {
+		appearNote.user = newNote.user;
+		hasContentChange = true;
+	}
 	
 	// Increment updatedRev whenever ANY content field changes to ensure template updates
 	if (hasContentChange && $appearNote.updatedRev !== undefined) {
@@ -607,12 +614,11 @@ const parsed = computed(() => appearNote.text ? parseMfmCached(appearNote.text) 
 const urls = computed(() => parsed.value ? extractUrlFromMfm(parsed.value).filter((url) => appearNote.renote?.url !== url && appearNote.renote?.uri !== url) : null);
 const isLong = shouldCollapsed(appearNote, urls.value ?? []);
 const isMFM = shouldMfmCollapsed(appearNote);
-const isBlindedInThisContext = computed(() => $appearNote.isBlinded && inGlobalTimeline.value);
 const iAmModerator = computed(() => $i && ($i.isAdmin || $i.policies?.canHideNote));
 // Include syncedNote as dependency to ensure re-evaluation when props.note changes
 const isEffectivelyHidden = computed(() => {
 	syncedNote.value; // Establish dependency on props.note changes
-	return $appearNote.isHidden || (isBlindedInThisContext.value && !iAmModerator.value);
+	return $appearNote.isHidden || ($appearNote.isBlinded && !iAmModerator.value);
 });
 const collapsed = ref(appearNote.cw == null && ((isLong && prefer.s.collapseLongNoteContent) || (isMFM && prefer.s.collapseDefault) || ((appearNote.files?.length ?? 0) > 0 && prefer.s.allMediaNoteCollapse)));
 const muted = ref(checkMute(appearNote, $i?.mutedWords));
@@ -818,13 +824,13 @@ watch(() => viewTextSource.value, () => {
 });
 
 function noteClick(ev: MouseEvent) {
-	if (isBlindedInThisContext.value && isEffectivelyHidden.value) { ev.stopPropagation(); return; }
+	if ($appearNote.isBlinded && isEffectivelyHidden.value) { ev.stopPropagation(); return; }
 	if (!expandOnNoteClick || window.getSelection()?.toString() !== '' || prefer.s.expandOnNoteClickBehavior === 'doubleClick') ev.stopPropagation();
 	else router.pushByPath(notePage(appearNote));
 }
 
 function noteDblClick(ev: MouseEvent) {
-	if (isBlindedInThisContext.value && isEffectivelyHidden.value) { ev.stopPropagation(); return; }
+	if ($appearNote.isBlinded && isEffectivelyHidden.value) { ev.stopPropagation(); return; }
 	if (!expandOnNoteClick || window.getSelection()?.toString() !== '' || prefer.s.expandOnNoteClickBehavior === 'click') ev.stopPropagation();
 	else router.pushByPath(notePage(appearNote));
 }
@@ -1055,6 +1061,11 @@ function toggleReact() {
 
 function onContextmenu(ev: MouseEvent): void {
 	if (props.mock) {
+		return;
+	}
+
+	if ($appearNote.isBlinded && isEffectivelyHidden.value) {
+		ev.preventDefault();
 		return;
 	}
 

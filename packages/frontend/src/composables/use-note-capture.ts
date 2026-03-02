@@ -166,8 +166,14 @@ function realtimeSubscribe(props: {
 					$note.pollChoices = body.poll?.choices ?? [];
 				}
 				if (body.event !== undefined) note.event = body.event;
+				if (body.userId !== undefined) note.userId = body.userId;
+				if (body.user !== undefined) note.user = body.user;
 				if (body.isBlinded !== undefined) {
 					note.isBlinded = body.isBlinded;
+					// 블라인드 해제 시 isHidden도 초기화 (원래 콘텐츠가 복구되므로)
+					if (!body.isBlinded) {
+						note.isHidden = false;
+					}
 				}
 				if (body.visibility !== undefined) {
 					note.visibility = body.visibility;

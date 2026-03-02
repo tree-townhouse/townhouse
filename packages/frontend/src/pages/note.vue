@@ -21,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 					<div class="_margin _gaps_s">
 						<MkRemoteCaution v-if="note.user.host != null" :href="note.url ?? note.uri"/>
-						<MkInfo v-if="note.isBlinded && !note.isHidden" warn>{{ i18n.ts.blindedNoteMessage }}</MkInfo>
+						<MkInfo v-if="note.isBlinded" warn>{{ i18n.ts.blindedNoteMessage }}</MkInfo>
 						<MkNoteDetailed :key="note.id" v-model:note="note" :initialTab="initialTab" :class="$style.note"/>
 					</div>
 					<div v-if="clips && clips.length > 0" class="_margin">
