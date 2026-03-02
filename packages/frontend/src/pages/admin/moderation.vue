@@ -346,7 +346,7 @@ const moderationReasons = ref<{ text: string; type: 'all' | 'warn' | 'silence' |
 
 const reasonTypeItems = [
 	{ value: 'all', label: i18n.ts.all },
-	{ value: 'warn', label: i18n.ts.warning },
+	{ value: 'warn', label: i18n.ts.warn },
 	{ value: 'silence', label: i18n.ts.silence },
 	{ value: 'suspend', label: i18n.ts.suspend },
 ] as const;
