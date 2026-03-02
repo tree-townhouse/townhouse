@@ -255,17 +255,30 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template #label><SearchLabel>{{ i18n.ts.moderationReasons }}</SearchLabel></template>
 
 						<div class="_gaps">
-							<div v-for="(reason, i) in moderationReasons" :key="i" :class="$style.reasonRow">
-								<MkInput v-model="reason.text" :class="$style.reasonText">
-									<template #label>{{ i18n.ts.reason }}</template>
-								</MkInput>
-								<MkSelect v-model="reason.type" :items="reasonTypeItems" :class="$style.reasonType">
-									<template #label>{{ i18n.ts.type }}</template>
-								</MkSelect>
-								<MkButton danger :class="$style.reasonDelete" @click="removeReason(i)">
-									<i class="ti ti-trash"></i>
-								</MkButton>
-							</div>
+							<Sortable
+								v-model="moderationReasons"
+								class="_gaps"
+								:itemKey="(_, i) => i"
+								:animation="150"
+								:handle="'.' + $style.reasonHandle"
+								@start="e => e.item.classList.add('active')"
+								@end="e => e.item.classList.remove('active')"
+							>
+								<template #item="{element, index}">
+									<div :class="$style.reasonRow">
+										<span :class="$style.reasonHandle"><i class="ti ti-grip-vertical"/></span>
+										<MkInput v-model="element.text" :class="$style.reasonText">
+											<template #label>{{ i18n.ts.reason }}</template>
+										</MkInput>
+										<MkSelect v-model="element.type" :items="reasonTypeItems" :class="$style.reasonType">
+											<template #label>{{ i18n.ts.type }}</template>
+										</MkSelect>
+										<MkButton danger :class="$style.reasonDelete" @click="removeReason(index)">
+											<i class="ti ti-trash"></i>
+										</MkButton>
+									</div>
+								</template>
+							</Sortable>
 							<MkButton @click="addReason"><i class="ti ti-plus"></i> {{ i18n.ts.add }}</MkButton>
 							<MkButton primary @click="save_moderationReasons">{{ i18n.ts.save }}</MkButton>
 						</div>
@@ -306,7 +319,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, defineAsyncComponent } from 'vue';
 import * as Misskey from 'cherrypick-js';
 import XServerRules from './server-rules.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
@@ -320,6 +333,8 @@ import { definePage } from '@/page.js';
 import { useMkSelect } from '@/composables/use-mkselect.js';
 import MkButton from '@/components/MkButton.vue';
 import FormLink from '@/components/form/link.vue';
+
+const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
 import MkFolder from '@/components/MkFolder.vue';
 import MkSelect from '@/components/MkSelect.vue';
 
@@ -588,6 +603,21 @@ definePage(() => ({
 	display: flex;
 	gap: 8px;
 	align-items: flex-end;
+}
+
+.reasonHandle {
+	display: flex;
+	width: 28px;
+	align-items: center;
+	justify-content: center;
+	cursor: move;
+	flex-shrink: 0;
+	margin-bottom: 6px;
+	opacity: 0.5;
+
+	&:hover {
+		opacity: 1;
+	}
 }
 
 .reasonText {
