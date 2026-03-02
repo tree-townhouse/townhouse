@@ -315,7 +315,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkA v-if="appearNote.channel && !inChannel" :class="$style.channel" :to="`/channels/${appearNote.channel.id}`"><i class="ti ti-device-tv"></i> {{ appearNote.channel.name }}</MkA>
 		</div>
 		<div v-if="appearNote.renoteId" :class="$style.quote"><MkNoteSimple :note="appearNote?.renote ?? null" :class="$style.quoteNote"/></div>
-		<div>
+		<div v-if="!(isBlindedInThisContext && isEffectivelyHidden)">
 			<MkReactionsViewer
 				v-if="appearNote.reactionAcceptance !== 'likeOnly'"
 				style="margin-top: 6px;"
@@ -333,7 +333,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkA :to="`/notes/${appearNote.id}/reactions`" :class="[$style.reactionOmitted]">{{ i18n.ts.more }}</MkA>
 				</template>
 			</MkReactionsViewer>
-			<footer :class="$style.footer">
+			<footer v-if="!(isBlindedInThisContext && isEffectivelyHidden)" :class="$style.footer">
 				<template v-if="prefer.s.showReplyButtonInNoteFooter">
 					<button v-if="!(note.isHidden || isEffectivelyHidden)" v-tooltip="i18n.ts.reply" :class="$style.footerButton" class="_button" @click.stop="reply()">
 						<i class="ti ti-arrow-back-up"></i>

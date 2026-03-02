@@ -216,6 +216,24 @@ export class NoteEntityService implements OnModuleInit {
 			packedNote.cw = null;
 			packedNote.isHidden = true;
 			// TODO: hiddenReason みたいなのを提供しても良さそう
+
+			if (packedNote.isBlinded) {
+				packedNote.userId = '0000000000';
+				packedNote.user = {
+					id: '0000000000',
+					name: null,
+					username: '***',
+					host: null,
+					avatarUrl: null,
+					avatarBlurhash: null,
+					avatarDecorations: [],
+					isBot: false,
+					isCat: false,
+					emojis: {},
+					onlineStatus: 'unknown',
+					badgeRoles: [],
+				} as any;
+			}
 		}
 	}
 

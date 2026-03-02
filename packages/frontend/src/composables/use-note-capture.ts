@@ -361,6 +361,14 @@ export function useNoteCapture(props: {
 				// Simply unhide - content already intact from blind state
 				note.isHidden = false;
 				$note.isHidden = false;
+
+				// Restore user info if provided (for notes loaded while blinded)
+				if (payload.userId !== undefined) {
+					note.userId = payload.userId;
+				}
+				if (payload.user !== undefined) {
+					note.user = payload.user as any;
+				}
 			}
 		}
 		if (payload.fileIds !== undefined) {

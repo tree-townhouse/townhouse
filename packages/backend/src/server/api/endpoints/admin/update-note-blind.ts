@@ -96,6 +96,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					files: packed.files,
 					poll: packed.poll,
 					event: packed.event,
+					userId: packed.userId,
+					user: packed.user,
 				};
 			}
 
