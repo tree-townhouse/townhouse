@@ -71,6 +71,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #icon><i class="ti ti-user-shield"></i></template>
 					<template #default>{{ i18n.ts.impressum }}</template>
 				</FormLink>
+				<FormLink v-if="instance.tosUrl" :to="instance.tosUrl" external>
+					<template #icon><i class="ti ti-license"></i></template>
+					<template #default>{{ i18n.ts.termsOfService }}</template>
+				</FormLink>
+				<FormLink v-if="instance.privacyPolicyUrl" :to="instance.privacyPolicyUrl" external>
+					<template #icon><i class="ti ti-shield-lock"></i></template>
+					<template #default>{{ i18n.ts.privacyPolicy }}</template>
+				</FormLink>
 				<MkFolder v-if="instance.serverRules.length > 0">
 					<template #icon><span style="font-size: 0.9em;"><i class="ti ti-checkup-list"></i></span></template>
 					<template #label><span style="font-size: 0.9em;">{{ i18n.ts.serverRules }}</span></template>
@@ -80,14 +88,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</li>
 					</ol>
 				</MkFolder>
-				<FormLink v-if="instance.tosUrl" :to="instance.tosUrl" external>
-					<template #icon><i class="ti ti-license"></i></template>
-					<template #default>{{ i18n.ts.termsOfService }}</template>
-				</FormLink>
-				<FormLink v-if="instance.privacyPolicyUrl" :to="instance.privacyPolicyUrl" external>
-					<template #icon><i class="ti ti-shield-lock"></i></template>
-					<template #default>{{ i18n.ts.privacyPolicy }}</template>
-				</FormLink>
 				<FormLink v-if="instance.feedbackUrl" :to="instance.feedbackUrl" external>
 					<template #icon><i class="ti ti-message"></i></template>
 					<template #default>{{ i18n.ts.feedback }}</template>
