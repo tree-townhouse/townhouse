@@ -15,7 +15,7 @@ import { moderationLogTypes } from '@/types.js';
 
 // Moderation log types that target a specific user (userId in info payload)
 const USER_TARGET_LOG_TYPES = [
-	'suspend', 'unsuspend', 'silence', 'unsilence', 'warn', 'resetWarning',
+	'suspend', 'unsuspend', 'silence', 'unsilence', 'restrict', 'unrestrict', 'warn', 'resetWarning',
 	'approve', 'decline', 'updateUserNote', 'resetPassword',
 	'unsetUserAvatar', 'unsetUserBanner', 'deleteAccount',
 	'assignRole', 'unassignRole',

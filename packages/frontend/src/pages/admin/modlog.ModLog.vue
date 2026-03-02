@@ -19,6 +19,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'createSystemWebhook',
 					'createAbuseReportNotificationRecipient',
 					'approve',
+					'unsilence',
+					'unrestrict',
+					'unsuspend',
 				].includes(log.type),
 				[$style.logYellow]: [
 					'markSensitiveDriveFile',
@@ -26,6 +29,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'suspendRemoteInstance',
 					'updateNoteVisibility',
 					'resetWarning',
+					'silence',
+					'restrict',
+					'warn',
+					'updateNoteBlind',
 				].includes(log.type),
 				[$style.logRed]: [
 					'suspend',
@@ -89,6 +96,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else-if="log.type === 'deleteFlash'">: @{{ log.info.flashUserUsername }}</span>
 		<span v-else-if="log.type === 'deleteGalleryPost'">: @{{ log.info.postUserUsername }}</span>
 		<span v-else-if="log.type === 'deleteChatRoom'">: @{{ log.info.room.name }}</span>
+		<span v-else-if="log.type === 'silence'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
+		<span v-else-if="log.type === 'unsilence'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
+		<span v-else-if="log.type === 'restrict'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
+		<span v-else-if="log.type === 'unrestrict'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
+		<span v-else-if="log.type === 'warn'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
+		<span v-else-if="log.type === 'updateNoteBlind'">: @{{ log.info.noteUserUsername }}{{ log.info.noteUserHost ? '@' + log.info.noteUserHost : '' }}</span>
 		<span v-else-if="log.type === 'resetWarning'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
 	</template>
 	<template #icon>
@@ -136,6 +149,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="log.type === 'deleteGalleryPost'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'deleteChatRoom'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'resetWarning'" class="ti ti-alert-triangle-off"></i>
+		<i v-else-if="log.type === 'silence'" class="ti ti-volume-off"></i>
+		<i v-else-if="log.type === 'unsilence'" class="ti ti-volume"></i>
+		<i v-else-if="log.type === 'restrict'" class="ti ti-lock"></i>
+		<i v-else-if="log.type === 'unrestrict'" class="ti ti-lock-open"></i>
+		<i v-else-if="log.type === 'warn'" class="ti ti-alert-triangle"></i>
+		<i v-else-if="log.type === 'updateNoteBlind'" class="ti ti-eye-off"></i>
 	</template>
 	<template #suffix>
 		<MkTime :time="log.createdAt"/>
@@ -176,6 +195,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div v-if="log.info.expiresAt">{{ i18n.ts.period }}: {{ new Date(log.info.expiresAt).toLocaleString() }}</div>
 		</template>
 		<template v-else-if="log.type === 'unsilence'">
+			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
+		</template>
+		<template v-else-if="log.type === 'restrict'">
+			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
+			<div>{{ i18n.ts.reason }}: {{ log.info.reason }}</div>
+			<div v-if="log.info.expiresAt">{{ i18n.ts.period }}: {{ new Date(log.info.expiresAt).toLocaleString() }}</div>
+		</template>
+		<template v-else-if="log.type === 'unrestrict'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
 		</template>
 		<template v-else-if="log.type === 'warn'">
