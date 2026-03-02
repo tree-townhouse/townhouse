@@ -22,6 +22,13 @@ export class MiModerationLog {
 	@JoinColumn()
 	public user: MiUser | null;
 
+	@Index()
+	@Column({
+		...id(),
+		nullable: true,
+	})
+	public targetUserId: MiUser['id'] | null;
+
 	@Column('varchar', {
 		length: 128,
 	})

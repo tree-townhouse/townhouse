@@ -143,6 +143,8 @@ export const moderationLogTypes = [
 	'unsilence',
 	'warn',
 	'resetWarning',
+	'editModerationLog',
+	'deleteModerationLog',
 ] as const;
 
 export type ModerationLogPayloads = {
@@ -453,6 +455,17 @@ export type ModerationLogPayloads = {
 		userUsername: string;
 		userHost: string | null;
 		previousCount: number;
+	};
+	editModerationLog: {
+		logId: string;
+		logType: string;
+		before: Record<string, any>;
+		after: Record<string, any>;
+	};
+	deleteModerationLog: {
+		logId: string;
+		logType: string;
+		logInfo: Record<string, any>;
 	};
 };
 

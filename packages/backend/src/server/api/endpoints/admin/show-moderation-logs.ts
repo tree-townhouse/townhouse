@@ -68,6 +68,7 @@ export const paramDef = {
 		untilDate: { type: 'integer' },
 		type: { type: 'string', nullable: true },
 		userId: { type: 'string', format: 'misskey:id', nullable: true },
+		targetUserId: { type: 'string', format: 'misskey:id', nullable: true },
 		search: { type: 'string', nullable: true },
 	},
 	required: [],
@@ -91,6 +92,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.userId != null) {
 				query.andWhere('log.userId = :userId', { userId: ps.userId });
+			}
+
+			if (ps.targetUserId != null) {
+				query.andWhere('log.targetUserId = :targetUserId', { targetUserId: ps.targetUserId });
 			}
 
 			if (ps.search != null) {

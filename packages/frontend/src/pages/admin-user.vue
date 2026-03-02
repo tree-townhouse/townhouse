@@ -208,6 +208,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkObjectView tall :value="user">
 			</MkObjectView>
 		</div>
+
+		<div v-else-if="tab === 'modlog'">
+			<UserModlog :userId="user.id" @refresh="refreshUser"/>
+		</div>
 	</div>
 </PageWithHeader>
 </template>
@@ -240,6 +244,7 @@ import { ensureSignin, iAmAdmin, iAmModerator } from '@/i.js';
 import MkRolePreview from '@/components/MkRolePreview.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import { Paginator } from '@/utility/paginator.js';
+import UserModlog from '@/pages/admin/user-modlog.vue';
 
 const $i = ensureSignin();
 
@@ -660,6 +665,10 @@ const headerTabs = computed(() => isSystem.value ? [{
 	key: 'chart',
 	title: i18n.ts.charts,
 	icon: 'ti ti-chart-line',
+}, {
+	key: 'modlog',
+	title: i18n.ts.moderationHistory,
+	icon: 'ti ti-history',
 }, {
 	key: 'raw',
 	title: 'Raw',
