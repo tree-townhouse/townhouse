@@ -465,6 +465,7 @@ export class WebhookTestService {
 			bannerUrl: user.bannerId == null ? null : user.bannerUrl,
 			bannerBlurhash: user.bannerId == null ? null : user.bannerBlurhash,
 			isSilenced: false,
+			isRestricted: false,
 			isSuspended: user.isSuspended,
 			description: null,
 			location: null,

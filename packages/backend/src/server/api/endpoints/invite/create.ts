@@ -18,6 +18,7 @@ export const meta = {
 	tags: ['meta'],
 
 	requireCredential: true,
+	prohibitRestricted: true,
 	requiredRolePolicy: 'canInvite',
 	kind: 'write:invite-codes',
 

@@ -48,6 +48,12 @@ interface IEndpointMetaBase {
 	readonly prohibitMoved?: boolean;
 
 	/**
+	 * 全体制限(Restrict)されたユーザーによるリクエストを禁止するか
+	 * 省略した場合は false として解釈されます。
+	 */
+	readonly prohibitRestricted?: boolean;
+
+	/**
 	 * エンドポイントのリミテーションに関するやつ
 	 * 省略した場合はリミテーションは無いものとして解釈されます。
 	 */

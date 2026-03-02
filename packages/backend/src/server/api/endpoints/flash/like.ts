@@ -17,6 +17,8 @@ export const meta = {
 
 	prohibitMoved: true,
 
+	prohibitRestricted: true,
+
 	kind: 'write:flash-likes',
 
 	errors: {

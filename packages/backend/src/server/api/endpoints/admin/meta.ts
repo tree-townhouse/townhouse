@@ -771,6 +771,14 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			restrictAnnouncementTitle: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			restrictAnnouncementText: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 			moderationReasons: {
 				type: 'array',
 				optional: false, nullable: false,
@@ -983,6 +991,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				warningAnnouncementText: instance.warningAnnouncementText,
 				suspendAnnouncementTitle: instance.suspendAnnouncementTitle,
 				suspendAnnouncementText: instance.suspendAnnouncementText,
+				restrictAnnouncementTitle: instance.restrictAnnouncementTitle,
+				restrictAnnouncementText: instance.restrictAnnouncementText,
 				moderationReasons: instance.moderationReasons,
 			};
 		});

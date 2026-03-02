@@ -10,6 +10,8 @@ import { GetterService } from '@/server/api/GetterService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
 import { ChatService } from '@/core/ChatService.js';
+import { UserRestrictionService } from '@/core/UserRestrictionService.js';
+import { RoleService } from '@/core/RoleService.js';
 import type { DriveFilesRepository, MiUser } from '@/models/_.js';
 
 export const meta = {
@@ -62,6 +64,12 @@ export const meta = {
 			code: 'YOU_HAVE_BEEN_BLOCKED',
 			id: 'c15a5199-7422-4968-941a-2a462c478f7d',
 		},
+
+		yourAccountRestricted: {
+			message: 'Your account has been restricted. You can only send messages to moderators.',
+			code: 'YOUR_ACCOUNT_RESTRICTED',
+			id: 'd8e5a7b1-3f2c-4a9e-b6d1-8c7e9f0a1b2c',
+		},
 	},
 } as const;
 
@@ -83,8 +91,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private getterService: GetterService,
 		private chatService: ChatService,
+		private userRestrictionService: UserRestrictionService,
+		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			// 制限されたユーザーはモデレーター宛のメッセージのみ許可
+			if (this.userRestrictionService.isEffectivelyRestricted(me)) {
+				const isMod = await this.roleService.isModerator({ id: ps.toUserId });
+				if (!isMod) {
+					throw new ApiError(meta.errors.yourAccountRestricted);
+				}
+			}
+
 			await this.chatService.checkChatAvailability(me.id, 'write');
 
 			let file = null;

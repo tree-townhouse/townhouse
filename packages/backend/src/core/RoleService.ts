@@ -391,6 +391,9 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		// Check if user is directly silenced (and silence hasn't expired)
 		const isDirectlySilenced = user != null && user.isSilenced && (user.silencedUntil == null || user.silencedUntil > new Date());
 
+		// Check if user is directly restricted (and restriction hasn't expired)
+		const isDirectlyRestricted = user != null && user.isRestricted && (user.restrictedUntil == null || user.restrictedUntil > new Date());
+
 		function calc<T extends keyof RolePolicies>(name: T, aggregate: (values: RolePolicies[T][]) => RolePolicies[T]) {
 			if (roles.length === 0) return basePolicies[name];
 
@@ -415,7 +418,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			gtlAvailable: calc('gtlAvailable', vs => vs.some(v => v === true)),
 			ltlAvailable: calc('ltlAvailable', vs => vs.some(v => v === true)),
 			btlAvailable: calc('btlAvailable', vs => vs.some(v => v === true)),
-			canPublicNote: isDirectlySilenced ? false : calc('canPublicNote', vs => vs.some(v => v === true)),
+			canPublicNote: (isDirectlySilenced || isDirectlyRestricted) ? false : calc('canPublicNote', vs => vs.some(v => v === true)),
 			canEditNote: calc('canEditNote', vs => vs.some(v => v === true)),
 			mentionLimit: calc('mentionLimit', vs => Math.max(...vs)),
 			canInvite: calc('canInvite', vs => vs.some(v => v === true)),

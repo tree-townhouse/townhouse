@@ -18,6 +18,7 @@ export const meta = {
 
 	requireCredential: true,
 	prohibitMoved: true,
+	prohibitRestricted: true,
 
 	kind: 'write:favorites',
 

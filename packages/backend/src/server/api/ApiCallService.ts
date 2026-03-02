@@ -17,6 +17,7 @@ import type { MiMeta, UserIpsRepository } from '@/models/_.js';
 import { createTemp } from '@/misc/create-temp.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
+import { UserRestrictionService } from '@/core/UserRestrictionService.js';
 import type { Config } from '@/config.js';
 import type { FlashToken } from '@/misc/flash-token.js';
 import { ApiError } from './error.js';
@@ -53,6 +54,7 @@ export class ApiCallService implements OnApplicationShutdown {
 		private authenticateService: AuthenticateService,
 		private rateLimiterService: RateLimiterService,
 		private roleService: RoleService,
+		private userRestrictionService: UserRestrictionService,
 		private apiLoggerService: ApiLoggerService,
 	) {
 		this.logger = this.apiLoggerService.logger;
@@ -398,6 +400,17 @@ export class ApiCallService implements OnApplicationShutdown {
 					code: 'YOUR_ACCOUNT_MOVED',
 					kind: 'permission',
 					id: '56f20ec9-fd06-4fa5-841b-edd6d7d4fa31',
+				});
+			}
+		}
+
+		if (ep.meta.prohibitRestricted) {
+			if (user && this.userRestrictionService.isEffectivelyRestricted(user)) {
+				throw new ApiError({
+					message: 'Your account is restricted.',
+					code: 'YOUR_ACCOUNT_RESTRICTED',
+					kind: 'permission',
+					id: 'a8c724b3-6e9c-4b46-b1a8-bc3ed6258371',
 				});
 			}
 		}

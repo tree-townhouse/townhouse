@@ -190,6 +190,18 @@ export class MiUser {
 	})
 	public silencedUntil: Date | null;
 
+	@Column('boolean', {
+		default: false,
+		comment: 'Whether the User is restricted.',
+	})
+	public isRestricted: boolean;
+
+	@Column('timestamp with time zone', {
+		nullable: true,
+		comment: 'The expiry date of the restriction. Null means indefinite.',
+	})
+	public restrictedUntil: Date | null;
+
 	@Column('integer', {
 		default: 0,
 		comment: 'The number of warnings the user has received.',

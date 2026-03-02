@@ -131,6 +131,18 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			isRestricted: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			isDirectlyRestricted: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			restrictedUntil: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 			warningCount: {
 				type: 'number',
 				optional: false, nullable: false,
@@ -278,6 +290,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				isSilenced: isSilenced,
 				isDirectlySilenced: user.isSilenced,
 				silencedUntil: user.silencedUntil ? user.silencedUntil.toISOString() : null,
+				isRestricted: user.isRestricted && (user.restrictedUntil == null || user.restrictedUntil > new Date()),
+				isDirectlyRestricted: user.isRestricted,
+				restrictedUntil: user.restrictedUntil ? user.restrictedUntil.toISOString() : null,
 				warningCount: user.warningCount,
 				isSuspended: user.isSuspended,
 				isHibernated: user.isHibernated,

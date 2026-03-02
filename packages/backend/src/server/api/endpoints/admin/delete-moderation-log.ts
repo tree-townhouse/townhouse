@@ -39,7 +39,7 @@ export const paramDef = {
 } as const;
 
 // Log types that can be deleted and their revert behavior
-const DELETABLE_LOG_TYPES = ['silence', 'suspend', 'warn', 'unsilence', 'unsuspend', 'resetWarning'];
+const DELETABLE_LOG_TYPES = ['silence', 'restrict', 'suspend', 'warn', 'unsilence', 'unrestrict', 'unsuspend', 'resetWarning'];
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
@@ -74,7 +74,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 								});
 							}
 							break;
-
+							case 'restrict':
+								// Only revert if user is currently restricted
+								if (user.isRestricted) {
+									await this.usersRepository.update(targetUserId, {
+										isRestricted: false,
+										restrictedUntil: null,
+									});
+								}
+								break;
 						case 'suspend':
 							// Only revert if user is currently suspended
 							if (user.isSuspended) {
@@ -95,6 +103,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						// For unsilence/unsuspend/resetWarning: just delete the log,
 						// don't re-apply the original action
 						case 'unsilence':
+						case 'unrestrict':
 						case 'unsuspend':
 						case 'resetWarning':
 							break;

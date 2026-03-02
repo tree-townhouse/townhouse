@@ -10,6 +10,8 @@ import { MAX_NOTE_TEXT_LENGTH } from '@/const.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
+import { UserRestrictionService } from '@/core/UserRestrictionService.js';
+import { RoleService } from '@/core/RoleService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { ApiError } from '../../error.js';
 
@@ -134,6 +136,12 @@ export const meta = {
 			message: 'Cannot specify delete time earlier than now.',
 			code: 'CANNOT_SCHEDULE_DELETE_EARLIER_THAN_NOW',
 			id: '9f04994a-3aa2-11ef-a495-177eea74788f',
+		},
+
+		yourAccountRestricted: {
+			message: 'Your account has been restricted. You can only send direct messages to moderators.',
+			code: 'YOUR_ACCOUNT_RESTRICTED',
+			id: 'c3f3b58e-7e2a-4e3f-b7d0-1a2b3c4d5e6f',
 		},
 	},
 } as const;
@@ -262,8 +270,34 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		private noteEntityService: NoteEntityService,
 		private noteCreateService: NoteCreateService,
+		private userRestrictionService: UserRestrictionService,
+		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			// 制限されたユーザーはモデレーター宛のダイレクトメッセージのみ許可
+			if (this.userRestrictionService.isEffectivelyRestricted(me)) {
+				if (ps.visibility !== 'specified') {
+					throw new ApiError(meta.errors.yourAccountRestricted);
+				}
+				if (!ps.visibleUserIds || ps.visibleUserIds.length === 0) {
+					throw new ApiError(meta.errors.yourAccountRestricted);
+				}
+				// リノート・返信は禁止
+				if (ps.renoteId != null || ps.replyId != null) {
+					throw new ApiError(meta.errors.yourAccountRestricted);
+				}
+				// 添付ファイルは禁止
+				if ((ps.fileIds && ps.fileIds.length > 0) || (ps.mediaIds && ps.mediaIds.length > 0)) {
+					throw new ApiError(meta.errors.yourAccountRestricted);
+				}
+				for (const userId of ps.visibleUserIds) {
+					const isMod = await this.roleService.isModerator({ id: userId });
+					if (!isMod) {
+						throw new ApiError(meta.errors.yourAccountRestricted);
+					}
+				}
+			}
+
 			try {
 				const note = await this.noteCreateService.fetchAndCreate(me, {
 					createdAt: new Date(),

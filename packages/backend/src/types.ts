@@ -141,6 +141,8 @@ export const moderationLogTypes = [
 	'updateNoteBlind',
 	'silence',
 	'unsilence',
+	'restrict',
+	'unrestrict',
 	'warn',
 	'resetWarning',
 	'editModerationLog',
@@ -440,6 +442,18 @@ export type ModerationLogPayloads = {
 		expiresAt: string | null;
 	};
 	unsilence: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+	};
+	restrict: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+		reason: string;
+		expiresAt: string | null;
+	};
+	unrestrict: {
 		userId: string;
 		userUsername: string;
 		userHost: string | null;

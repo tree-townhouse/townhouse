@@ -21,6 +21,8 @@ export const meta = {
 
 	prohibitMoved: true,
 
+	prohibitRestricted: true,
+
 	limit: {
 		duration: ms('1hour'),
 		max: 120,

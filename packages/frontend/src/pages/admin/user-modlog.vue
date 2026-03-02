@@ -17,6 +17,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<span :class="$style.logIcon">
 							<i v-if="log.type === 'silence'" class="ti ti-volume-off" style="color: var(--MI_THEME-warn);"></i>
 							<i v-else-if="log.type === 'unsilence'" class="ti ti-volume" style="color: var(--MI_THEME-success);"></i>
+							<i v-else-if="log.type === 'restrict'" class="ti ti-lock" style="color: var(--MI_THEME-warn);"></i>
+							<i v-else-if="log.type === 'unrestrict'" class="ti ti-lock-open" style="color: var(--MI_THEME-success);"></i>
 							<i v-else-if="log.type === 'warn'" class="ti ti-alert-triangle" style="color: var(--MI_THEME-warn);"></i>
 							<i v-else-if="log.type === 'resetWarning'" class="ti ti-alert-triangle-off" style="color: var(--MI_THEME-success);"></i>
 							<i v-else-if="log.type === 'suspend'" class="ti ti-user-x" style="color: var(--MI_THEME-error);"></i>
@@ -34,6 +36,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 						<!-- Silence details -->
 						<template v-if="log.type === 'silence'">
+							<div>{{ i18n.ts.reason }}: {{ log.info.reason }}</div>
+							<div v-if="log.info.expiresAt">{{ i18n.ts.period }}: {{ new Date(log.info.expiresAt).toLocaleString() }}</div>
+							<div v-else>{{ i18n.ts.period }}: {{ i18n.ts.indefinitely }}</div>
+						</template>
+
+						<!-- Restrict details -->
+						<template v-else-if="log.type === 'restrict'">
 							<div>{{ i18n.ts.reason }}: {{ log.info.reason }}</div>
 							<div v-if="log.info.expiresAt">{{ i18n.ts.period }}: {{ new Date(log.info.expiresAt).toLocaleString() }}</div>
 							<div v-else>{{ i18n.ts.period }}: {{ i18n.ts.indefinitely }}</div>
@@ -98,7 +107,7 @@ const emit = defineEmits<{
 }>();
 
 const MODERATION_TYPES = [
-	'silence', 'unsilence', 'warn', 'resetWarning', 'suspend', 'unsuspend',
+	'silence', 'unsilence', 'restrict', 'unrestrict', 'warn', 'resetWarning', 'suspend', 'unsuspend',
 ];
 
 const {
@@ -108,6 +117,7 @@ const {
 	items: [
 		{ label: i18n.ts.all, value: 'all' },
 		{ label: i18n.ts._moderationLogTypes.silence ?? 'Silence', value: 'silence' },
+		{ label: i18n.ts._moderationLogTypes.restrict ?? 'Restrict', value: 'restrict' },
 		{ label: i18n.ts._moderationLogTypes.warn ?? 'Warn', value: 'warn' },
 		{ label: i18n.ts._moderationLogTypes.suspend ?? 'Suspend', value: 'suspend' },
 	],
@@ -124,6 +134,8 @@ const paginator = markRaw(new Paginator('admin/show-moderation-logs', {
 			params.types = MODERATION_TYPES;
 		} else if (logTypeFilter.value === 'silence') {
 			params.types = ['silence', 'unsilence'];
+		} else if (logTypeFilter.value === 'restrict') {
+			params.types = ['restrict', 'unrestrict'];
 		} else if (logTypeFilter.value === 'warn') {
 			params.types = ['warn', 'resetWarning'];
 		} else if (logTypeFilter.value === 'suspend') {
@@ -134,12 +146,14 @@ const paginator = markRaw(new Paginator('admin/show-moderation-logs', {
 }));
 
 function isEditableType(type: string): boolean {
-	return ['silence', 'suspend', 'warn'].includes(type);
+	return ['silence', 'restrict', 'suspend', 'warn'].includes(type);
 }
 
 async function editLog(log: any) {
 	if (log.type === 'silence') {
 		await editSilenceLog(log);
+	} else if (log.type === 'restrict') {
+		await editRestrictLog(log);
 	} else if (log.type === 'suspend') {
 		await editSuspendLog(log);
 	} else if (log.type === 'warn') {
@@ -183,6 +197,55 @@ async function editSilenceLog(log: any) {
 
 	if (period !== 'keep') {
 		// Recalculate expiresAt based on original action time
+		const actionTime = new Date(log.createdAt).getTime();
+		params.expiresAt = period === 'indefinitely' ? null
+			: period === 'oneHour' ? actionTime + (1000 * 60 * 60)
+			: period === 'oneDay' ? actionTime + (1000 * 60 * 60 * 24)
+			: period === 'oneWeek' ? actionTime + (1000 * 60 * 60 * 24 * 7)
+			: period === 'oneMonth' ? actionTime + (1000 * 60 * 60 * 24 * 30)
+			: null;
+	}
+
+	await os.apiWithDialog('admin/update-moderation-log', params);
+	paginator.reload();
+	emit('refresh');
+}
+
+async function editRestrictLog(log: any) {
+	const { canceled: canceledReason, result: reason } = await os.inputText({
+		title: i18n.ts.reason,
+		default: log.info.reason,
+	});
+	if (canceledReason) return;
+
+	const { canceled: canceledPeriod, result: period } = await os.select({
+		title: i18n.ts.restrictPeriod,
+		items: [{
+			value: 'keep', label: i18n.ts.noChange ?? '変更なし',
+		}, {
+			value: 'indefinitely', label: i18n.ts.indefinitely,
+		}, {
+			value: 'oneHour', label: i18n.ts.oneHour,
+		}, {
+			value: 'oneDay', label: i18n.ts.oneDay,
+		}, {
+			value: 'oneWeek', label: i18n.ts.oneWeek,
+		}, {
+			value: 'oneMonth', label: i18n.ts.oneMonth,
+		}],
+		default: 'keep',
+	});
+	if (canceledPeriod) return;
+
+	const params: Record<string, any> = {
+		logId: log.id,
+	};
+
+	if (reason !== log.info.reason) {
+		params.reason = reason;
+	}
+
+	if (period !== 'keep') {
 		const actionTime = new Date(log.createdAt).getTime();
 		params.expiresAt = period === 'indefinitely' ? null
 			: period === 'oneHour' ? actionTime + (1000 * 60 * 60)

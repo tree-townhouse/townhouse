@@ -16,6 +16,8 @@ export const meta = {
 
 	requireCredential: true,
 
+	prohibitRestricted: true,
+
 	kind: 'write:drive',
 
 	description: 'Update the properties of a drive file.',

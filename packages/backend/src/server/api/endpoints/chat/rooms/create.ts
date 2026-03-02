@@ -18,6 +18,8 @@ export const meta = {
 
 	prohibitMoved: true,
 
+	prohibitRestricted: true,
+
 	kind: 'write:chat',
 
 	limit: {

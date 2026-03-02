@@ -962,11 +962,23 @@ export class MiMeta {
 	})
 	public suspendAnnouncementText: string | null;
 
+	@Column('varchar', {
+		length: 256, nullable: true,
+		comment: 'Custom title for the restrict announcement sent to users.',
+	})
+	public restrictAnnouncementTitle: string | null;
+
+	@Column('varchar', {
+		length: 2048, nullable: true,
+		comment: 'Custom text for the restrict announcement sent to users. Supports {reason}, {period}, {date}, and {enddate} placeholders.',
+	})
+	public restrictAnnouncementText: string | null;
+
 	@Column('jsonb', {
 		default: [],
-		comment: 'Predefined moderation reasons. Each entry has text and type (all/warn/silence/suspend).',
+		comment: 'Predefined moderation reasons. Each entry has text and type (all/warn/silence/suspend/restrict).',
 	})
-	public moderationReasons: { text: string; type: 'all' | 'warn' | 'silence' | 'suspend' }[];
+	public moderationReasons: { text: string; type: 'all' | 'warn' | 'silence' | 'suspend' | 'restrict' }[];
 }
 
 export type SoftwareSuspension = {

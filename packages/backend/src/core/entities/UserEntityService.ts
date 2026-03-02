@@ -549,6 +549,7 @@ export class UserEntityService implements OnModuleInit {
 				bannerUrl: user.bannerId == null ? null : user.bannerUrl,
 				bannerBlurhash: user.bannerId == null ? null : user.bannerBlurhash,
 				isSilenced: this.roleService.getUserPolicies(user.id).then(r => !r.canPublicNote),
+				isRestricted: user.isRestricted && (user.restrictedUntil == null || user.restrictedUntil > new Date()),
 				isSuspended: user.isSuspended,
 				description: profile!.description,
 				location: profile!.location,

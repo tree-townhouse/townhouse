@@ -13,8 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<span class="name"><MkUserName class="name" :user="user"/></span>
 					<span class="sub"><span class="acct _monospace">@{{ acct(user) }}</span></span>
 					<span class="state">
-						<span v-if="suspended" class="suspended">Suspended</span>
-						<span v-if="silenced" class="silenced">Silenced</span>
+						<span v-if="suspended" class="suspended">Suspended</span>					<span v-if="restricted" class="silenced">Restricted</span>						<span v-if="silenced" class="silenced">Silenced</span>
 						<span v-if="moderator" class="moderator">Moderator</span>
 					</span>
 				</div>
@@ -102,10 +101,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div :class="$style.modActions">
 							<MkButton v-if="user.host == null && !info.isDirectlySilenced" @click="silenceUser"><i class="ti ti-volume-off"></i> {{ i18n.ts.silence }}</MkButton>
 							<MkButton v-if="user.host == null && info.isDirectlySilenced" @click="unsilenceUser"><i class="ti ti-volume"></i> {{ i18n.ts.unsilence }}</MkButton>
-							<MkButton v-if="user.host == null" @click="warnUser"><i class="ti ti-alert-triangle"></i> {{ i18n.ts.warn }}</MkButton>
-						</div>
-						<div v-if="info.isDirectlySilenced || info.warningCount > 0" :class="$style.modStatus">
-							<span v-if="info.isDirectlySilenced && info.silencedUntil"><i class="ti ti-volume-off"></i> {{ i18n.tsx.silencedUntil({ date: new Date(info.silencedUntil).toLocaleString() }) }}</span>
+						<MkButton v-if="user.host == null && !info.isDirectlyRestricted" @click="restrictUser"><i class="ti ti-lock"></i> {{ i18n.ts.restrict }}</MkButton>
+						<MkButton v-if="user.host == null && info.isDirectlyRestricted" @click="unrestrictUser"><i class="ti ti-lock-open"></i> {{ i18n.ts.unrestrict }}</MkButton>
+						<MkButton v-if="user.host == null" @click="warnUser"><i class="ti ti-alert-triangle"></i> {{ i18n.ts.warn }}</MkButton>
+					</div>
+					<div v-if="info.isDirectlySilenced || info.isDirectlyRestricted || info.warningCount > 0" :class="$style.modStatus">
+						<span v-if="info.isDirectlySilenced && info.silencedUntil"><i class="ti ti-volume-off"></i> {{ i18n.tsx.silencedUntil({ date: new Date(info.silencedUntil).toLocaleString() }) }}</span>
+						<span v-if="info.isDirectlyRestricted && info.restrictedUntil"><i class="ti ti-lock"></i> {{ i18n.tsx.restrictedUntil({ date: new Date(info.restrictedUntil).toLocaleString() }) }}</span>
 							<span v-if="info.warningCount > 0"><i class="ti ti-alert-triangle"></i> {{ i18n.tsx.warningCount({ count: info.warningCount }) }}</span>
 						</div>
 					</div>
@@ -285,6 +287,7 @@ const showIpToolTip = ref(false);
 const ap = ref<Misskey.entities.ApGetResponse | null>(null);
 const moderator = ref(info.value.isModerator);
 const silenced = ref(info.value.isSilenced);
+const restricted = ref(info.value.isRestricted);
 const suspended = ref(info.value.isSuspended);
 const isSystem = ref(user.value.host == null && user.value.username.includes('.'));
 const moderationNote = ref(info.value.moderationNote);
@@ -341,6 +344,7 @@ async function refreshUser() {
 	ips.value = result.ips;
 	moderator.value = info.value.isModerator;
 	silenced.value = info.value.isSilenced;
+	restricted.value = info.value.isRestricted;
 	suspended.value = info.value.isSuspended;
 	isSystem.value = user.value.host == null && user.value.username.includes('.');
 	moderationNote.value = info.value.moderationNote;
@@ -371,7 +375,7 @@ async function resetPassword() {
 
 let cachedModerationReasons: { text: string; type: string }[] | null = null;
 
-async function askForReason(actionType: 'warn' | 'silence' | 'suspend', title: string, description: string): Promise<string | null> {
+async function askForReason(actionType: 'warn' | 'silence' | 'suspend' | 'restrict', title: string, description: string): Promise<string | null> {
 	if (cachedModerationReasons === null) {
 		const meta = await misskeyApi('admin/meta');
 		cachedModerationReasons = meta.moderationReasons ?? [];
@@ -489,6 +493,53 @@ async function unsilenceUser() {
 	if (confirm.canceled) return;
 
 	await os.apiWithDialog('admin/unsilence-user', { userId: user.value.id });
+	await refreshUser();
+}
+
+async function restrictUser() {
+	const { canceled: canceled1, result: period } = await os.select({
+		title: i18n.ts.restrictPeriod,
+		items: [{
+			value: 'indefinitely', label: i18n.ts.indefinitely,
+		}, {
+			value: 'oneHour', label: i18n.ts.oneHour,
+		}, {
+			value: 'oneDay', label: i18n.ts.oneDay,
+		}, {
+			value: 'oneWeek', label: i18n.ts.oneWeek,
+		}, {
+			value: 'oneMonth', label: i18n.ts.oneMonth,
+		}],
+		default: 'indefinitely',
+	});
+	if (canceled1) return;
+
+	const reason = await askForReason('restrict', i18n.ts.restrictReason, i18n.ts.restrictReasonDescription);
+	if (reason === null) return;
+
+	const expiresAt = period === 'indefinitely' ? null
+		: period === 'oneHour' ? Date.now() + (1000 * 60 * 60)
+		: period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
+		: period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
+		: period === 'oneMonth' ? Date.now() + (1000 * 60 * 60 * 24 * 30)
+		: null;
+
+	await os.apiWithDialog('admin/restrict-user', {
+		userId: user.value.id,
+		reason: reason,
+		expiresAt,
+	});
+	await refreshUser();
+}
+
+async function unrestrictUser() {
+	const confirm = await os.confirm({
+		type: 'warning',
+		text: i18n.ts.unrestrictConfirm,
+	});
+	if (confirm.canceled) return;
+
+	await os.apiWithDialog('admin/unrestrict-user', { userId: user.value.id });
 	await refreshUser();
 }
 

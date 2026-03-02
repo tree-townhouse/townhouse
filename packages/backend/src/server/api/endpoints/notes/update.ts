@@ -18,6 +18,7 @@ export const meta = {
 	tags: ['notes'],
 
 	requireCredential: true,
+	prohibitRestricted: true,
 	requiredRolePolicy: 'canEditNote',
 
 	kind: 'write:notes',

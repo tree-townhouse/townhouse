@@ -261,13 +261,15 @@ export const paramDef = {
 		warningAnnouncementText: { type: 'string', nullable: true },
 		suspendAnnouncementTitle: { type: 'string', nullable: true },
 		suspendAnnouncementText: { type: 'string', nullable: true },
+		restrictAnnouncementTitle: { type: 'string', nullable: true },
+		restrictAnnouncementText: { type: 'string', nullable: true },
 		moderationReasons: {
 			type: 'array', nullable: true,
 			items: {
 				type: 'object',
 				properties: {
 					text: { type: 'string' },
-					type: { type: 'string', enum: ['all', 'warn', 'silence', 'suspend'] },
+					type: { type: 'string', enum: ['all', 'warn', 'silence', 'restrict', 'suspend'] },
 				},
 				required: ['text', 'type'],
 			},
@@ -977,6 +979,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.suspendAnnouncementText !== undefined) {
 				set.suspendAnnouncementText = ps.suspendAnnouncementText;
+			}
+
+			if (ps.restrictAnnouncementTitle !== undefined) {
+				set.restrictAnnouncementTitle = ps.restrictAnnouncementTitle;
+			}
+
+			if (ps.restrictAnnouncementText !== undefined) {
+				set.restrictAnnouncementText = ps.restrictAnnouncementText;
 			}
 
 			if (ps.moderationReasons !== undefined) {
