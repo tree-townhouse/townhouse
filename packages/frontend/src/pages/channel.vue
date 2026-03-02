@@ -206,6 +206,8 @@ async function mute() {
 		}, {
 			value: 'oneDay', label: i18n.ts.oneDay,
 		}, {
+			value: 'threeDays', label: i18n.ts.threeDays,
+		}, {
 			value: 'oneWeek', label: i18n.ts.oneWeek,
 		}],
 		default: 'indefinitely',
@@ -216,6 +218,7 @@ async function mute() {
 		: period === 'tenMinutes' ? Date.now() + (1000 * 60 * 10)
 		: period === 'oneHour' ? Date.now() + (1000 * 60 * 60)
 		: period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
+		: period === 'threeDays' ? Date.now() + (1000 * 60 * 60 * 24 * 3)
 		: period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
 		: null;
 

@@ -113,23 +113,35 @@ async function assign() {
 		items: [{
 			value: 'indefinitely', label: i18n.ts.indefinitely,
 		}, {
+			value: 'tenMinutes', label: i18n.ts.tenMinutes,
+		}, {
 			value: 'oneHour', label: i18n.ts.oneHour,
 		}, {
 			value: 'oneDay', label: i18n.ts.oneDay,
 		}, {
+			value: 'threeDays', label: i18n.ts.threeDays,
+		}, {
 			value: 'oneWeek', label: i18n.ts.oneWeek,
 		}, {
 			value: 'oneMonth', label: i18n.ts.oneMonth,
+		}, {
+			value: 'threeMonths', label: i18n.ts.threeMonths,
+		}, {
+			value: 'oneYear', label: i18n.ts.oneYear,
 		}],
 		default: 'indefinitely',
 	});
 	if (canceled2) return;
 
 	const expiresAt = period === 'indefinitely' ? null
+		: period === 'tenMinutes' ? Date.now() + (1000 * 60 * 10)
 		: period === 'oneHour' ? Date.now() + (1000 * 60 * 60)
 		: period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
+		: period === 'threeDays' ? Date.now() + (1000 * 60 * 60 * 24 * 3)
 		: period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
 		: period === 'oneMonth' ? Date.now() + (1000 * 60 * 60 * 24 * 30)
+		: period === 'threeMonths' ? Date.now() + (1000 * 60 * 60 * 24 * 90)
+		: period === 'oneYear' ? Date.now() + (1000 * 60 * 60 * 24 * 365)
 		: null;
 
 	await os.apiWithDialog('admin/roles/assign', { roleId: role.id, userId: user.id, expiresAt });

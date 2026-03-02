@@ -175,13 +175,21 @@ async function editSilenceLog(log: any) {
 		}, {
 			value: 'indefinitely', label: i18n.ts.indefinitely,
 		}, {
+			value: 'tenMinutes', label: i18n.ts.tenMinutes,
+		}, {
 			value: 'oneHour', label: i18n.ts.oneHour,
 		}, {
 			value: 'oneDay', label: i18n.ts.oneDay,
 		}, {
+			value: 'threeDays', label: i18n.ts.threeDays,
+		}, {
 			value: 'oneWeek', label: i18n.ts.oneWeek,
 		}, {
 			value: 'oneMonth', label: i18n.ts.oneMonth,
+		}, {
+			value: 'threeMonths', label: i18n.ts.threeMonths,
+		}, {
+			value: 'oneYear', label: i18n.ts.oneYear,
 		}],
 		default: 'keep',
 	});
@@ -199,10 +207,14 @@ async function editSilenceLog(log: any) {
 		// Recalculate expiresAt based on original action time
 		const actionTime = new Date(log.createdAt).getTime();
 		params.expiresAt = period === 'indefinitely' ? null
+			: period === 'tenMinutes' ? actionTime + (1000 * 60 * 10)
 			: period === 'oneHour' ? actionTime + (1000 * 60 * 60)
 			: period === 'oneDay' ? actionTime + (1000 * 60 * 60 * 24)
+			: period === 'threeDays' ? actionTime + (1000 * 60 * 60 * 24 * 3)
 			: period === 'oneWeek' ? actionTime + (1000 * 60 * 60 * 24 * 7)
 			: period === 'oneMonth' ? actionTime + (1000 * 60 * 60 * 24 * 30)
+			: period === 'threeMonths' ? actionTime + (1000 * 60 * 60 * 24 * 90)
+			: period === 'oneYear' ? actionTime + (1000 * 60 * 60 * 24 * 365)
 			: null;
 	}
 
@@ -225,13 +237,21 @@ async function editRestrictLog(log: any) {
 		}, {
 			value: 'indefinitely', label: i18n.ts.indefinitely,
 		}, {
+			value: 'tenMinutes', label: i18n.ts.tenMinutes,
+		}, {
 			value: 'oneHour', label: i18n.ts.oneHour,
 		}, {
 			value: 'oneDay', label: i18n.ts.oneDay,
 		}, {
+			value: 'threeDays', label: i18n.ts.threeDays,
+		}, {
 			value: 'oneWeek', label: i18n.ts.oneWeek,
 		}, {
 			value: 'oneMonth', label: i18n.ts.oneMonth,
+		}, {
+			value: 'threeMonths', label: i18n.ts.threeMonths,
+		}, {
+			value: 'oneYear', label: i18n.ts.oneYear,
 		}],
 		default: 'keep',
 	});
@@ -248,10 +268,14 @@ async function editRestrictLog(log: any) {
 	if (period !== 'keep') {
 		const actionTime = new Date(log.createdAt).getTime();
 		params.expiresAt = period === 'indefinitely' ? null
+			: period === 'tenMinutes' ? actionTime + (1000 * 60 * 10)
 			: period === 'oneHour' ? actionTime + (1000 * 60 * 60)
 			: period === 'oneDay' ? actionTime + (1000 * 60 * 60 * 24)
+			: period === 'threeDays' ? actionTime + (1000 * 60 * 60 * 24 * 3)
 			: period === 'oneWeek' ? actionTime + (1000 * 60 * 60 * 24 * 7)
 			: period === 'oneMonth' ? actionTime + (1000 * 60 * 60 * 24 * 30)
+			: period === 'threeMonths' ? actionTime + (1000 * 60 * 60 * 24 * 90)
+			: period === 'oneYear' ? actionTime + (1000 * 60 * 60 * 24 * 365)
 			: null;
 	}
 
