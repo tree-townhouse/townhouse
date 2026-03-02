@@ -92,19 +92,37 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 			<FormSection v-if="!isSystem">
 				<div class="_gaps">
-					<MkSwitch v-model="suspended" @update:modelValue="toggleSuspend">{{ i18n.ts.suspend }}</MkSwitch>
-
-					<div>
-						<MkButton v-if="user.host == null && !info.isDirectlySilenced" inline style="margin-right: 8px;" @click="silenceUser"><i class="ti ti-volume-off"></i> {{ i18n.ts.silence }}</MkButton>
-						<MkButton v-if="user.host == null && info.isDirectlySilenced" inline style="margin-right: 8px;" @click="unsilenceUser"><i class="ti ti-volume"></i> {{ i18n.ts.unsilence }}</MkButton>
-						<MkButton v-if="user.host == null" inline style="margin-right: 8px;" @click="warnUser"><i class="ti ti-alert-triangle"></i> {{ i18n.ts.warn }}</MkButton>
-						<MkButton v-if="$i.isAdmin && info.warningCount > 0" inline danger style="margin-right: 8px;" @click="resetWarningCount"><i class="ti ti-alert-triangle-off"></i> {{ i18n.ts.resetWarning }}</MkButton>
-						<span v-if="info.isDirectlySilenced && info.silencedUntil" style="font-size: 0.85em; opacity: 0.7;">{{ i18n.tsx.silencedUntil({ date: new Date(info.silencedUntil).toLocaleString() }) }}</span>
-						<span v-if="info.warningCount > 0" style="font-size: 0.85em; opacity: 0.7; margin-left: 8px;">{{ i18n.tsx.warningCount({ count: info.warningCount }) }}</span>
+					<!-- 이용 제한 -->
+					<div :class="$style.modSection">
+						<div :class="$style.modSectionHeader">
+							<i class="ti ti-shield-exclamation"></i>
+							<span>{{ i18n.ts.moderation }}</span>
+						</div>
+						<MkSwitch v-model="suspended" @update:modelValue="toggleSuspend">{{ i18n.ts.suspend }}</MkSwitch>
+						<div :class="$style.modActions">
+							<MkButton v-if="user.host == null && !info.isDirectlySilenced" @click="silenceUser"><i class="ti ti-volume-off"></i> {{ i18n.ts.silence }}</MkButton>
+							<MkButton v-if="user.host == null && info.isDirectlySilenced" @click="unsilenceUser"><i class="ti ti-volume"></i> {{ i18n.ts.unsilence }}</MkButton>
+							<MkButton v-if="user.host == null" @click="warnUser"><i class="ti ti-alert-triangle"></i> {{ i18n.ts.warn }}</MkButton>
+							<MkButton v-if="$i.isAdmin && info.warningCount > 0" danger @click="resetWarningCount"><i class="ti ti-alert-triangle-off"></i> {{ i18n.ts.resetWarning }}</MkButton>
+						</div>
+						<div v-if="info.isDirectlySilenced || info.warningCount > 0" :class="$style.modStatus">
+							<span v-if="info.isDirectlySilenced && info.silencedUntil"><i class="ti ti-volume-off"></i> {{ i18n.tsx.silencedUntil({ date: new Date(info.silencedUntil).toLocaleString() }) }}</span>
+							<span v-if="info.warningCount > 0"><i class="ti ti-alert-triangle"></i> {{ i18n.tsx.warningCount({ count: info.warningCount }) }}</span>
+						</div>
 					</div>
 
-					<div>
-						<MkButton v-if="user.host == null" inline style="margin-right: 8px;" @click="resetPassword"><i class="ti ti-key"></i> {{ i18n.ts.resetPassword }}</MkButton>
+					<!-- 계정 관리 -->
+					<div :class="$style.modSection">
+						<div :class="$style.modSectionHeader">
+							<i class="ti ti-settings"></i>
+							<span>{{ i18n.ts.accountManagement ?? 'Account' }}</span>
+						</div>
+						<div :class="$style.modActions">
+							<MkButton v-if="user.host == null" @click="resetPassword"><i class="ti ti-key"></i> {{ i18n.ts.resetPassword }}</MkButton>
+							<MkButton v-if="iAmModerator" danger @click="unsetUserAvatar"><i class="ti ti-user-circle"></i> {{ i18n.ts.unsetUserAvatar }}</MkButton>
+							<MkButton v-if="iAmModerator" danger @click="unsetUserBanner"><i class="ti ti-photo"></i> {{ i18n.ts.unsetUserBanner }}</MkButton>
+						</div>
+						<MkButton v-if="$i.isAdmin" danger full @click="deleteAccount"><i class="ti ti-trash"></i> {{ i18n.ts.deleteAccount }}</MkButton>
 					</div>
 
 					<MkFolder>
@@ -130,12 +148,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</div>
 						</template>
 					</MkFolder>
-
-					<div>
-						<MkButton v-if="iAmModerator" inline danger style="margin-right: 8px;" @click="unsetUserAvatar"><i class="ti ti-user-circle"></i> {{ i18n.ts.unsetUserAvatar }}</MkButton>
-						<MkButton v-if="iAmModerator" inline danger @click="unsetUserBanner"><i class="ti ti-photo"></i> {{ i18n.ts.unsetUserBanner }}</MkButton>
-					</div>
-					<MkButton v-if="$i.isAdmin" inline danger @click="deleteAccount">{{ i18n.ts.deleteAccount }}</MkButton>
 				</div>
 			</FormSection>
 		</div>
@@ -808,5 +820,44 @@ definePage(() => ({
 	padding: 8px 12px;
 	border-radius: 6px;
 	cursor: pointer;
+}
+
+.modSection {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 16px;
+	border-radius: 8px;
+	background: color(from var(--MI_THEME-panel) srgb r g b / 0.5);
+}
+
+.modSectionHeader {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: bold;
+	font-size: 0.95em;
+	opacity: 0.85;
+}
+
+.modActions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.modStatus {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	font-size: 0.85em;
+	opacity: 0.7;
+	padding: 4px 0;
+
+	> span {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
 }
 </style>
