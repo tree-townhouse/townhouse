@@ -231,6 +231,33 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkFolder>
 				</SearchMarker>
 
+				<SearchMarker :keywords="['moderation', 'reasons', 'predefined']">
+					<MkFolder>
+						<template #icon><SearchIcon><i class="ti ti-list-check"></i></SearchIcon></template>
+						<template #label><SearchLabel>{{ i18n.ts.moderationReasons }}</SearchLabel></template>
+
+						<div class="_gaps">
+							<div v-for="(reason, i) in moderationReasons" :key="i" :class="$style.reasonRow">
+								<MkInput v-model="reason.text" :class="$style.reasonText">
+									<template #label>{{ i18n.ts.reason }}</template>
+								</MkInput>
+								<MkSelect v-model="reason.type" :class="$style.reasonType">
+									<template #label>{{ i18n.ts.type }}</template>
+									<option value="all">{{ i18n.ts.all }}</option>
+									<option value="warn">{{ i18n.ts.warning }}</option>
+									<option value="silence">{{ i18n.ts.silence }}</option>
+									<option value="suspend">{{ i18n.ts.suspend }}</option>
+								</MkSelect>
+								<MkButton danger :class="$style.reasonDelete" @click="removeReason(i)">
+									<i class="ti ti-trash"></i>
+								</MkButton>
+							</div>
+							<MkButton @click="addReason"><i class="ti ti-plus"></i> {{ i18n.ts.add }}</MkButton>
+							<MkButton primary @click="save_moderationReasons">{{ i18n.ts.save }}</MkButton>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
 				<SearchMarker :keywords="['blocked', 'servers', 'hosts']">
 					<MkFolder>
 						<template #icon><SearchIcon><i class="ti ti-ban"></i></SearchIcon></template>
@@ -317,6 +344,9 @@ const warningAnnouncementTitle = ref(meta.warningAnnouncementTitle ?? '');
 const warningAnnouncementText = ref(meta.warningAnnouncementText ?? '');
 const suspendAnnouncementTitle = ref(meta.suspendAnnouncementTitle ?? '');
 const suspendAnnouncementText = ref(meta.suspendAnnouncementText ?? '');
+const moderationReasons = ref<{ text: string; type: 'all' | 'warn' | 'silence' | 'suspend' }[]>(
+	(meta.moderationReasons ?? []).map(r => ({ ...r })),
+);
 
 async function onChange_enableRegistration(value: boolean) {
 	if (value) {
@@ -494,6 +524,24 @@ function save_suspendAnnouncementTemplate() {
 	});
 }
 
+function addReason() {
+	moderationReasons.value.push({ text: '', type: 'all' });
+}
+
+function removeReason(index: number) {
+	moderationReasons.value.splice(index, 1);
+}
+
+function save_moderationReasons() {
+	const filtered = moderationReasons.value.filter(r => r.text.trim() !== '');
+	os.apiWithDialog('admin/update-meta', {
+		moderationReasons: filtered,
+	}).then(() => {
+		moderationReasons.value = filtered;
+		fetchInstance(true);
+	});
+}
+
 const headerTabs = computed(() => []);
 
 definePage(() => ({
@@ -501,3 +549,25 @@ definePage(() => ({
 	icon: 'ti ti-shield',
 }));
 </script>
+
+<style module lang="scss">
+.reasonRow {
+	display: flex;
+	gap: 8px;
+	align-items: flex-end;
+}
+
+.reasonText {
+	flex: 1;
+}
+
+.reasonType {
+	width: 140px;
+	flex-shrink: 0;
+}
+
+.reasonDelete {
+	flex-shrink: 0;
+	margin-bottom: 2px;
+}
+</style>

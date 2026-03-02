@@ -369,14 +369,53 @@ async function resetPassword() {
 	}
 }
 
+let cachedModerationReasons: { text: string; type: string }[] | null = null;
+
+async function askForReason(actionType: 'warn' | 'silence' | 'suspend', title: string, description: string): Promise<string | null> {
+	if (cachedModerationReasons === null) {
+		const meta = await misskeyApi('admin/meta');
+		cachedModerationReasons = meta.moderationReasons ?? [];
+	}
+
+	const reasons = cachedModerationReasons!;
+	const matchingReasons = reasons.filter(r => r.type === 'all' || r.type === actionType);
+
+	if (matchingReasons.length > 0) {
+		const items = [
+			...matchingReasons.map(r => ({ value: r.text, label: r.text })),
+			{ value: '__custom__', label: i18n.ts.customInput },
+		];
+
+		const { canceled, result } = await os.select({
+			title,
+			items,
+		});
+		if (canceled) return null;
+
+		if (result === '__custom__') {
+			const { canceled: canceled2, result: customReason } = await os.inputText({
+				title,
+				text: description,
+			});
+			if (canceled2) return null;
+			return customReason ?? '';
+		}
+
+		return result as string;
+	} else {
+		const { canceled, result: reason } = await os.inputText({
+			title,
+			text: description,
+		});
+		if (canceled) return null;
+		return reason ?? '';
+	}
+}
+
 async function toggleSuspend(v) {
 	if (v) {
-		const { canceled: canceled1, result: reason } = await os.inputText({
-			type: 'text',
-			title: i18n.ts.suspendReason,
-			text: i18n.ts.suspendReasonDescription,
-		});
-		if (canceled1) {
+		const reason = await askForReason('suspend', i18n.ts.suspendReason, i18n.ts.suspendReasonDescription);
+		if (reason === null) {
 			suspended.value = false;
 			return;
 		}
@@ -424,11 +463,8 @@ async function silenceUser() {
 	});
 	if (canceled1) return;
 
-	const { canceled: canceled2, result: reason } = await os.inputText({
-		title: i18n.ts.silenceReason,
-		text: i18n.ts.silenceReasonDescription,
-	});
-	if (canceled2) return;
+	const reason = await askForReason('silence', i18n.ts.silenceReason, i18n.ts.silenceReasonDescription);
+	if (reason === null) return;
 
 	const expiresAt = period === 'indefinitely' ? null
 		: period === 'oneHour' ? Date.now() + (1000 * 60 * 60)
@@ -439,7 +475,7 @@ async function silenceUser() {
 
 	await os.apiWithDialog('admin/silence-user', {
 		userId: user.value.id,
-		reason: reason ?? '',
+		reason: reason,
 		expiresAt,
 	});
 	await refreshUser();
@@ -457,15 +493,12 @@ async function unsilenceUser() {
 }
 
 async function warnUser() {
-	const { canceled, result: reason } = await os.inputText({
-		title: i18n.ts.warnReason,
-		text: i18n.ts.warnReasonDescription,
-	});
-	if (canceled) return;
+	const reason = await askForReason('warn', i18n.ts.warnReason, i18n.ts.warnReasonDescription);
+	if (reason === null) return;
 
 	await os.apiWithDialog('admin/warn-user', {
 		userId: user.value.id,
-		reason: reason ?? '',
+		reason: reason,
 	});
 	await refreshUser();
 }

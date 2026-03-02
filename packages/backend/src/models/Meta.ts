@@ -961,6 +961,12 @@ export class MiMeta {
 		comment: 'Custom text for the suspend announcement sent to users. Supports {reason} and {date} placeholders.',
 	})
 	public suspendAnnouncementText: string | null;
+
+	@Column('jsonb', {
+		default: [],
+		comment: 'Predefined moderation reasons. Each entry has text and type (all/warn/silence/suspend).',
+	})
+	public moderationReasons: { text: string; type: 'all' | 'warn' | 'silence' | 'suspend' }[];
 }
 
 export type SoftwareSuspension = {
