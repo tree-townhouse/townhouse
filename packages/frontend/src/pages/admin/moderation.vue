@@ -195,6 +195,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkFolder>
 				</SearchMarker>
 
+				<SearchMarker :keywords="['restrict', 'announcement', 'template']">
+					<MkFolder>
+						<template #icon><SearchIcon><i class="ti ti-ban"></i></SearchIcon></template>
+						<template #label><SearchLabel>{{ i18n.ts.restrictAnnouncementTemplate }}</SearchLabel></template>
+
+						<div class="_gaps">
+							<MkInput v-model="restrictAnnouncementTitle">
+								<template #label>{{ i18n.ts.restrictAnnouncementTitleLabel }}</template>
+							</MkInput>
+							<MkTextarea v-model="restrictAnnouncementText">
+								<template #label>{{ i18n.ts.restrictAnnouncementTextLabel }}</template>
+								<template #caption>{{ i18n.ts.restrictAnnouncementTemplateDescription }}</template>
+							</MkTextarea>
+							<MkButton primary @click="save_restrictAnnouncementTemplate">{{ i18n.ts.save }}</MkButton>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
 				<SearchMarker :keywords="['warning', 'announcement', 'template']">
 					<MkFolder>
 						<template #icon><SearchIcon><i class="ti ti-alert-triangle"></i></SearchIcon></template>
@@ -336,11 +354,13 @@ const trustedLinkUrlPatterns = ref(meta.trustedLinkUrlPatterns.join('\n'));
 const bubbleTimeline = ref(meta.bubbleInstances.join('\n'));
 const silenceAnnouncementTitle = ref(meta.silenceAnnouncementTitle ?? '');
 const silenceAnnouncementText = ref(meta.silenceAnnouncementText ?? '');
+const restrictAnnouncementTitle = ref(meta.restrictAnnouncementTitle ?? '');
+const restrictAnnouncementText = ref(meta.restrictAnnouncementText ?? '');
 const warningAnnouncementTitle = ref(meta.warningAnnouncementTitle ?? '');
 const warningAnnouncementText = ref(meta.warningAnnouncementText ?? '');
 const suspendAnnouncementTitle = ref(meta.suspendAnnouncementTitle ?? '');
 const suspendAnnouncementText = ref(meta.suspendAnnouncementText ?? '');
-const moderationReasons = ref<{ text: string; type: 'all' | 'warn' | 'silence' | 'suspend' }[]>(
+const moderationReasons = ref<{ text: string; type: 'all' | 'warn' | 'silence' | 'restrict' | 'suspend' }[]>(
 	(meta.moderationReasons ?? []).map(r => ({ ...r })),
 );
 
@@ -348,6 +368,7 @@ const reasonTypeItems = [
 	{ value: 'all', label: i18n.ts.all },
 	{ value: 'warn', label: i18n.ts.warn },
 	{ value: 'silence', label: i18n.ts.silence },
+	{ value: 'restrict', label: i18n.ts.restrict },
 	{ value: 'suspend', label: i18n.ts.suspend },
 ] as const;
 
@@ -504,6 +525,15 @@ function save_silenceAnnouncementTemplate() {
 	os.apiWithDialog('admin/update-meta', {
 		silenceAnnouncementTitle: silenceAnnouncementTitle.value || null,
 		silenceAnnouncementText: silenceAnnouncementText.value || null,
+	}).then(() => {
+		fetchInstance(true);
+	});
+}
+
+function save_restrictAnnouncementTemplate() {
+	os.apiWithDialog('admin/update-meta', {
+		restrictAnnouncementTitle: restrictAnnouncementTitle.value || null,
+		restrictAnnouncementText: restrictAnnouncementText.value || null,
 	}).then(() => {
 		fetchInstance(true);
 	});

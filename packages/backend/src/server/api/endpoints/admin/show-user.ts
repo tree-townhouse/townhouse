@@ -259,7 +259,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			const isModerator = await this.roleService.isModerator(user);
-			const isSilenced = !(await this.roleService.getUserPolicies(user.id)).canPublicNote;
+			const policies = await this.roleService.getUserPolicies(user.id);
+			const isEffectivelyRestricted = user.isRestricted && (user.restrictedUntil == null || user.restrictedUntil > new Date());
+			const isSilenced = !policies.canPublicNote && !isEffectivelyRestricted;
 
 			const _me = await this.usersRepository.findOneByOrFail({ id: me.id });
 			if (!await this.roleService.isAdministrator(_me) && await this.roleService.isAdministrator(user)) {
@@ -290,7 +292,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				isSilenced: isSilenced,
 				isDirectlySilenced: user.isSilenced,
 				silencedUntil: user.silencedUntil ? user.silencedUntil.toISOString() : null,
-				isRestricted: user.isRestricted && (user.restrictedUntil == null || user.restrictedUntil > new Date()),
+				isRestricted: isEffectivelyRestricted,
 				isDirectlyRestricted: user.isRestricted,
 				restrictedUntil: user.restrictedUntil ? user.restrictedUntil.toISOString() : null,
 				warningCount: user.warningCount,

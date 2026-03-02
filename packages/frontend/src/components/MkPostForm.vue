@@ -86,7 +86,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</I18n> - <button class="_textButton" @click="cancelScheduleDelete()">{{ i18n.ts.cancel }}</button>
 	</MkInfo>
 	<MkInfo v-if="hasNotSpecifiedMentions" warn :class="$style.hasNotSpecifiedMentions">{{ i18n.ts.notSpecifiedMentionWarning }} - <button class="_textButton" @click="addMissingMention()">{{ i18n.ts.add }}</button></MkInfo>
-	<MkInfo v-if="$i.isSilenced" warn>{{ i18n.ts.silencedNotice }}</MkInfo>
+	<MkInfo v-if="$i.isSilenced && !$i.isRestricted" warn>{{ i18n.ts.silencedNotice }}</MkInfo>
 	<MkInfo v-if="$i.isRestricted" warn>{{ i18n.ts.restrictedNotice }}</MkInfo>
 	<div v-show="useCw" :class="$style.cwOuter">
 		<input ref="cwInputEl" v-model="cw" :class="$style.cw" :placeholder="i18n.ts.annotation" @keydown="onKeydown" @keyup="onKeyup" @compositionend="onCompositionEnd">
