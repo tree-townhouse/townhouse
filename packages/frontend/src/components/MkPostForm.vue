@@ -86,8 +86,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</I18n> - <button class="_textButton" @click="cancelScheduleDelete()">{{ i18n.ts.cancel }}</button>
 	</MkInfo>
 	<MkInfo v-if="hasNotSpecifiedMentions" warn :class="$style.hasNotSpecifiedMentions">{{ i18n.ts.notSpecifiedMentionWarning }} - <button class="_textButton" @click="addMissingMention()">{{ i18n.ts.add }}</button></MkInfo>
-	<MkInfo v-if="$i.isSilenced && !$i.isRestricted" warn>{{ i18n.ts.silencedNotice }}</MkInfo>
-	<MkInfo v-if="$i.isRestricted" warn>{{ i18n.ts.restrictedNotice }}</MkInfo>
+	<MkInfo v-if="$i.isSilenced && !$i.isRestricted" warn :class="$style.restrictionNotice">{{ i18n.ts.silencedNotice }}</MkInfo>
+	<MkInfo v-if="$i.isRestricted" warn :class="$style.restrictionNotice">{{ i18n.ts.restrictedNotice }}</MkInfo>
 	<div v-show="useCw" :class="$style.cwOuter">
 		<input ref="cwInputEl" v-model="cw" :class="$style.cw" :placeholder="i18n.ts.annotation" @keydown="onKeydown" @keyup="onKeyup" @compositionend="onCompositionEnd">
 		<div v-if="maxCwTextLength - cwTextLength < 20" :class="['_acrylic', $style.cwTextCount, { [$style.cwTextOver]: cwTextLength > maxCwTextLength }]">{{ maxCwTextLength - cwTextLength }}</div>
@@ -1318,10 +1318,17 @@ async function post(ev?: MouseEvent) {
 		});
 	}).catch(err => {
 		posting.value = false;
-		os.alert({
-			type: 'error',
-			text: `${err.message}\n${(err as any).id}`,
-		});
+		if (err.code === 'YOUR_ACCOUNT_RESTRICTED') {
+			os.alert({
+				type: 'error',
+				text: i18n.ts.restrictedErrorNote,
+			});
+		} else {
+			os.alert({
+				type: 'error',
+				text: `${err.message}\n${(err as any).id}`,
+			});
+		}
 	});
 	if (textareaEl.value) {
 		textareaEl.value.style.height = '';
@@ -1995,6 +2002,10 @@ html[data-color-scheme=light] .preview {
 }
 
 .hasNotSpecifiedMentions {
+	margin: 0 20px 16px 20px;
+}
+
+.restrictionNotice {
 	margin: 0 20px 16px 20px;
 }
 

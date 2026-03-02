@@ -79,6 +79,8 @@ export const apiWithDialog = (<E extends keyof Misskey.Endpoints>(
 		} else if (err.code.startsWith('TOO_MANY')) { // TODO: バックエンドに kind: client/contentsLimitExceeded みたいな感じで送るように統一してもらってそれで判定する
 			title = i18n.ts.youCannotCreateAnymore;
 			text = `${i18n.ts.error}: ${err.id}`;
+		} else if (err.code === 'YOUR_ACCOUNT_RESTRICTED') {
+			text = i18n.ts.restrictedError;
 		} else if (err.message.startsWith('Unexpected token')) {
 			title = i18n.ts.gotInvalidResponseError;
 			text = i18n.ts.gotInvalidResponseErrorDescription;
