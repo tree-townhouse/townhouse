@@ -102,6 +102,12 @@ export function uploadFile(file: File | Blob, options: {
 							title: i18n.ts.failedToUpload,
 							text: i18n.ts.cannotUploadBecauseUnallowedFileType,
 						});
+					} else if (res.error?.code === 'YOUR_ACCOUNT_RESTRICTED') {
+						os.alert({
+							type: 'error',
+							title: i18n.ts.failedToUpload,
+							text: i18n.ts.restrictedError,
+						});
 					} else {
 						os.alert({
 							type: 'error',
