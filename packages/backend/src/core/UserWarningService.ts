@@ -28,6 +28,8 @@ export class UserWarningService {
 	public async warn(user: MiUser, moderator: MiUser, reason: string): Promise<void> {
 		await this.usersRepository.increment({ id: user.id }, 'warningCount', 1);
 
+		const newWarningCount = (user.warningCount ?? 0) + 1;
+
 		this.moderationLogService.log(moderator, 'warn', {
 			userId: user.id,
 			userUsername: user.username,
@@ -40,10 +42,12 @@ export class UserWarningService {
 		const dateText = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 		const title = (meta.warningAnnouncementTitle ?? '{reason}')
 			.replace('{reason}', reason)
-			.replace('{date}', dateText);
+			.replace('{date}', dateText)
+			.replace('{count}', String(newWarningCount));
 		const text = (meta.warningAnnouncementText ?? '{reason}')
 			.replace('{reason}', reason)
-			.replace('{date}', dateText);
+			.replace('{date}', dateText)
+			.replace('{count}', String(newWarningCount));
 
 		await this.announcementService.create({
 			title: title,

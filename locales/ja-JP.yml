@@ -617,7 +617,7 @@ resetWarningConfirm: "このユーザーの警告回数をリセットします�
 warningAnnouncementTemplate: "警告お知らせテンプレート"
 warningAnnouncementTitleLabel: "お知らせタイトル"
 warningAnnouncementTextLabel: "お知らせ内容"
-warningAnnouncementTemplateDescription: "{reason}は理由、{date}は日時に置き換えられます。"
+warningAnnouncementTemplateDescription: "{reason}は理由、{date}は日時、{count}は警告回数に置き換えられます。"
 suspendReason: "凍結理由"
 suspendReasonDescription: "凍結の理由を入力してください。"
 suspendAnnouncementTemplate: "凍結お知らせテンプレート"
