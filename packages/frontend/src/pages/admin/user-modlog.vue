@@ -120,8 +120,14 @@ const paginator = markRaw(new Paginator('admin/show-moderation-logs', {
 		const params: Record<string, any> = {
 			targetUserId: props.userId,
 		};
-		if (logTypeFilter.value !== 'all') {
-			params.type = logTypeFilter.value;
+		if (logTypeFilter.value === 'all') {
+			params.types = MODERATION_TYPES;
+		} else if (logTypeFilter.value === 'silence') {
+			params.types = ['silence', 'unsilence'];
+		} else if (logTypeFilter.value === 'warn') {
+			params.types = ['warn', 'resetWarning'];
+		} else if (logTypeFilter.value === 'suspend') {
+			params.types = ['suspend', 'unsuspend'];
 		}
 		return params;
 	}),

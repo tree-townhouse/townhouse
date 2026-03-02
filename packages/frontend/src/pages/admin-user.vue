@@ -103,7 +103,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<MkButton v-if="user.host == null && !info.isDirectlySilenced" @click="silenceUser"><i class="ti ti-volume-off"></i> {{ i18n.ts.silence }}</MkButton>
 							<MkButton v-if="user.host == null && info.isDirectlySilenced" @click="unsilenceUser"><i class="ti ti-volume"></i> {{ i18n.ts.unsilence }}</MkButton>
 							<MkButton v-if="user.host == null" @click="warnUser"><i class="ti ti-alert-triangle"></i> {{ i18n.ts.warn }}</MkButton>
-							<MkButton v-if="$i.isAdmin && info.warningCount > 0" danger @click="resetWarningCount"><i class="ti ti-alert-triangle-off"></i> {{ i18n.ts.resetWarning }}</MkButton>
 						</div>
 						<div v-if="info.isDirectlySilenced || info.warningCount > 0" :class="$style.modStatus">
 							<span v-if="info.isDirectlySilenced && info.silencedUntil"><i class="ti ti-volume-off"></i> {{ i18n.tsx.silencedUntil({ date: new Date(info.silencedUntil).toLocaleString() }) }}</span>
@@ -467,19 +466,6 @@ async function warnUser() {
 	await os.apiWithDialog('admin/warn-user', {
 		userId: user.value.id,
 		reason: reason ?? '',
-	});
-	await refreshUser();
-}
-
-async function resetWarningCount() {
-	const confirm = await os.confirm({
-		type: 'warning',
-		text: i18n.ts.resetWarningConfirm,
-	});
-	if (confirm.canceled) return;
-
-	await os.apiWithDialog('admin/reset-user-warning', {
-		userId: user.value.id,
 	});
 	await refreshUser();
 }

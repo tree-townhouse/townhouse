@@ -67,6 +67,7 @@ export const paramDef = {
 		sinceDate: { type: 'integer' },
 		untilDate: { type: 'integer' },
 		type: { type: 'string', nullable: true },
+		types: { type: 'array', items: { type: 'string' }, nullable: true },
 		userId: { type: 'string', format: 'misskey:id', nullable: true },
 		targetUserId: { type: 'string', format: 'misskey:id', nullable: true },
 		search: { type: 'string', nullable: true },
@@ -88,6 +89,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.type != null) {
 				query.andWhere('log.type = :type', { type: ps.type });
+			}
+
+			if (ps.types != null && ps.types.length > 0) {
+				query.andWhere('log.type IN (:...types)', { types: ps.types });
 			}
 
 			if (ps.userId != null) {
