@@ -143,6 +143,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<i v-else class="ti ti-file-info"></i>
 						</span>
 						<span :class="$style.logType">{{ logTypeLabel(log.type) }}</span>
+						<template v-if="log.targetUser">
+							<span :class="$style.logHeaderTarget">
+								(<MkAvatar :user="log.targetUser" :class="$style.logTargetAvatar"/>
+								<MkA v-user-preview="log.targetUser.id" :to="userPage(log.targetUser)" class="_link">@{{ log.targetUser.username }}</MkA>)
+							</span>
+						</template>
 						<span :class="$style.logTime"><MkTime :time="log.createdAt" mode="detail"/></span>
 					</div>
 
@@ -150,13 +156,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div :class="$style.logModerator">
 							{{ i18n.ts.moderator }}: <MkA v-user-preview="log.user.id" :to="userPage(log.user)" class="_link">@{{ log.user.username }}</MkA>
 						</div>
-
-						<template v-if="log.targetUser">
-							<div :class="$style.logTarget">
-								{{ i18n.ts.target }}: <MkAvatar :user="log.targetUser" :class="$style.logTargetAvatar"/>
-								<MkA v-user-preview="log.targetUser.id" :to="userPage(log.targetUser)" class="_link">@{{ log.targetUser.username }}</MkA>
-							</div>
-						</template>
 
 						<div v-if="log.info.noteId" :class="$style.logDetail">
 							{{ i18n.ts.note }}: <MkA :to="`/notes/${log.info.noteId}`" class="_link">{{ log.info.noteId }}</MkA>
@@ -701,12 +700,20 @@ definePage(() => ({
 
 .logType {
 	font-weight: bold;
-	flex: 1;
+}
+
+.logHeaderTarget {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	flex-shrink: 0;
 }
 
 .logTime {
 	font-size: 0.85em;
 	opacity: 0.7;
+	margin-left: auto;
+	flex-shrink: 0;
 }
 
 .logBody {
@@ -719,13 +726,6 @@ definePage(() => ({
 
 .logModerator {
 	opacity: 0.7;
-	font-size: 0.9em;
-}
-
-.logTarget {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
 	font-size: 0.9em;
 }
 
