@@ -88,12 +88,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkButton primary rounded @click="banUser()"><i class="ti ti-plus"></i> {{ i18n.ts.banUser }}</MkButton>
 
 					<div v-if="bannedUsers.length === 0" style="text-align: center; opacity: 0.5;">{{ i18n.ts.noBannedUsers }}</div>
-					<div v-for="ban in bannedUsers" :key="ban.userId" :class="$style.moderatorItem">
-						<MkAvatar :user="ban.user" :class="$style.moderatorAvatar"/>
-						<MkUserName :user="ban.user" :class="$style.moderatorName"/>
-						<span v-if="ban.expiresAt" style="opacity: 0.7; font-size: 0.85em; margin-left: 0.5em;">{{ banRemainingLabel(ban.expiresAt) }}</span>
-						<span v-else style="opacity: 0.7; font-size: 0.85em; margin-left: 0.5em;">{{ i18n.ts.banPermanent }}</span>
-						<MkButton danger small @click="unbanUser(ban)"><i class="ti ti-x"></i></MkButton>
+					<div v-for="ban in bannedUsers" :key="ban.userId" :class="$style.banItem">
+						<div :class="$style.moderatorItem">
+							<MkAvatar :user="ban.user" :class="$style.moderatorAvatar"/>
+							<MkUserName :user="ban.user" :class="$style.moderatorName"/>
+							<span v-if="ban.expiresAt" style="opacity: 0.7; font-size: 0.85em; margin-left: 0.5em;">{{ banRemainingLabel(ban.expiresAt) }}</span>
+							<span v-else style="opacity: 0.7; font-size: 0.85em; margin-left: 0.5em;">{{ i18n.ts.banPermanent }}</span>
+							<MkButton danger small @click="unbanUser(ban)"><i class="ti ti-x"></i></MkButton>
+						</div>
+						<div v-if="ban.reason" :class="$style.banReason"><i class="ti ti-message-report"></i> {{ ban.reason }}</div>
 					</div>
 				</div>
 			</MkFolder>
@@ -133,21 +136,25 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #right="{ event }">
 					<div style="margin: 4px 0;">
 						<div :class="$style.logAction">
-							<MkA v-user-preview="event.user.id" :to="userPage(event.user)" :class="$style.logUser">
-								<MkUserName :user="event.user"/>
-							</MkA>
-							<span>{{ logTypeLabel(event.type) }}</span>
+							<MkA v-user-preview="event.user.id" :to="userPage(event.user)" :class="$style.logUser">@{{ event.user.username }}</MkA>
+							<span :class="logTypeColorClass(event.type)">{{ logTypeLabel(event.type) }}</span>
 							<template v-if="event.targetUser">
 								<span>(</span>
 								<MkA v-user-preview="event.targetUser.id" :to="userPage(event.targetUser)" :class="$style.logUser">
 									<MkAvatar :user="event.targetUser" :class="$style.logAvatar"/>
-									<MkUserName :user="event.targetUser"/>
+									@{{ event.targetUser.username }}
 								</MkA>
 								<span>)</span>
 							</template>
 						</div>
 						<div v-if="event.info.noteId" style="opacity: 0.7; font-size: 0.85em;">
 							{{ i18n.ts.note }}: <MkA :to="`/notes/${event.info.noteId}`" class="_link">{{ event.info.noteId }}</MkA>
+						</div>
+						<div v-if="event.info.reason" style="opacity: 0.7; font-size: 0.85em;">
+							<i class="ti ti-message-report"></i> {{ event.info.reason }}
+						</div>
+						<div style="opacity: 0.5; font-size: 0.8em;">
+							<MkTime :time="event.createdAt" mode="detail"/>
 						</div>
 					</div>
 				</template>
@@ -368,6 +375,19 @@ function logTypeLabel(type: string): string {
 	}
 }
 
+function logTypeColorClass(type: string): string {
+	switch (type) {
+		case 'deleteNote': return $style.logColorRed;
+		case 'pinNote': return $style.logColorGreen;
+		case 'unpinNote': return $style.logColorYellow;
+		case 'addModerator': return $style.logColorGreen;
+		case 'removeModerator': return $style.logColorRed;
+		case 'banUser': return $style.logColorRed;
+		case 'unbanUser': return $style.logColorGreen;
+		default: return '';
+	}
+}
+
 fetchChannel();
 
 watch(tab, (newTab) => {
@@ -491,6 +511,12 @@ async function banUser() {
 	});
 	if (canceled) return;
 
+	const { canceled: reasonCanceled, result: reason } = await os.inputText({
+		title: i18n.ts.banReason,
+		placeholder: i18n.ts.optional,
+	});
+	if (reasonCanceled) return;
+
 	const expiresAt = period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
 		: period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
 		: period === 'oneMonth' ? Date.now() + (1000 * 60 * 60 * 24 * 30)
@@ -500,6 +526,7 @@ async function banUser() {
 		channelId: props.channelId,
 		userId: user.id,
 		expiresAt,
+		reason: reason ?? '',
 	});
 
 	await fetchBannedUsers();
@@ -650,5 +677,32 @@ definePage(() => ({
 .logOrderSelect {
 	flex: 1;
 	margin-right: 6px;
+}
+
+.logColorRed {
+	color: #ff2a2a;
+	font-weight: bold;
+}
+
+.logColorGreen {
+	color: #2ade5f;
+	font-weight: bold;
+}
+
+.logColorYellow {
+	color: #daa520;
+	font-weight: bold;
+}
+
+.banItem {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.banReason {
+	opacity: 0.7;
+	font-size: 0.85em;
+	margin-left: 34px;
 }
 </style>

@@ -1321,9 +1321,12 @@ async function post(ev?: MouseEvent) {
 		if (err.code === 'YOUR_ACCOUNT_RESTRICTED') {
 			// handled by global interceptor in misskey-api.ts
 		} else if (err.code === 'BANNED_FROM_CHANNEL') {
+			const reason = err.info?.reason;
 			os.alert({
 				type: 'error',
-				text: i18n.ts.youAreBannedFromThisChannel,
+				text: reason
+					? `${i18n.ts.youAreBannedFromThisChannel}\n${i18n.ts.reason}: ${reason}`
+					: i18n.ts.youAreBannedFromThisChannel,
 			});
 		} else {
 			os.alert({

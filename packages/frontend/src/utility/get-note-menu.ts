@@ -694,6 +694,12 @@ export function getNoteMenu(props: {
 								});
 								if (canceled) return;
 
+								const { canceled: reasonCanceled, result: reason } = await os.inputText({
+									title: i18n.ts.banReason,
+									placeholder: i18n.ts.optional,
+								});
+								if (reasonCanceled) return;
+
 								const expiresAt = period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
 									: period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
 									: period === 'oneMonth' ? Date.now() + (1000 * 60 * 60 * 24 * 30)
@@ -703,6 +709,7 @@ export function getNoteMenu(props: {
 									channelId: appearNote.channel!.id,
 									userId: appearNote.userId,
 									expiresAt,
+									reason: reason ?? '',
 								});
 							},
 						});

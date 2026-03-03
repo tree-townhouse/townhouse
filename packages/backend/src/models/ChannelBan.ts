@@ -56,4 +56,11 @@ export class MiChannelBan {
 		comment: 'When the ban expires. Null means permanent.',
 	})
 	public expiresAt: Date | null;
+
+	@Column('varchar', {
+		length: 512,
+		default: '',
+		comment: 'The reason for the ban.',
+	})
+	public reason: string;
 }

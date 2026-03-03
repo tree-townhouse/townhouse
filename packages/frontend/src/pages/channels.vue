@@ -45,6 +45,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</MkPagination>
 		</div>
+		<div v-else-if="tab === 'all'">
+			<MkPagination v-slot="{items}" :paginator="allPaginator">
+				<div :class="$style.root">
+					<MkChannelPreview v-for="channel in items" :key="channel.id" :channel="channel"/>
+				</div>
+			</MkPagination>
+		</div>
 		<div v-else-if="tab === 'owned'" class="_gaps">
 			<MkButton link primary rounded to="/channels/new"><i class="ti ti-plus"></i> {{ i18n.ts.createNew }}</MkButton>
 			<MkPagination v-slot="{items}" :paginator="ownedPaginator">
@@ -103,6 +110,13 @@ const favoritesPaginator = markRaw(new Paginator('channels/my-favorites', {
 const followingPaginator = markRaw(new Paginator('channels/followed', {
 	limit: 10,
 }));
+const allPaginator = markRaw(new Paginator('channels/search', {
+	limit: 10,
+	params: {
+		query: '',
+		type: 'nameAndDescription',
+	},
+}));
 const ownedPaginator = markRaw(new Paginator('channels/owned', {
 	limit: 10,
 }));
@@ -148,6 +162,10 @@ const headerTabs = computed(() => [{
 	key: 'following',
 	title: i18n.ts._channel.following,
 	icon: 'ti ti-eye',
+}, {
+	key: 'all',
+	title: i18n.ts._channel.all,
+	icon: 'ti ti-list',
 }, {
 	key: 'owned',
 	title: i18n.ts._channel.owned,

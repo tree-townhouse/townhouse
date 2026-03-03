@@ -244,7 +244,7 @@ export class ChannelModerationService {
 	 * Ban a user from a channel
 	 */
 	@bindThis
-	public async banUser(channelId: MiChannel['id'], bannerId: MiUser['id'], targetUserId: MiUser['id'], expiresAt?: Date | null): Promise<void> {
+	public async banUser(channelId: MiChannel['id'], bannerId: MiUser['id'], targetUserId: MiUser['id'], expiresAt?: Date | null, reason?: string): Promise<void> {
 		// Check permission (channel admin/moderator or server admin)
 		const isServerAdmin = await this.roleService.isAdministrator({ id: bannerId });
 		if (!isServerAdmin && !await this.hasChannelManagePermission(channelId, bannerId)) {
@@ -273,8 +273,9 @@ export class ChannelModerationService {
 			await this.channelBansRepository.update(existing.id, {
 				expiresAt: expiresAt ?? null,
 				bannedById: bannerId,
+				reason: reason ?? '',
 			});
-			await this.log(channelId, bannerId, 'banUser', { targetUserId, expiresAt: expiresAt ?? null });
+			await this.log(channelId, bannerId, 'banUser', { targetUserId, expiresAt: expiresAt ?? null, reason: reason ?? '' });
 			return;
 		}
 
@@ -284,6 +285,7 @@ export class ChannelModerationService {
 			userId: targetUserId,
 			bannedById: bannerId,
 			expiresAt: expiresAt ?? null,
+			reason: reason ?? '',
 		});
 
 		// Also remove moderator status if the user was a moderator
@@ -292,7 +294,7 @@ export class ChannelModerationService {
 			userId: targetUserId,
 		});
 
-		await this.log(channelId, bannerId, 'banUser', { targetUserId, expiresAt: expiresAt ?? null });
+		await this.log(channelId, bannerId, 'banUser', { targetUserId, expiresAt: expiresAt ?? null, reason: reason ?? '' });
 	}
 
 	/**
@@ -317,35 +319,35 @@ export class ChannelModerationService {
 	 * Check if a user is banned from a channel (respecting expiration)
 	 */
 	@bindThis
-	public async isBanned(channelId: MiChannel['id'], userId: MiUser['id']): Promise<boolean> {
+	public async isBanned(channelId: MiChannel['id'], userId: MiUser['id']): Promise<{ banned: boolean; reason?: string }> {
 		const ban = await this.channelBansRepository.findOneBy({ channelId, userId });
-		if (!ban) return false;
+		if (!ban) return { banned: false };
 
 		// If ban has expired, remove it and return false
 		if (ban.expiresAt && ban.expiresAt.getTime() < Date.now()) {
 			await this.channelBansRepository.delete(ban.id);
-			return false;
+			return { banned: false };
 		}
 
-		return true;
+		return { banned: true, reason: ban.reason || undefined };
 	}
 
 	/**
 	 * Get banned users for a channel (excluding expired bans)
 	 */
 	@bindThis
-	public async getBannedUsers(channelId: MiChannel['id']): Promise<{ userId: string; bannedById: string; expiresAt: Date | null }[]> {
+	public async getBannedUsers(channelId: MiChannel['id']): Promise<{ userId: string; bannedById: string; expiresAt: Date | null; reason: string }[]> {
 		const bans = await this.channelBansRepository.findBy({ channelId });
 
 		// Filter out expired bans and clean them up
-		const activeBans: { userId: string; bannedById: string; expiresAt: Date | null }[] = [];
+		const activeBans: { userId: string; bannedById: string; expiresAt: Date | null; reason: string }[] = [];
 		const expiredBanIds: string[] = [];
 
 		for (const ban of bans) {
 			if (ban.expiresAt && ban.expiresAt.getTime() < Date.now()) {
 				expiredBanIds.push(ban.id);
 			} else {
-				activeBans.push({ userId: ban.userId, bannedById: ban.bannedById, expiresAt: ban.expiresAt });
+				activeBans.push({ userId: ban.userId, bannedById: ban.bannedById, expiresAt: ban.expiresAt, reason: ban.reason ?? '' });
 			}
 		}
 

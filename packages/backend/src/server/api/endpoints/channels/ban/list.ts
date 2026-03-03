@@ -37,6 +37,10 @@ export const meta = {
 					optional: false, nullable: true,
 					format: 'date-time',
 				},
+				reason: {
+					type: 'string',
+					optional: false, nullable: false,
+				},
 				user: {
 					type: 'object',
 					optional: false, nullable: false,
@@ -78,12 +82,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			const bans = await this.channelModerationService.getBannedUsers(ps.channelId);
-			return await Promise.all(bans.map(async (ban: { userId: string; bannedById: string; expiresAt: Date | null }) => {
+			return await Promise.all(bans.map(async (ban: { userId: string; bannedById: string; expiresAt: Date | null; reason: string }) => {
 				const user = await this.userEntityService.pack(ban.userId, me);
 				return {
 					userId: ban.userId,
 					bannedById: ban.bannedById,
 					expiresAt: ban.expiresAt?.toISOString() ?? null,
+					reason: ban.reason,
 					user,
 				};
 			}));

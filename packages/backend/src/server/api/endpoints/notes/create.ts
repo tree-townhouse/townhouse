@@ -377,7 +377,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					} else if (err.id === 'bfa3905b-25f5-4894-b430-da331a490e4b') {
 						throw new ApiError(meta.errors.noSuchChannel);
 					} else if (err.id === 'd8e5e1e0-1234-4567-890a-bcdef0123456') {
-						throw new ApiError(meta.errors.bannedFromChannel);
+						throw new ApiError(meta.errors.bannedFromChannel, { reason: err.message });
 					}
 				}
 				throw err;

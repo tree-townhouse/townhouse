@@ -40,6 +40,7 @@ export const paramDef = {
 		channelId: { type: 'string', format: 'misskey:id' },
 		userId: { type: 'string', format: 'misskey:id' },
 		expiresAt: { type: 'integer', nullable: true, description: 'Expiration timestamp in milliseconds. Null or omitted for permanent ban.' },
+		reason: { type: 'string', maxLength: 512, default: '' },
 	},
 	required: ['channelId', 'userId'],
 } as const;
@@ -52,7 +53,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		super(meta, paramDef, async (ps, me) => {
 			const expiresAt = ps.expiresAt ? new Date(ps.expiresAt) : null;
 			try {
-				await this.channelModerationService.banUser(ps.channelId, me.id, ps.userId, expiresAt);
+				await this.channelModerationService.banUser(ps.channelId, me.id, ps.userId, expiresAt, ps.reason ?? '');
 			} catch (e: any) {
 				switch (e.message) {
 					case 'ACCESS_DENIED': throw new ApiError(meta.errors.accessDenied);
