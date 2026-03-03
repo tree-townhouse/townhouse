@@ -170,6 +170,7 @@ export const paramDef = {
 		manifestJsonOverride: { type: 'string' },
 		enableFanoutTimeline: { type: 'boolean' },
 		enableFanoutTimelineDbFallback: { type: 'boolean' },
+		requireChannelApproval: { type: 'boolean' },
 		perLocalUserUserTimelineCacheMax: { type: 'integer' },
 		perRemoteUserUserTimelineCacheMax: { type: 'integer' },
 		perUserHomeTimelineCacheMax: { type: 'integer' },
@@ -797,6 +798,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.enableFanoutTimelineDbFallback !== undefined) {
 				set.enableFanoutTimelineDbFallback = ps.enableFanoutTimelineDbFallback;
+			}
+
+			if (ps.requireChannelApproval !== undefined) {
+				set.requireChannelApproval = ps.requireChannelApproval;
 			}
 
 			if (ps.perLocalUserUserTimelineCacheMax !== undefined) {

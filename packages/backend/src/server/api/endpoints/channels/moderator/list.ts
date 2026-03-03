@@ -5,8 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { ChannelsRepository } from '@/models/_.js';
-import { ChannelEntityService } from '@/core/entities/ChannelEntityService.js';
+import type { ChannelModeratorsRepository, UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 
 export const meta = {
@@ -20,34 +19,44 @@ export const meta = {
 		items: {
 			type: 'object',
 			optional: false, nullable: false,
-			ref: 'Channel',
+			properties: {
+				userId: {
+					type: 'string',
+					optional: false, nullable: false,
+				},
+				status: {
+					type: 'string',
+					optional: false, nullable: false,
+				},
+			},
 		},
 	},
 } as const;
 
 export const paramDef = {
 	type: 'object',
-	properties: {},
-	required: [],
+	properties: {
+		channelId: { type: 'string', format: 'misskey:id' },
+	},
+	required: ['channelId'],
 } as const;
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.channelsRepository)
-		private channelsRepository: ChannelsRepository,
-
-		private channelEntityService: ChannelEntityService,
+		@Inject(DI.channelModeratorsRepository)
+		private channelModeratorsRepository: ChannelModeratorsRepository,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const query = this.channelsRepository.createQueryBuilder('channel')
-				.where('channel.lastNotedAt IS NOT NULL')
-				.andWhere('channel.isApproved = TRUE')
-				.orderBy('channel.lastNotedAt', 'DESC');
+			const moderators = await this.channelModeratorsRepository.findBy({
+				channelId: ps.channelId,
+				status: 'accepted',
+			});
 
-			const channels = await query.limit(10).getMany();
-
-			return await Promise.all(channels.map(x => this.channelEntityService.pack(x, me)));
+			return moderators.map((m: { userId: string; status: string }) => ({
+				userId: m.userId,
+				status: m.status,
+			}));
 		});
 	}
 }

@@ -23,6 +23,8 @@ import {
 	MiChannelFavorite,
 	MiChannelFollowing,
 	MiChannelMuting,
+	MiChannelModerator,
+	MiChannelBan,
 	MiClip,
 	MiClipFavorite,
 	MiClipNote,
@@ -445,6 +447,18 @@ const $channelMutingRepository: Provider = {
 	inject: [DI.db],
 };
 
+const $channelModeratorsRepository: Provider = {
+	provide: DI.channelModeratorsRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiChannelModerator).extend(miRepository as MiRepository<MiChannelModerator>),
+	inject: [DI.db],
+};
+
+const $channelBansRepository: Provider = {
+	provide: DI.channelBansRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiChannelBan).extend(miRepository as MiRepository<MiChannelBan>),
+	inject: [DI.db],
+};
+
 const $registryItemsRepository: Provider = {
 	provide: DI.registryItemsRepository,
 	useFactory: (db: DataSource) => db.getRepository(MiRegistryItem).extend(miRepository as MiRepository<MiRegistryItem>),
@@ -627,6 +641,8 @@ const $noteHistoryRepository: Provider = {
 		$channelFollowingsRepository,
 		$channelFavoritesRepository,
 		$channelMutingRepository,
+		$channelModeratorsRepository,
+		$channelBansRepository,
 		$registryItemsRepository,
 		$webhooksRepository,
 		$systemWebhooksRepository,
@@ -708,6 +724,8 @@ const $noteHistoryRepository: Provider = {
 		$channelFollowingsRepository,
 		$channelFavoritesRepository,
 		$channelMutingRepository,
+		$channelModeratorsRepository,
+		$channelBansRepository,
 		$registryItemsRepository,
 		$webhooksRepository,
 		$systemWebhooksRepository,

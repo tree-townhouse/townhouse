@@ -298,7 +298,7 @@ export class NoteDraftService {
 		//#region channel
 		let channel: MiChannel | null = null;
 		if (data.channelId != null) {
-			channel = await this.channelsRepository.findOneBy({ id: data.channelId, isArchived: false });
+			channel = await this.channelsRepository.findOneBy({ id: data.channelId, isApproved: true });
 
 			if (channel == null) {
 				throw new IdentifiableError('6815399a-6f13-4069-b60d-ed5156249d12', 'No such channel');

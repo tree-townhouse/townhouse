@@ -57,7 +57,7 @@ export const packedChannelSchema = {
 			type: 'string',
 			optional: false, nullable: false,
 		},
-		isArchived: {
+		isApproved: {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
@@ -86,6 +86,18 @@ export const packedChannelSchema = {
 			optional: true, nullable: false,
 		},
 		isMuting: {
+			type: 'boolean',
+			optional: true, nullable: false,
+		},
+		isChannelAdmin: {
+			type: 'boolean',
+			optional: true, nullable: false,
+		},
+		isChannelModerator: {
+			type: 'boolean',
+			optional: true, nullable: false,
+		},
+		isBanned: {
 			type: 'boolean',
 			optional: true, nullable: false,
 		},

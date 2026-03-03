@@ -16,6 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div><i class="ti ti-users ti-fw"></i><I18n :src="i18n.ts._channel.usersCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.usersCount }}</b></template></I18n></div>
 						<div><i class="ti ti-pencil ti-fw"></i><I18n :src="i18n.ts._channel.notesCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.notesCount }}</b></template></I18n></div>
 						<div v-if="$i != null && channel != null && $i.id === channel.userId" style="color: var(--MI_THEME-warn)"><i class="ti ti-user-star ti-fw"></i><span style="margin-left: 4px;">{{ i18n.ts.youAreAdmin }}</span></div>
+					<div v-else-if="$i != null && channel != null && channel.isChannelModerator" style="color: var(--MI_THEME-accent)"><i class="ti ti-shield-check ti-fw"></i><span style="margin-left: 4px;">{{ i18n.ts.youAreModerator }}</span></div>
 					</div>
 					<div v-if="channel.isSensitive" :class="$style.sensitiveIndicator">{{ i18n.ts.sensitive }}</div>
 					<div :class="$style.bannerFade"></div>
@@ -33,7 +34,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFoldableSection>
 		</div>
 		<div v-if="channel && tab === 'timeline'" class="_gaps">
-			<MkInfo v-if="channel.isArchived" warn>{{ i18n.ts.thisChannelArchived }}</MkInfo>
+			<MkInfo v-if="!channel.isApproved" warn>{{ i18n.ts.thisChannelPendingApproval }}</MkInfo>
+			<MkInfo v-if="channel.isBanned" warn>{{ i18n.ts.youAreBannedFromThisChannel }}</MkInfo>
 
 			<!-- スマホ・タブレットの場合、キーボードが表示されると投稿が見づらくなるので、デスクトップ場合のみ自動でフォーカスを当てる -->
 			<MkPostForm v-if="$i && prefer.r.showFixedPostFormInChannel.value" :channel="channel" class="post-form _panel" fixed :autofocus="deviceKind === 'desktop'"/>
@@ -312,10 +314,10 @@ const headerActions = computed(() => {
 			});
 		}
 
-		if (($i && $i.id === channel.value.userId) || iAmModerator) {
+		if (($i && $i.id === channel.value.userId) || iAmModerator || channel.value.isChannelModerator) {
 			headerItems.push({
 				icon: 'ti ti-settings',
-				text: i18n.ts.edit,
+				text: i18n.ts.channelSettings,
 				handler: edit,
 			});
 		}

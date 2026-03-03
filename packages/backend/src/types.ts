@@ -145,6 +145,8 @@ export const moderationLogTypes = [
 	'resetWarning',
 	'editModerationLog',
 	'deleteModerationLog',
+	'deleteChannel',
+	'approveChannel',
 ] as const;
 
 export type ModerationLogPayloads = {
@@ -478,6 +480,14 @@ export type ModerationLogPayloads = {
 		logId: string;
 		logType: string;
 		logInfo: Record<string, any>;
+	};
+	deleteChannel: {
+		channelId: string;
+		channelName: string;
+	};
+	approveChannel: {
+		channelId: string;
+		channelName: string;
 	};
 };
 

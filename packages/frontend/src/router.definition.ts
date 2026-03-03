@@ -532,6 +532,10 @@ export const ROUTE_DEF = [{
 		name: 'approvals',
 		component: page(() => import('./pages/admin/approvals.vue')),
 	}, {
+		path: '/channels',
+		name: 'channels',
+		component: page(() => import('@/pages/admin/channels.vue')),
+	}, {
 		path: '/',
 		component: page(() => import('@/pages/_empty_.vue')),
 	}],

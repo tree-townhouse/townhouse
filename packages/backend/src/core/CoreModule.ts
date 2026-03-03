@@ -45,6 +45,7 @@ import { ModerationLogService } from './ModerationLogService.js';
 import { NoteCreateService } from './NoteCreateService.js';
 import { NoteUpdateService } from './NoteUpdateService.js';
 import { NoteDeleteService } from './NoteDeleteService.js';
+import { ChannelModerationService } from './ChannelModerationService.js';
 import { NotePiningService } from './NotePiningService.js';
 import { NoteDraftService } from './NoteDraftService.js';
 import { NotificationService } from './NotificationService.js';
@@ -165,7 +166,7 @@ import { NoteHistorySerivce } from './NoteHistoryService.js';
 import { NoteHistoryEntityService } from './entities/NoteHistoryEntityService.js';
 import type { Provider } from '@nestjs/common';
 
-//#region ?�字?�ベ?�ス?�のinjection??循環?�照対応??��??
+//#region ?�字?�ベ?�ス?�のinjection??循環?�照対応??��??
 const $LoggerService: Provider = { provide: 'LoggerService', useExisting: LoggerService };
 const $AbuseReportService: Provider = { provide: 'AbuseReportService', useExisting: AbuseReportService };
 const $AbuseReportNotificationService: Provider = { provide: 'AbuseReportNotificationService', useExisting: AbuseReportNotificationService };
@@ -197,6 +198,7 @@ const $ModerationLogService: Provider = { provide: 'ModerationLogService', useEx
 const $NoteCreateService: Provider = { provide: 'NoteCreateService', useExisting: NoteCreateService };
 const $NoteUpdateService: Provider = { provide: 'NoteUpdateService', useExisting: NoteUpdateService };
 const $NoteDeleteService: Provider = { provide: 'NoteDeleteService', useExisting: NoteDeleteService };
+const $ChannelModerationService: Provider = { provide: 'ChannelModerationService', useExisting: ChannelModerationService };
 const $NotePiningService: Provider = { provide: 'NotePiningService', useExisting: NotePiningService };
 const $NoteDraftService: Provider = { provide: 'NoteDraftService', useExisting: NoteDraftService };
 const $NotificationService: Provider = { provide: 'NotificationService', useExisting: NotificationService };
@@ -357,8 +359,7 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		ModerationLogService,
 		NoteCreateService,
 		NoteUpdateService,
-		NoteDeleteService,
-		NotePiningService,
+		NoteDeleteService,		ChannelModerationService,		NotePiningService,
 		NoteDraftService,
 		NotificationService,
 		PollService,
@@ -484,7 +485,7 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		ApEventService,
 		QueueService,
 
-		//#region ?�字?�ベ?�ス?�のinjection??循環?�照対応??��??
+		//#region ?�字?�ベ?�ス?�のinjection??循環?�照対応??��??
 		$LoggerService,
 		$AbuseReportService,
 		$AbuseReportNotificationService,
@@ -799,7 +800,7 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		ApEventService,
 		QueueService,
 
-		//#region ?�字?�ベ?�ス?�のinjection??循環?�照対応??��??
+		//#region ?�字?�ベ?�ス?�のinjection??循環?�照対応??��??
 		$LoggerService,
 		$AbuseReportService,
 		$AbuseReportNotificationService,
@@ -831,6 +832,7 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		$NoteCreateService,
 		$NoteUpdateService,
 		$NoteDeleteService,
+		$ChannelModerationService,
 		$NotePiningService,
 		$NoteDraftService,
 		$NotificationService,

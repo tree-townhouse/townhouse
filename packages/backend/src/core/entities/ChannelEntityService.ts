@@ -14,12 +14,15 @@ import type {
 	MiDriveFile,
 	MiNote,
 	NotesRepository,
+	ChannelModeratorsRepository,
+	ChannelBansRepository,
 } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiChannel } from '@/models/Channel.js';
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
+import { ChannelModerationService } from '@/core/ChannelModerationService.js';
 import { DriveFileEntityService } from './DriveFileEntityService.js';
 import { NoteEntityService } from './NoteEntityService.js';
 
@@ -38,8 +41,13 @@ export class ChannelEntityService {
 		private notesRepository: NotesRepository,
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
+		@Inject(DI.channelModeratorsRepository)
+		private channelModeratorsRepository: ChannelModeratorsRepository,
+		@Inject(DI.channelBansRepository)
+		private channelBansRepository: ChannelBansRepository,
 		private noteEntityService: NoteEntityService,
 		private driveFileEntityService: DriveFileEntityService,
+		private channelModerationService: ChannelModerationService,
 		private idService: IdService,
 	) {
 	}
@@ -114,7 +122,7 @@ export class ChannelEntityService {
 			bannerId: channel.bannerId,
 			pinnedNoteIds: channel.pinnedNoteIds,
 			color: channel.color,
-			isArchived: channel.isArchived,
+			isApproved: channel.isApproved,
 			usersCount: channel.usersCount,
 			notesCount: channel.notesCount,
 			isSensitive: channel.isSensitive,
@@ -125,6 +133,9 @@ export class ChannelEntityService {
 				isFavorited,
 				isMuting,
 				hasUnreadNote: false, // 後方互換性のため
+				isChannelAdmin: channel.userId === me.id,
+				isChannelModerator: await this.channelModerationService.isChannelModerator(channel.id, me.id),
+				isBanned: await this.channelModerationService.isBanned(channel.id, me.id),
 			} : {}),
 
 			...(detailed ? {

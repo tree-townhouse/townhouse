@@ -979,6 +979,12 @@ export class MiMeta {
 		comment: 'Predefined moderation reasons. Each entry has text and type (all/warn/silence/suspend/restrict).',
 	})
 	public moderationReasons: { text: string; type: 'all' | 'warn' | 'silence' | 'suspend' | 'restrict' }[];
+
+	@Column('boolean', {
+		default: false,
+		comment: 'Whether channel creation requires approval from server admin.',
+	})
+	public requireChannelApproval: boolean;
 }
 
 export type SoftwareSuspension = {

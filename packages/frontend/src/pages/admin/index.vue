@@ -139,6 +139,11 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 		to: '/admin/approvals',
 		active: currentPage.value?.route.name === 'approvals',
 	}, {
+		icon: 'ti ti-device-tv',
+		text: i18n.ts.channel,
+		to: '/admin/channels',
+		active: currentPage.value?.route.name === 'channels',
+	}, {
 		icon: 'ti ti-badges',
 		text: i18n.ts.roles,
 		to: '/admin/roles',

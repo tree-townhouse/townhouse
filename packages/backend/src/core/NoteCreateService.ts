@@ -53,6 +53,7 @@ import { FeaturedService } from '@/core/FeaturedService.js';
 import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { UserBlockingService } from '@/core/UserBlockingService.js';
+import { ChannelModerationService } from '@/core/ChannelModerationService.js';
 import { isReply } from '@/misc/is-reply.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
@@ -231,6 +232,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		private utilityService: UtilityService,
 		private userBlockingService: UserBlockingService,
 		private cacheService: CacheService,
+		private channelModerationService: ChannelModerationService,
 	) {
 		this.updateNotesCountQueue = new CollapsedQueue(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
 	}
@@ -383,10 +385,15 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 		let channel: MiChannel | null = null;
 		if (data.channelId != null) {
-			channel = await this.channelsRepository.findOneBy({ id: data.channelId, isArchived: false });
+			channel = await this.channelsRepository.findOneBy({ id: data.channelId, isApproved: true });
 
 			if (channel == null) {
 				throw new IdentifiableError('bfa3905b-25f5-4894-b430-da331a490e4b', 'No such channel');
+			}
+
+			// Check if the user is banned from this channel
+			if (await this.channelModerationService.isBanned(channel.id, user.id)) {
+				throw new IdentifiableError('d8e5e1e0-1234-4567-890a-bcdef0123456', 'You are banned from this channel');
 			}
 		}
 

@@ -5214,6 +5214,7 @@ export type components = {
             pinnedNoteIds: string[];
             color: string;
             isArchived: boolean;
+            isApproved: boolean;
             usersCount: number;
             notesCount: number;
             isSensitive: boolean;
@@ -5221,6 +5222,9 @@ export type components = {
             isFollowing?: boolean;
             isFavorited?: boolean;
             isMuting?: boolean;
+            isChannelAdmin?: boolean;
+            isChannelModerator?: boolean;
+            isBanned?: boolean;
             pinnedNotes?: components['schemas']['Note'][];
         };
         QueueCount: {
@@ -16576,7 +16580,6 @@ export interface operations {
                     description?: string | null;
                     /** Format: misskey:id */
                     bannerId?: string | null;
-                    isArchived?: boolean | null;
                     pinnedNoteIds?: string[];
                     color?: string;
                     isSensitive?: boolean | null;

@@ -6,16 +6,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { ChannelsRepository } from '@/models/_.js';
-import { QueryService } from '@/core/QueryService.js';
 import { ChannelEntityService } from '@/core/entities/ChannelEntityService.js';
 import { DI } from '@/di-symbols.js';
 
 export const meta = {
-	tags: ['channels', 'account'],
+	tags: ['admin', 'channels'],
 
 	requireCredential: true,
-
-	kind: 'read:channels',
+	requireAdmin: true,
+	kind: 'read:admin:channels',
 
 	res: {
 		type: 'array',
@@ -31,11 +30,8 @@ export const meta = {
 export const paramDef = {
 	type: 'object',
 	properties: {
-		sinceId: { type: 'string', format: 'misskey:id' },
-		untilId: { type: 'string', format: 'misskey:id' },
-		sinceDate: { type: 'integer' },
-		untilDate: { type: 'integer' },
-		limit: { type: 'integer', minimum: 1, maximum: 100, default: 5 },
+		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+		offset: { type: 'integer', minimum: 0, default: 0 },
 	},
 	required: [],
 } as const;
@@ -47,18 +43,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private channelsRepository: ChannelsRepository,
 
 		private channelEntityService: ChannelEntityService,
-		private queryService: QueryService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const query = this.queryService.makePaginationQuery(this.channelsRepository.createQueryBuilder('channel'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
-				.andWhere('channel.isApproved = TRUE')
-				.andWhere({ userId: me.id });
+			const channels = await this.channelsRepository.find({
+				where: { isApproved: false },
+				take: ps.limit,
+				skip: ps.offset,
+				order: { id: 'DESC' },
+			});
 
-			const channels = await query
-				.limit(ps.limit)
-				.getMany();
-
-			return await Promise.all(channels.map(x => this.channelEntityService.pack(x, me)));
+			return await this.channelEntityService.packMany(channels, me);
 		});
 	}
 }

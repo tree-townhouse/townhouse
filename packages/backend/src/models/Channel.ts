@@ -71,9 +71,10 @@ export class MiChannel {
 
 	@Index()
 	@Column('boolean', {
-		default: false,
+		default: true,
+		comment: 'Whether the channel is approved (relevant when requireChannelApproval is enabled).',
 	})
-	public isArchived: boolean;
+	public isApproved: boolean;
 
 	@Index()
 	@Column('integer', {

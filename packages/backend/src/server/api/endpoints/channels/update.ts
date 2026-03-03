@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { DriveFilesRepository, ChannelsRepository } from '@/models/_.js';
 import { ChannelEntityService } from '@/core/entities/ChannelEntityService.js';
+import { ChannelModerationService } from '@/core/ChannelModerationService.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
 import { ApiError } from '../../error.js';
@@ -54,7 +55,6 @@ export const paramDef = {
 		name: { type: 'string', minLength: 1, maxLength: 128 },
 		description: { type: 'string', nullable: true, maxLength: 2048 },
 		bannerId: { type: 'string', format: 'misskey:id', nullable: true },
-		isArchived: { type: 'boolean', nullable: true },
 		pinnedNoteIds: {
 			type: 'array',
 			items: {
@@ -79,6 +79,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private channelEntityService: ChannelEntityService,
 
+		private channelModerationService: ChannelModerationService,
+
 		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
@@ -91,7 +93,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			const iAmModerator = await this.roleService.isModerator(me);
-			if (channel.userId !== me.id && !iAmModerator) {
+			const isChannelAdmin = channel.userId === me.id;
+			const isChannelModerator = await this.channelModerationService.isChannelModerator(channel.id, me.id);
+
+			// Channel moderators can only update pinnedNoteIds
+			if (isChannelModerator && !isChannelAdmin && !iAmModerator) {
+				// Only allow pinnedNoteIds update
+				if (ps.name !== undefined || ps.description !== undefined || ps.bannerId !== undefined ||
+					ps.color !== undefined || ps.isSensitive !== undefined || ps.allowRenoteToExternal !== undefined) {
+					throw new ApiError(meta.errors.accessDenied);
+				}
+			} else if (!isChannelAdmin && !iAmModerator) {
 				throw new ApiError(meta.errors.accessDenied);
 			}
 
@@ -115,7 +127,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...(ps.description !== undefined ? { description: ps.description } : {}),
 				...(ps.pinnedNoteIds !== undefined ? { pinnedNoteIds: ps.pinnedNoteIds } : {}),
 				...(ps.color !== undefined ? { color: ps.color } : {}),
-				...(typeof ps.isArchived === 'boolean' ? { isArchived: ps.isArchived } : {}),
 				...(banner ? { bannerId: banner.id } : {}),
 				...(typeof ps.isSensitive === 'boolean' ? { isSensitive: ps.isSensitive } : {}),
 				...(typeof ps.allowRenoteToExternal === 'boolean' ? { allowRenoteToExternal: ps.allowRenoteToExternal } : {}),
