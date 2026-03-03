@@ -46,12 +46,27 @@ export class ChannelModeration1772000000000 {
 		// 5. Add requireChannelApproval to meta
 		await queryRunner.query(`ALTER TABLE "meta" ADD "requireChannelApproval" boolean NOT NULL DEFAULT false`);
 		await queryRunner.query(`COMMENT ON COLUMN "meta"."requireChannelApproval" IS 'Whether channel creation requires approval from server admin.'`);
+
+		// 6. Create channel_moderation_log table
+		await queryRunner.query(`CREATE TABLE "channel_moderation_log" ("id" character varying(32) NOT NULL, "channelId" character varying(32) NOT NULL, "userId" character varying(32) NOT NULL, "type" character varying(64) NOT NULL, "info" jsonb NOT NULL DEFAULT '{}', CONSTRAINT "PK_channel_moderation_log_id" PRIMARY KEY ("id"))`);
+		await queryRunner.query(`CREATE INDEX "IDX_channel_moderation_log_channelId" ON "channel_moderation_log" ("channelId")`);
+		await queryRunner.query(`CREATE INDEX "IDX_channel_moderation_log_userId" ON "channel_moderation_log" ("userId")`);
+		await queryRunner.query(`COMMENT ON COLUMN "channel_moderation_log"."userId" IS 'The user who performed the action.'`);
+		await queryRunner.query(`COMMENT ON COLUMN "channel_moderation_log"."type" IS 'The type of moderation action.'`);
+		await queryRunner.query(`COMMENT ON COLUMN "channel_moderation_log"."info" IS 'Additional info about the action.'`);
+		await queryRunner.query(`ALTER TABLE "channel_moderation_log" ADD CONSTRAINT "FK_channel_moderation_log_channelId" FOREIGN KEY ("channelId") REFERENCES "channel"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+		await queryRunner.query(`ALTER TABLE "channel_moderation_log" ADD CONSTRAINT "FK_channel_moderation_log_userId" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
 	}
 
 	/**
 	 * @param {import('typeorm').QueryRunner} queryRunner
 	 */
 	async down(queryRunner) {
+		// Reverse: drop channel_moderation_log table
+		await queryRunner.query(`ALTER TABLE "channel_moderation_log" DROP CONSTRAINT "FK_channel_moderation_log_userId"`);
+		await queryRunner.query(`ALTER TABLE "channel_moderation_log" DROP CONSTRAINT "FK_channel_moderation_log_channelId"`);
+		await queryRunner.query(`DROP TABLE "channel_moderation_log"`);
+
 		// Reverse: remove requireChannelApproval from meta
 		await queryRunner.query(`ALTER TABLE "meta" DROP COLUMN "requireChannelApproval"`);
 

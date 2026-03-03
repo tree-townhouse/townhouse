@@ -132,6 +132,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...(typeof ps.allowRenoteToExternal === 'boolean' ? { allowRenoteToExternal: ps.allowRenoteToExternal } : {}),
 			});
 
+			// Log pin/unpin changes
+			if (ps.pinnedNoteIds !== undefined) {
+				const oldPinned = new Set(channel.pinnedNoteIds ?? []);
+				const newPinned = new Set(ps.pinnedNoteIds);
+				for (const noteId of ps.pinnedNoteIds) {
+					if (!oldPinned.has(noteId)) {
+						await this.channelModerationService.logAction(channel.id, me.id, 'pinNote', { noteId });
+					}
+				}
+				for (const noteId of (channel.pinnedNoteIds ?? [])) {
+					if (!newPinned.has(noteId)) {
+						await this.channelModerationService.logAction(channel.id, me.id, 'unpinNote', { noteId });
+					}
+				}
+			}
+
 			return await this.channelEntityService.pack(channel.id, me);
 		});
 	}

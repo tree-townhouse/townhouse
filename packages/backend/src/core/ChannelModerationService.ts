@@ -9,6 +9,7 @@ import type {
 	ChannelsRepository,
 	ChannelModeratorsRepository,
 	ChannelBansRepository,
+	ChannelModerationLogsRepository,
 	NotesRepository,
 	UsersRepository,
 } from '@/models/_.js';
@@ -18,6 +19,7 @@ import { IdService } from '@/core/IdService.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { NoteDeleteService } from '@/core/NoteDeleteService.js';
 import { RoleService } from '@/core/RoleService.js';
+import type { ChannelModerationLogType } from '@/models/ChannelModerationLog.js';
 import { bindThis } from '@/decorators.js';
 
 @Injectable()
@@ -32,6 +34,9 @@ export class ChannelModerationService {
 		@Inject(DI.channelBansRepository)
 		private channelBansRepository: ChannelBansRepository,
 
+		@Inject(DI.channelModerationLogsRepository)
+		private channelModerationLogsRepository: ChannelModerationLogsRepository,
+
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
 
@@ -43,6 +48,28 @@ export class ChannelModerationService {
 		private noteDeleteService: NoteDeleteService,
 		private roleService: RoleService,
 	) {}
+
+	/**
+	 * Log a channel moderation action
+	 */
+	@bindThis
+	public async logAction(channelId: MiChannel['id'], userId: MiUser['id'], type: ChannelModerationLogType, info: Record<string, any> = {}): Promise<void> {
+		await this.channelModerationLogsRepository.insertOne({
+			id: this.idService.gen(),
+			channelId,
+			userId,
+			type,
+			info,
+		});
+	}
+
+	/**
+	 * Log a channel moderation action (internal alias)
+	 */
+	@bindThis
+	private async log(channelId: MiChannel['id'], userId: MiUser['id'], type: ChannelModerationLogType, info: Record<string, any> = {}): Promise<void> {
+		await this.logAction(channelId, userId, type, info);
+	}
 
 	/**
 	 * Check if a user is the channel owner (admin)
@@ -119,6 +146,8 @@ export class ChannelModerationService {
 		this.notificationService.createNotification(inviteeId, 'channelModeratorInvitationReceived', {
 			channelId,
 		}, inviterId);
+
+		await this.log(channelId, inviterId, 'addModerator', { targetUserId: inviteeId });
 	}
 
 	/**
@@ -175,6 +204,8 @@ export class ChannelModerationService {
 			channelId,
 			userId: moderatorId,
 		});
+
+		await this.log(channelId, adminId, 'removeModerator', { targetUserId: moderatorId });
 	}
 
 	/**
@@ -219,6 +250,7 @@ export class ChannelModerationService {
 				expiresAt: expiresAt ?? null,
 				bannedById: bannerId,
 			});
+			await this.log(channelId, bannerId, 'banUser', { targetUserId, expiresAt: expiresAt ?? null });
 			return;
 		}
 
@@ -235,6 +267,8 @@ export class ChannelModerationService {
 			channelId,
 			userId: targetUserId,
 		});
+
+		await this.log(channelId, bannerId, 'banUser', { targetUserId, expiresAt: expiresAt ?? null });
 	}
 
 	/**
@@ -242,7 +276,8 @@ export class ChannelModerationService {
 	 */
 	@bindThis
 	public async unbanUser(channelId: MiChannel['id'], unbannerId: MiUser['id'], targetUserId: MiUser['id']): Promise<void> {
-		if (!await this.hasChannelManagePermission(channelId, unbannerId)) {
+		const isServerAdmin = await this.roleService.isAdministrator({ id: unbannerId });
+		if (!isServerAdmin && !await this.hasChannelManagePermission(channelId, unbannerId)) {
 			throw new Error('ACCESS_DENIED');
 		}
 
@@ -250,6 +285,8 @@ export class ChannelModerationService {
 			channelId,
 			userId: targetUserId,
 		});
+
+		await this.log(channelId, unbannerId, 'unbanUser', { targetUserId });
 	}
 
 	/**
@@ -319,6 +356,8 @@ export class ChannelModerationService {
 		const deleter = await this.usersRepository.findOneByOrFail({ id: deleterId });
 
 		await this.noteDeleteService.delete(noteAuthor, note, false, deleter);
+
+		await this.log(channelId, deleterId, 'deleteNote', { noteId, noteUserId: note.userId });
 	}
 
 	/**
@@ -345,5 +384,37 @@ export class ChannelModerationService {
 		await this.channelsRepository.update(channelId, {
 			userId: newOwnerId,
 		});
+	}
+
+	/**
+	 * Get moderation log entries for a channel
+	 */
+	@bindThis
+	public async getLog(channelId: MiChannel['id'], limit = 50, sinceId?: string, untilId?: string): Promise<{
+		id: string;
+		userId: string;
+		type: string;
+		info: Record<string, any>;
+	}[]> {
+		const query = this.channelModerationLogsRepository.createQueryBuilder('log')
+			.where('log.channelId = :channelId', { channelId })
+			.orderBy('log.id', 'DESC')
+			.take(limit);
+
+		if (sinceId) {
+			query.andWhere('log.id > :sinceId', { sinceId });
+		}
+		if (untilId) {
+			query.andWhere('log.id < :untilId', { untilId });
+		}
+
+		const logs = await query.getMany();
+
+		return logs.map((log: { id: string; userId: string; type: string; info: Record<string, any> }) => ({
+			id: log.id,
+			userId: log.userId,
+			type: log.type,
+			info: log.info,
+		}));
 	}
 }

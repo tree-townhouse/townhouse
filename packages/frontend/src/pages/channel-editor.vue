@@ -96,6 +96,35 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</MkFolder>
 
+			<!-- Moderation Log (admin + moderator) -->
+			<MkFolder v-if="(isChannelAdmin || isChannelModerator) && channelId">
+				<template #label><i class="ti ti-history ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.channelModerationLog }}</template>
+
+				<div class="_gaps">
+					<MkButton rounded @click="fetchModerationLog()"><i class="ti ti-refresh"></i> {{ i18n.ts.reload }}</MkButton>
+
+					<div v-if="moderationLog.length === 0" style="text-align: center; opacity: 0.5;">{{ i18n.ts.noModerationLog }}</div>
+					<div v-for="entry in moderationLog" :key="entry.id" :class="$style.logItem">
+						<MkAvatar :user="entry.user" :class="$style.moderatorAvatar"/>
+						<div :class="$style.logContent">
+							<div :class="$style.logAction">
+								<MkUserName :user="entry.user" style="font-weight: bold;"/>
+								<span style="margin-left: 0.5em;">{{ logTypeLabel(entry.type) }}</span>
+							</div>
+							<div v-if="entry.info.targetUserId" style="opacity: 0.7; font-size: 0.85em;">
+								{{ i18n.ts.target }}: {{ entry.info.targetUserId }}
+							</div>
+							<div v-if="entry.info.noteId" style="opacity: 0.7; font-size: 0.85em;">
+								{{ i18n.ts.note }}: {{ entry.info.noteId }}
+							</div>
+							<div style="opacity: 0.5; font-size: 0.8em;">{{ logTimestamp(entry.id) }}</div>
+						</div>
+					</div>
+
+					<MkButton v-if="moderationLog.length > 0 && hasMoreLog" rounded @click="fetchMoreModerationLog()">{{ i18n.ts.loadMore }}</MkButton>
+				</div>
+			</MkFolder>
+
 			<div class="_buttons">
 				<MkButton v-if="isChannelAdmin" primary @click="save()"><i class="ti ti-device-floppy"></i> {{ channelId ? i18n.ts.save : i18n.ts.create }}</MkButton>
 				<MkButton v-else-if="isChannelModerator" primary @click="savePinnedOnly()"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
@@ -141,6 +170,8 @@ const allowRenoteToExternal = ref(true);
 const pinnedNotes = ref<{ id: Misskey.entities.Note['id'] }[]>([]);
 const moderators = ref<any[]>([]);
 const bannedUsers = ref<any[]>([]);
+const moderationLog = ref<any[]>([]);
+const hasMoreLog = ref(false);
 
 const isChannelAdmin = computed(() => {
 	if (!channel.value || !$i) return props.channelId == null; // new channel = admin
@@ -209,6 +240,57 @@ async function fetchBannedUsers() {
 	} catch {
 		bannedUsers.value = [];
 	}
+}
+
+async function fetchModerationLog() {
+	if (!props.channelId) return;
+	try {
+		const result = await misskeyApi('channels/moderation-log', {
+			channelId: props.channelId,
+			limit: 30,
+		});
+		moderationLog.value = result;
+		hasMoreLog.value = result.length >= 30;
+	} catch {
+		moderationLog.value = [];
+		hasMoreLog.value = false;
+	}
+}
+
+async function fetchMoreModerationLog() {
+	if (!props.channelId || moderationLog.value.length === 0) return;
+	const lastId = moderationLog.value[moderationLog.value.length - 1].id;
+	try {
+		const result = await misskeyApi('channels/moderation-log', {
+			channelId: props.channelId,
+			limit: 30,
+			untilId: lastId,
+		});
+		moderationLog.value = [...moderationLog.value, ...result];
+		hasMoreLog.value = result.length >= 30;
+	} catch {
+		hasMoreLog.value = false;
+	}
+}
+
+function logTypeLabel(type: string): string {
+	switch (type) {
+		case 'deleteNote': return i18n.ts.logDeleteNote;
+		case 'pinNote': return i18n.ts.logPinNote;
+		case 'unpinNote': return i18n.ts.logUnpinNote;
+		case 'addModerator': return i18n.ts.logAddModerator;
+		case 'removeModerator': return i18n.ts.logRemoveModerator;
+		case 'banUser': return i18n.ts.logBanUser;
+		case 'unbanUser': return i18n.ts.logUnbanUser;
+		default: return type;
+	}
+}
+
+function logTimestamp(id: string): string {
+	// Misskey ID encodes timestamp - extract from aid format
+	const EPOCH = new Date('2000-01-01T00:00:00.000Z').getTime();
+	const time = parseInt(id.slice(0, 8), 36) + EPOCH;
+	return new Date(time).toLocaleString();
 }
 
 fetchChannel();
@@ -428,5 +510,25 @@ definePage(() => ({
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.logItem {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	padding: 8px;
+	border-bottom: 1px solid var(--MI_THEME-divider, rgba(0, 0, 0, 0.1));
+}
+
+.logContent {
+	flex: 1;
+	min-width: 0;
+}
+
+.logAction {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 2px;
 }
 </style>

@@ -27,6 +27,7 @@ import { MiChannelFollowing } from '@/models/ChannelFollowing.js';
 import { MiChannelMuting } from '@/models/ChannelMuting.js';
 import { MiChannelModerator } from '@/models/ChannelModerator.js';
 import { MiChannelBan } from '@/models/ChannelBan.js';
+import { MiChannelModerationLog } from '@/models/ChannelModerationLog.js';
 import { MiChatApproval } from '@/models/ChatApproval.js';
 import { MiChatMessage } from '@/models/ChatMessage.js';
 import { MiChatRoom } from '@/models/ChatRoom.js';
@@ -119,6 +120,7 @@ export {
 	MiChannelMuting,
 	MiChannelModerator,
 	MiChannelBan,
+	MiChannelModerationLog,
 	MiClip,
 	MiClipNote,
 	MiClipFavorite,
@@ -203,6 +205,7 @@ export type ChannelFavoritesRepository = Repository<MiChannelFavorite> & MiRepos
 export type ChannelMutingRepository = Repository<MiChannelMuting> & MiRepository<MiChannelMuting>;
 export type ChannelModeratorsRepository = Repository<MiChannelModerator> & MiRepository<MiChannelModerator>;
 export type ChannelBansRepository = Repository<MiChannelBan> & MiRepository<MiChannelBan>;
+export type ChannelModerationLogsRepository = Repository<MiChannelModerationLog> & MiRepository<MiChannelModerationLog>;
 export type ClipsRepository = Repository<MiClip> & MiRepository<MiClip>;
 export type ClipNotesRepository = Repository<MiClipNote> & MiRepository<MiClipNote>;
 export type ClipFavoritesRepository = Repository<MiClipFavorite> & MiRepository<MiClipFavorite>;

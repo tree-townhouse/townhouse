@@ -168,6 +168,7 @@ export * as 'channels/timeline' from './endpoints/channels/timeline.js';
 export * as 'channels/unfavorite' from './endpoints/channels/unfavorite.js';
 export * as 'channels/unfollow' from './endpoints/channels/unfollow.js';
 export * as 'channels/update' from './endpoints/channels/update.js';
+export * as 'channels/moderation-log' from './endpoints/channels/moderation-log.js';
 export * as 'channels/moderator/add' from './endpoints/channels/moderator/add.js';
 export * as 'channels/moderator/remove' from './endpoints/channels/moderator/remove.js';
 export * as 'channels/moderator/list' from './endpoints/channels/moderator/list.js';
