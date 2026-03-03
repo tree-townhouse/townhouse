@@ -41,6 +41,11 @@ export const meta = {
 			code: 'CANNOT_INVITE_SELF',
 			id: 'e0460b5e-1a02-4c29-a8b0-001001000005',
 		},
+		cannotInviteAdmin: {
+			message: 'Cannot invite the channel admin as moderator.',
+			code: 'CANNOT_INVITE_ADMIN',
+			id: 'e0460b5e-1a02-4c29-a8b0-001001000006',
+		},
 	},
 } as const;
 
@@ -65,6 +70,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				switch (e.message) {
 					case 'ACCESS_DENIED': throw new ApiError(meta.errors.accessDenied);
 					case 'CANNOT_INVITE_SELF': throw new ApiError(meta.errors.cannotInviteSelf);
+					case 'CANNOT_INVITE_ADMIN': throw new ApiError(meta.errors.cannotInviteAdmin);
 					case 'ALREADY_MODERATOR': throw new ApiError(meta.errors.alreadyModerator);
 					case 'ALREADY_INVITED': throw new ApiError(meta.errors.alreadyInvited);
 					default: throw new ApiError(meta.errors.noSuchChannel);

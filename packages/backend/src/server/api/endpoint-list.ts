@@ -178,6 +178,7 @@ export * as 'channels/moderator/reject' from './endpoints/channels/moderator/rej
 export * as 'channels/ban/create' from './endpoints/channels/ban/create.js';
 export * as 'channels/ban/delete' from './endpoints/channels/ban/delete.js';
 export * as 'channels/ban/list' from './endpoints/channels/ban/list.js';
+export * as 'channels/cancel-creation' from './endpoints/channels/cancel-creation.js';
 export * as 'channels/notes/delete' from './endpoints/channels/notes/delete.js';
 export * as 'channels/mute/create' from './endpoints/channels/mute/create.js';
 export * as 'channels/mute/delete' from './endpoints/channels/mute/delete.js';

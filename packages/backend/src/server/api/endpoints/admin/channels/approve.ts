@@ -8,6 +8,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { ChannelsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { NotificationService } from '@/core/NotificationService.js';
 import { ApiError } from '../../../error.js';
 
 export const meta = {
@@ -46,6 +47,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private channelsRepository: ChannelsRepository,
 
 		private moderationLogService: ModerationLogService,
+		private notificationService: NotificationService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const channel = await this.channelsRepository.findOneBy({ id: ps.channelId });
@@ -65,6 +67,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				channelId: channel.id,
 				channelName: channel.name,
 			});
+
+			// Notify the channel creator that their channel has been approved
+			if (channel.userId) {
+				this.notificationService.createNotification(channel.userId, 'channelApproved', {
+					channelId: channel.id,
+				});
+			}
 		});
 	}
 }

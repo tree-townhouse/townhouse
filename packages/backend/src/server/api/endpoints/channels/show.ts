@@ -8,6 +8,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { ChannelsRepository } from '@/models/_.js';
 import { ChannelEntityService } from '@/core/entities/ChannelEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { RoleService } from '@/core/RoleService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -45,6 +46,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private channelsRepository: ChannelsRepository,
 
 		private channelEntityService: ChannelEntityService,
+		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const channel = await this.channelsRepository.findOneBy({
@@ -53,6 +55,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (channel == null) {
 				throw new ApiError(meta.errors.noSuchChannel);
+			}
+
+			// Unapproved channels are only visible to the creator and server admins/moderators
+			if (!channel.isApproved) {
+				const isCreator = me && channel.userId === me.id;
+				const isServerMod = me ? await this.roleService.isModerator(me) : false;
+				if (!isCreator && !isServerMod) {
+					throw new ApiError(meta.errors.noSuchChannel);
+				}
 			}
 
 			return await this.channelEntityService.pack(channel, me, true);

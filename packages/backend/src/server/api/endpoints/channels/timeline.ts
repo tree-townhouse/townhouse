@@ -14,6 +14,7 @@ import { IdService } from '@/core/IdService.js';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
 import { MiLocalUser } from '@/models/User.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
+import { RoleService } from '@/core/RoleService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -72,6 +73,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
 		private activeUsersChart: ActiveUsersChart,
 		private channelMutingService: ChannelMutingService,
+		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
@@ -83,6 +85,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (channel == null) {
 				throw new ApiError(meta.errors.noSuchChannel);
+			}
+
+			// Unapproved channels are only accessible to the creator and server admins/moderators
+			if (!channel.isApproved) {
+				const isCreator = me && channel.userId === me.id;
+				const isServerMod = me ? await this.roleService.isModerator(me) : false;
+				if (!isCreator && !isServerMod) {
+					throw new ApiError(meta.errors.noSuchChannel);
+				}
 			}
 
 			if (me) this.activeUsersChart.read(me);

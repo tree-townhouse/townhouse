@@ -58,11 +58,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.find({ where: { userId: me.id, status: 'accepted' }, select: ['channelId'] })
 				.then(rows => rows.map(r => r.channelId));
 
-			const query = this.queryService.makePaginationQuery(this.channelsRepository.createQueryBuilder('channel'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
-				.andWhere('channel.isApproved = TRUE');
+			const query = this.queryService.makePaginationQuery(this.channelsRepository.createQueryBuilder('channel'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate);
 
 			if (moderatedChannelIds.length > 0) {
-				query.andWhere('(channel.userId = :userId OR channel.id IN (:...moderatedChannelIds))', {
+				query.andWhere('(channel.userId = :userId OR (channel.id IN (:...moderatedChannelIds) AND channel.isApproved = TRUE))', {
 					userId: me.id,
 					moderatedChannelIds,
 				});

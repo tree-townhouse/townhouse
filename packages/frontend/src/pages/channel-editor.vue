@@ -8,30 +8,33 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div class="_spacer" style="--MI_SPACER-w: 700px;">
 		<!-- Settings Tab -->
 		<div v-if="tab === 'settings' && (channelId == null || channel != null)" class="_gaps_m">
+			<!-- Pending approval notice -->
+			<MkInfo v-if="channel && !channel.isApproved" warn>{{ i18n.ts.thisChannelPendingApproval }}</MkInfo>
+
 			<!-- Admin-only settings (channel owner / server moderator) -->
 			<template v-if="isChannelAdmin">
-				<MkInput v-model="name" :disabled="props.channelId != null && !iAmModerator">
+				<MkInput v-model="name" :disabled="(props.channelId != null && !iAmModerator) || isChannelPending">
 					<template #label>{{ i18n.ts.name }}</template>
 					<template v-if="props.channelId != null && !iAmModerator" #caption>{{ i18n.ts.cannotChangeChannelName }}</template>
 				</MkInput>
 
-				<MkTextarea v-model="description" mfmAutocomplete :mfmPreview="true">
+				<MkTextarea v-model="description" mfmAutocomplete :mfmPreview="true" :disabled="isChannelPending">
 					<template #label>{{ i18n.ts.description }}</template>
 				</MkTextarea>
 
-				<MkColorInput v-model="color">
+				<MkColorInput v-model="color" :disabled="isChannelPending">
 					<template #label>{{ i18n.ts.color }}</template>
 				</MkColorInput>
 
-				<MkSwitch v-model="isSensitive">
+				<MkSwitch v-model="isSensitive" :disabled="isChannelPending">
 					<template #label>{{ i18n.ts.sensitive }}</template>
 				</MkSwitch>
 
-				<MkSwitch v-model="allowRenoteToExternal">
+				<MkSwitch v-model="allowRenoteToExternal" :disabled="isChannelPending">
 					<template #label>{{ i18n.ts._channel.allowRenoteToExternal }}</template>
 				</MkSwitch>
 
-				<div>
+				<div v-if="!isChannelPending">
 					<MkButton v-if="bannerId == null" @click="setBannerImage"><i class="ti ti-plus"></i> {{ i18n.ts._channel.setBanner }}</MkButton>
 					<div v-else-if="bannerUrl">
 						<img :src="bannerUrl" style="width: 100%;"/>
@@ -41,7 +44,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</template>
 
 			<!-- Pinned Notes (admin + moderator) -->
-			<MkFolder :defaultOpen="true">
+			<MkFolder v-if="!isChannelPending" :defaultOpen="true">
 				<template #label>{{ i18n.ts.pinnedNotes }}</template>
 
 				<div class="_gaps">
@@ -65,11 +68,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 
 			<!-- Moderator Management (admin only) -->
-			<MkFolder v-if="isChannelAdmin && channelId">
+			<MkFolder v-if="isChannelAdmin && channelId && !isChannelPending">
 				<template #label><i class="ti ti-shield-check ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.channelModerators }}</template>
 
 				<div class="_gaps">
-					<MkButton primary rounded @click="addModerator()"><i class="ti ti-plus"></i> {{ i18n.ts.addModerator }}</MkButton>
+					<MkButton primary rounded @click="addModerator()"><i class="ti ti-plus"></i></MkButton>
 
 					<div v-if="moderators.length === 0" style="text-align: center; opacity: 0.5;">{{ i18n.ts.noModerators }}</div>
 					<div v-for="mod in moderators" :key="mod.userId" :class="$style.moderatorItem">
@@ -81,11 +84,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 
 			<!-- Ban Management (admin + moderator) -->
-			<MkFolder v-if="(isChannelAdmin || isChannelModerator) && channelId">
+			<MkFolder v-if="(isChannelAdmin || isChannelModerator) && channelId && !isChannelPending">
 				<template #label><i class="ti ti-ban ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.channelBannedUsers }}</template>
 
 				<div class="_gaps">
-					<MkButton primary rounded @click="banUser()"><i class="ti ti-plus"></i> {{ i18n.ts.banUser }}</MkButton>
+					<MkButton primary rounded @click="banUser()"><i class="ti ti-plus"></i></MkButton>
 
 					<div v-if="bannedUsers.length === 0" style="text-align: center; opacity: 0.5;">{{ i18n.ts.noBannedUsers }}</div>
 					<div v-for="ban in bannedUsers" :key="ban.userId" :class="$style.banItem">
@@ -102,8 +105,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 
 			<div class="_buttons">
-				<MkButton v-if="isChannelAdmin" primary @click="save()"><i class="ti ti-device-floppy"></i> {{ channelId ? i18n.ts.save : i18n.ts.create }}</MkButton>
-				<MkButton v-else-if="isChannelModerator" primary @click="savePinnedOnly()"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
+				<MkButton v-if="isChannelAdmin && !isChannelPending" primary @click="save()"><i class="ti ti-device-floppy"></i> {{ channelId ? i18n.ts.save : i18n.ts.create }}</MkButton>
+				<MkButton v-else-if="isChannelModerator && !isChannelPending" primary @click="savePinnedOnly()"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
+				<MkButton v-if="isChannelPending && isChannelAdmin" danger @click="cancelChannelCreation()"><i class="ti ti-x"></i> {{ i18n.ts.cancelChannelCreation }}</MkButton>
 			</div>
 		</div>
 
@@ -172,6 +176,7 @@ import * as Misskey from 'cherrypick-js';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkColorInput from '@/components/MkColorInput.vue';
+import MkInfo from '@/components/MkInfo.vue';
 import { selectFile } from '@/utility/drive.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
@@ -256,6 +261,10 @@ const isChannelAdmin = computed(() => {
 const isChannelModerator = computed(() => {
 	if (!channel.value || !$i) return false;
 	return channel.value.isChannelModerator ?? false;
+});
+
+const isChannelPending = computed(() => {
+	return channel.value != null && !channel.value.isApproved;
 });
 
 watch(() => bannerId.value, async () => {
@@ -441,6 +450,12 @@ function save() {
 		os.apiWithDialog('channels/create', params, undefined, {
 			'e0460b5e-1a02-4c29-a8b0-005002000001': { text: i18n.ts.duplicateChannelName },
 		}).then(created => {
+			if (!created.isApproved) {
+				os.alert({
+					type: 'info',
+					text: i18n.ts.channelCreationRequestSent,
+				});
+			}
 			router.push('/channels/:channelId', {
 				params: {
 					channelId: created.id,
@@ -468,10 +483,18 @@ async function addModerator() {
 		userId: user.id,
 	});
 
-	os.alert({
-		type: 'info',
-		text: i18n.ts.moderatorInvitationSent,
-	});
+	if (iAmModerator) {
+		os.alert({
+			type: 'info',
+			text: i18n.ts.moderatorAdded,
+		});
+		await fetchModerators();
+	} else {
+		os.alert({
+			type: 'info',
+			text: i18n.ts.moderatorInvitationSent,
+		});
+	}
 }
 
 async function removeModerator(mod: any) {
@@ -569,6 +592,22 @@ function setBannerImage(evt) {
 
 function removeBannerImage() {
 	bannerId.value = null;
+}
+
+async function cancelChannelCreation() {
+	if (!props.channelId) return;
+
+	const { canceled } = await os.confirm({
+		type: 'warning',
+		text: i18n.ts.cancelChannelCreationConfirm,
+	});
+	if (canceled) return;
+
+	await os.apiWithDialog('channels/cancel-creation', {
+		channelId: props.channelId,
+	});
+
+	router.push('/channels');
 }
 
 const headerActions = computed(() => []);

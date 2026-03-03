@@ -9,6 +9,7 @@ import type { ChannelsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
+import { ChannelModerationService } from '@/core/ChannelModerationService.js';
 
 export const meta = {
 	tags: ['channels', 'mute'],
@@ -36,6 +37,12 @@ export const meta = {
 			code: 'EXPIRES_AT_IS_PAST',
 			id: '42b32236-df2c-a45f-fdbf-def67268f749',
 		},
+
+		cannotMuteOwnManagedChannel: {
+			message: 'Channel admins and moderators cannot mute their own channel.',
+			code: 'CANNOT_MUTE_OWN_MANAGED_CHANNEL',
+			id: 'a8deea7f-2c5e-4b3a-9c4d-1f6e8a3b7c9d',
+		},
 	},
 } as const;
 
@@ -58,12 +65,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
 		private channelMutingService: ChannelMutingService,
+		private channelModerationService: ChannelModerationService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Check if exists the channel
 			const targetChannel = await this.channelsRepository.findOneBy({ id: ps.channelId });
 			if (!targetChannel) {
 				throw new ApiError(meta.errors.noSuchChannel);
+			}
+
+			// Check if the user is a channel admin or moderator
+			if (targetChannel.userId === me.id || await this.channelModerationService.isChannelModerator(targetChannel.id, me.id)) {
+				throw new ApiError(meta.errors.cannotMuteOwnManagedChannel);
 			}
 
 			// Check if already muting

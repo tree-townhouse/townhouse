@@ -135,7 +135,7 @@ export class ChannelEntityService {
 				hasUnreadNote: false, // 後方互換性のため
 				isChannelAdmin: channel.userId === me.id,
 				isChannelModerator: await this.channelModerationService.isChannelModerator(channel.id, me.id),
-				isBanned: await this.channelModerationService.isBanned(channel.id, me.id),
+				isBanned: (await this.channelModerationService.isBanned(channel.id, me.id)).banned,
 			} : {}),
 
 			...(detailed ? {

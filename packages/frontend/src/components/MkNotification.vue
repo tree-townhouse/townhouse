@@ -33,6 +33,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				[$style.t_chatRoomInvitationReceived]: notification.type === 'chatRoomInvitationReceived',
 				[$style.t_channelModeratorInvitationReceived]: notification.type === 'channelModeratorInvitationReceived',
 				[$style.t_channelModeratorInvitationAccepted]: notification.type === 'channelModeratorInvitationAccepted',
+				[$style.t_channelApproved]: notification.type === 'channelApproved',
 				[$style.t_roleAssigned]: notification.type === 'roleAssigned' && notification.role.iconUrl == null,
 			}]"
 		>
@@ -53,6 +54,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<i v-else-if="notification.type === 'chatRoomInvitationReceived'" class="ti ti-messages"></i>
 			<i v-else-if="notification.type === 'channelModeratorInvitationReceived'" class="ti ti-shield-check"></i>
 			<i v-else-if="notification.type === 'channelModeratorInvitationAccepted'" class="ti ti-shield-check"></i>
+			<i v-else-if="notification.type === 'channelApproved'" class="ti ti-check"></i>
 			<template v-else-if="notification.type === 'roleAssigned'">
 				<img v-if="notification.role.iconUrl" style="height: 1.3em; vertical-align: -22%; border-radius: 0.4em;" :src="notification.role.iconUrl" alt=""/>
 				<i v-else class="ti ti-badges"></i>
@@ -76,6 +78,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-else-if="notification.type === 'chatRoomInvitationReceived'" :class="$style.headerText">{{ i18n.ts._notification.chatRoomInvitationReceived }}</span>
 			<span v-else-if="notification.type === 'channelModeratorInvitationReceived'" :class="$style.headerText">{{ i18n.ts._notification.channelModeratorInvitationReceived }}</span>
 			<span v-else-if="notification.type === 'channelModeratorInvitationAccepted'" :class="$style.headerText">{{ i18n.ts._notification.channelModeratorInvitationAccepted }}</span>
+			<span v-else-if="notification.type === 'channelApproved'" :class="$style.headerText">{{ i18n.ts._notification.channelApproved }}</span>
 			<span v-else-if="notification.type === 'achievementEarned'" :class="$style.headerText">{{ i18n.ts._notification.achievementEarned }}</span>
 			<span v-else-if="notification.type === 'login'" :class="$style.headerText">{{ i18n.ts._notification.login }}</span>
 			<span v-else-if="notification.type === 'createToken'" :class="$style.headerText">{{ i18n.ts._notification.createToken }}</span>
@@ -134,6 +137,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div v-else-if="notification.type === 'channelModeratorInvitationAccepted'" :class="$style.text">
 				{{ notification.channel?.name }}
 			</div>
+			<MkA v-else-if="notification.type === 'channelApproved'" :class="$style.text" :to="`/channels/${notification.channel?.id}`">
+				{{ notification.channel?.name }}
+			</MkA>
 			<MkA v-else-if="notification.type === 'achievementEarned'" :class="$style.text" to="/my/achievements">
 				{{ i18n.ts._achievements._types['_' + notification.achievement].title }}
 			</MkA>
@@ -458,6 +464,11 @@ function getActualReactedUsersCount(notification: Misskey.entities.Notification)
 }
 
 .t_channelModeratorInvitationAccepted {
+	background: var(--eventOther);
+	pointer-events: none;
+}
+
+.t_channelApproved {
 	background: var(--eventOther);
 	pointer-events: none;
 }

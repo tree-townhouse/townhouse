@@ -117,6 +117,11 @@ export class ChannelModerationService {
 			throw new Error('CANNOT_INVITE_SELF');
 		}
 
+		// Cannot invite the channel admin as moderator
+		if (await this.isChannelAdmin(channelId, inviteeId)) {
+			throw new Error('CANNOT_INVITE_ADMIN');
+		}
+
 		// Check if already a moderator
 		const existing = await this.channelModeratorsRepository.findOneBy({
 			channelId,

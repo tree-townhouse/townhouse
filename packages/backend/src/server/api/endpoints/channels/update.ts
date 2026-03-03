@@ -58,6 +58,12 @@ export const meta = {
 			code: 'DUPLICATE_CHANNEL_NAME',
 			id: 'e0460b5e-1a02-4c29-a8b0-005002000003',
 		},
+
+		channelNotApproved: {
+			message: 'This channel is not yet approved. Settings cannot be changed until approved.',
+			code: 'CHANNEL_NOT_APPROVED',
+			id: 'e0460b5e-1a02-4c29-a8b0-005002000004',
+		},
 	},
 } as const;
 
@@ -110,6 +116,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const iAmModerator = await this.roleService.isModerator(me);
 			const isChannelAdmin = channel.userId === me.id;
 			const isChannelModerator = await this.channelModerationService.isChannelModerator(channel.id, me.id);
+
+			// Block updates on unapproved channels (only server admins can update)
+			if (!channel.isApproved && !iAmModerator) {
+				throw new ApiError(meta.errors.channelNotApproved);
+			}
 
 			// Channel moderators can only update pinnedNoteIds
 			if (isChannelModerator && !isChannelAdmin && !iAmModerator) {

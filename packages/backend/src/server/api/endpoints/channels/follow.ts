@@ -54,6 +54,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchChannel);
 			}
 
+			if (!channel.isApproved) {
+				throw new ApiError(meta.errors.noSuchChannel);
+			}
+
 			await this.channelFollowingService.follow(me, channel);
 		});
 	}

@@ -8,9 +8,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div class="_spacer" style="--MI_SPACER-w: 700px;">
 		<div v-if="channel && tab === 'overview'" class="_gaps">
 			<div class="_panel" :class="$style.bannerContainer">
-				<XChannelFollowButton :channel="channel" :full="true" :class="$style.subscribe"/>
-				<MkButton v-if="favorited" v-tooltip="i18n.ts.unfavorite" asLike class="button" rounded primary :class="$style.favorite" @click="unfavorite()"><i class="ti ti-star"></i></MkButton>
-				<MkButton v-else v-tooltip="i18n.ts.favorite" asLike class="button" rounded :class="$style.favorite" @click="favorite()"><i class="ti ti-star"></i></MkButton>
+				<XChannelFollowButton v-if="channel.isApproved" :channel="channel" :full="true" :class="$style.subscribe"/>
+				<MkButton v-if="channel.isApproved && favorited" v-tooltip="i18n.ts.unfavorite" asLike class="button" rounded primary :class="$style.favorite" @click="unfavorite()"><i class="ti ti-star"></i></MkButton>
+				<MkButton v-else-if="channel.isApproved" v-tooltip="i18n.ts.favorite" asLike class="button" rounded :class="$style.favorite" @click="favorite()"><i class="ti ti-star"></i></MkButton>
 				<div :style="{ backgroundImage: channel.bannerUrl ? `url(${channel.bannerUrl})` : undefined }" :class="$style.banner">
 					<div :class="$style.bannerStatus">
 						<div><i class="ti ti-users ti-fw"></i><I18n :src="i18n.ts._channel.usersCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.usersCount }}</b></template></I18n></div>
@@ -38,7 +38,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkInfo v-if="channel.isBanned" warn>{{ i18n.ts.youAreBannedFromThisChannel }}</MkInfo>
 
 			<!-- スマホ・タブレットの場合、キーボードが表示されると投稿が見づらくなるので、デスクトップ場合のみ自動でフォーカスを当てる -->
-			<MkPostForm v-if="$i && prefer.r.showFixedPostFormInChannel.value" :channel="channel" class="post-form _panel" fixed :autofocus="deviceKind === 'desktop'"/>
+			<MkPostForm v-if="$i && channel.isApproved && prefer.r.showFixedPostFormInChannel.value" :channel="channel" class="post-form _panel" fixed :autofocus="deviceKind === 'desktop'"/>
 
 			<MkStreamingNotesTimeline :key="channelId" src="channel" :channel="channelId"/>
 		</div>
@@ -60,7 +60,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 		</div>
 	</div>
-	<template #footer>
+	<template v-if="channel && channel.isApproved" #footer>
 		<div :class="$style.footer">
 			<div class="_spacer" style="--MI_SPACER-w: 700px; --MI_SPACER-min: 16px; --MI_SPACER-max: 16px;">
 				<div class="_buttonsCenter">
@@ -296,7 +296,7 @@ const headerActions = computed(() => {
 			});
 		}
 
-		if (!channel.value.isMuting) {
+		if (!channel.value.isMuting && !(($i && $i.id === channel.value.userId) || channel.value.isChannelModerator)) {
 			headerItems.push({
 				icon: 'ti ti-volume',
 				text: i18n.ts.mute,
@@ -304,7 +304,7 @@ const headerActions = computed(() => {
 					await mute();
 				},
 			});
-		} else {
+		} else if (channel.value.isMuting) {
 			headerItems.push({
 				icon: 'ti ti-volume-off',
 				text: i18n.ts.unmute,

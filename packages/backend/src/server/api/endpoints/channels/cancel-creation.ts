@@ -5,8 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { ChannelFavoritesRepository, ChannelsRepository } from '@/models/_.js';
-import { IdService } from '@/core/IdService.js';
+import type { ChannelsRepository, NotesRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../error.js';
 
@@ -14,16 +13,23 @@ export const meta = {
 	tags: ['channels'],
 
 	requireCredential: true,
-
-	prohibitMoved: true,
-
 	kind: 'write:channels',
 
 	errors: {
 		noSuchChannel: {
 			message: 'No such channel.',
 			code: 'NO_SUCH_CHANNEL',
-			id: '4938f5f3-6167-4c04-9149-6607b7542861',
+			id: 'e0460b5e-1a02-4c29-a8b0-006001000001',
+		},
+		notChannelOwner: {
+			message: 'You are not the owner of this channel.',
+			code: 'NOT_CHANNEL_OWNER',
+			id: 'e0460b5e-1a02-4c29-a8b0-006001000002',
+		},
+		channelAlreadyApproved: {
+			message: 'This channel is already approved.',
+			code: 'CHANNEL_ALREADY_APPROVED',
+			id: 'e0460b5e-1a02-4c29-a8b0-006001000003',
 		},
 	},
 } as const;
@@ -42,29 +48,28 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.channelsRepository)
 		private channelsRepository: ChannelsRepository,
 
-		@Inject(DI.channelFavoritesRepository)
-		private channelFavoritesRepository: ChannelFavoritesRepository,
-
-		private idService: IdService,
+		@Inject(DI.notesRepository)
+		private notesRepository: NotesRepository,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const channel = await this.channelsRepository.findOneBy({
-				id: ps.channelId,
-			});
-
-			if (channel == null) {
+			const channel = await this.channelsRepository.findOneBy({ id: ps.channelId });
+			if (!channel) {
 				throw new ApiError(meta.errors.noSuchChannel);
 			}
 
-			if (!channel.isApproved) {
-				throw new ApiError(meta.errors.noSuchChannel);
+			if (channel.userId !== me.id) {
+				throw new ApiError(meta.errors.notChannelOwner);
 			}
 
-			await this.channelFavoritesRepository.insert({
-				id: this.idService.gen(),
-				userId: me.id,
-				channelId: channel.id,
-			});
+			if (channel.isApproved) {
+				throw new ApiError(meta.errors.channelAlreadyApproved);
+			}
+
+			// Delete all notes in the channel (if any)
+			await this.notesRepository.delete({ channelId: channel.id });
+
+			// Delete the channel
+			await this.channelsRepository.delete(channel.id);
 		});
 	}
 }
