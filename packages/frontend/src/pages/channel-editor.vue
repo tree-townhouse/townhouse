@@ -4,9 +4,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader :actions="headerActions" :tabs="headerTabs">
+<PageWithHeader v-model:tab="tab" :actions="headerActions" :tabs="headerTabs">
 	<div class="_spacer" style="--MI_SPACER-w: 700px;">
-		<div v-if="channelId == null || channel != null" class="_gaps_m">
+		<!-- Settings Tab -->
+		<div v-if="tab === 'settings' && (channelId == null || channel != null)" class="_gaps_m">
 			<!-- Admin-only settings (channel owner / server moderator) -->
 			<template v-if="isChannelAdmin">
 				<MkInput v-model="name" :disabled="props.channelId != null && !iAmModerator">
@@ -97,46 +98,54 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</MkFolder>
 
-			<!-- Moderation Log (admin + moderator) -->
-			<MkFolder v-if="(isChannelAdmin || isChannelModerator) && channelId">
-				<template #label><i class="ti ti-history ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.channelModerationLog }}</template>
-
-				<div class="_gaps">
-					<MkButton rounded @click="fetchModerationLog()"><i class="ti ti-refresh"></i> {{ i18n.ts.reload }}</MkButton>
-
-					<div v-if="moderationLog.length === 0" style="text-align: center; opacity: 0.5;">{{ i18n.ts.noModerationLog }}</div>
-					<div v-for="entry in moderationLog" :key="entry.id" :class="$style.logItem">
-						<div :class="$style.logContent">
-							<div :class="$style.logAction">
-								<MkA v-user-preview="entry.user.id" :to="userPage(entry.user)" :class="$style.logUser">
-									<MkAvatar :user="entry.user" :class="$style.logAvatar"/>
-									<MkUserName :user="entry.user"/>
-								</MkA>
-								<span>{{ logTypeLabel(entry.type) }}</span>
-								<template v-if="entry.targetUser">
-									<span>(</span>
-									<MkA v-user-preview="entry.targetUser.id" :to="userPage(entry.targetUser)" :class="$style.logUser">
-										<MkAvatar :user="entry.targetUser" :class="$style.logAvatar"/>
-										<MkUserName :user="entry.targetUser"/>
-									</MkA>
-									<span>)</span>
-								</template>
-							</div>
-							<div v-if="entry.info.noteId" style="opacity: 0.7; font-size: 0.85em;">
-								{{ i18n.ts.note }}: <MkA :to="`/notes/${entry.info.noteId}`" class="_link">{{ entry.info.noteId }}</MkA>
-							</div>
-							<div style="opacity: 0.5; font-size: 0.8em;">{{ logTimestamp(entry.id) }}</div>
-						</div>
-					</div>
-
-					<MkButton v-if="moderationLog.length > 0 && hasMoreLog" rounded @click="fetchMoreModerationLog()">{{ i18n.ts.loadMore }}</MkButton>
-				</div>
-			</MkFolder>
-
 			<div class="_buttons">
 				<MkButton v-if="isChannelAdmin" primary @click="save()"><i class="ti ti-device-floppy"></i> {{ channelId ? i18n.ts.save : i18n.ts.create }}</MkButton>
 				<MkButton v-else-if="isChannelModerator" primary @click="savePinnedOnly()"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
 			</div>
+		</div>
+
+		<!-- Moderation Log Tab -->
+		<div v-else-if="tab === 'log'" class="_gaps_m">
+			<div :class="$style.logFilterBar">
+				<MkSelect v-model="logTypeFilter" small>
+					<template #label>{{ i18n.ts.filterByType }}</template>
+					<option :value="null">{{ i18n.ts.all }}</option>
+					<option value="deleteNote">{{ i18n.ts.logDeleteNote }}</option>
+					<option value="pinNote">{{ i18n.ts.logPinNote }}</option>
+					<option value="unpinNote">{{ i18n.ts.logUnpinNote }}</option>
+					<option value="addModerator">{{ i18n.ts.logAddModerator }}</option>
+					<option value="removeModerator">{{ i18n.ts.logRemoveModerator }}</option>
+					<option value="banUser">{{ i18n.ts.logBanUser }}</option>
+					<option value="unbanUser">{{ i18n.ts.logUnbanUser }}</option>
+				</MkSelect>
+			</div>
+
+			<div v-if="moderationLog.length === 0" style="text-align: center; opacity: 0.5; padding: 16px;">{{ i18n.ts.noModerationLog }}</div>
+			<div v-for="entry in moderationLog" :key="entry.id" :class="$style.logItem">
+				<div :class="$style.logContent">
+					<div :class="$style.logAction">
+						<MkA v-user-preview="entry.user.id" :to="userPage(entry.user)" :class="$style.logUser">
+							<MkAvatar :user="entry.user" :class="$style.logAvatar"/>
+							<MkUserName :user="entry.user"/>
+						</MkA>
+						<span>{{ logTypeLabel(entry.type) }}</span>
+						<template v-if="entry.targetUser">
+							<span>(</span>
+							<MkA v-user-preview="entry.targetUser.id" :to="userPage(entry.targetUser)" :class="$style.logUser">
+								<MkAvatar :user="entry.targetUser" :class="$style.logAvatar"/>
+								<MkUserName :user="entry.targetUser"/>
+							</MkA>
+							<span>)</span>
+						</template>
+					</div>
+					<div v-if="entry.info.noteId" style="opacity: 0.7; font-size: 0.85em;">
+						{{ i18n.ts.note }}: <MkA :to="`/notes/${entry.info.noteId}`" class="_link">{{ entry.info.noteId }}</MkA>
+					</div>
+					<div style="opacity: 0.5; font-size: 0.8em;">{{ logTimestamp(entry.id) }}</div>
+				</div>
+			</div>
+
+			<MkButton v-if="moderationLog.length > 0 && hasMoreLog" rounded @click="fetchMoreModerationLog()">{{ i18n.ts.loadMore }}</MkButton>
 		</div>
 	</div>
 </PageWithHeader>
@@ -156,6 +165,7 @@ import { i18n } from '@/i18n.js';
 import MkFolder from '@/components/MkFolder.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
+import MkSelect from '@/components/MkSelect.vue';
 import { useRouter } from '@/router.js';
 import { $i, iAmModerator } from '@/i.js';
 import { userPage } from '@/filters/user.js';
@@ -181,6 +191,8 @@ const moderators = ref<any[]>([]);
 const bannedUsers = ref<any[]>([]);
 const moderationLog = ref<any[]>([]);
 const hasMoreLog = ref(false);
+const tab = ref('settings');
+const logTypeFilter = ref<string | null>(null);
 
 const isChannelAdmin = computed(() => {
 	if (!channel.value || !$i) return props.channelId == null; // new channel = admin
@@ -254,10 +266,14 @@ async function fetchBannedUsers() {
 async function fetchModerationLog() {
 	if (!props.channelId) return;
 	try {
-		const result = await misskeyApi('channels/moderation-log', {
+		const params: any = {
 			channelId: props.channelId,
 			limit: 30,
-		});
+		};
+		if (logTypeFilter.value) {
+			params.type = logTypeFilter.value;
+		}
+		const result = await misskeyApi('channels/moderation-log', params);
 		moderationLog.value = result;
 		hasMoreLog.value = result.length >= 30;
 	} catch {
@@ -270,11 +286,15 @@ async function fetchMoreModerationLog() {
 	if (!props.channelId || moderationLog.value.length === 0) return;
 	const lastId = moderationLog.value[moderationLog.value.length - 1].id;
 	try {
-		const result = await misskeyApi('channels/moderation-log', {
+		const params: any = {
 			channelId: props.channelId,
 			limit: 30,
 			untilId: lastId,
-		});
+		};
+		if (logTypeFilter.value) {
+			params.type = logTypeFilter.value;
+		}
+		const result = await misskeyApi('channels/moderation-log', params);
 		moderationLog.value = [...moderationLog.value, ...result];
 		hasMoreLog.value = result.length >= 30;
 	} catch {
@@ -303,6 +323,16 @@ function logTimestamp(id: string): string {
 }
 
 fetchChannel();
+
+watch(tab, (newTab) => {
+	if (newTab === 'log') {
+		fetchModerationLog();
+	}
+});
+
+watch(logTypeFilter, () => {
+	fetchModerationLog();
+});
 
 async function addPinnedNote() {
 	const { canceled, result: value } = await os.inputText({
@@ -470,7 +500,21 @@ function removeBannerImage() {
 
 const headerActions = computed(() => []);
 
-const headerTabs = computed(() => []);
+const headerTabs = computed(() => {
+	const tabs: { key: string; title: string; icon: string }[] = [{
+		key: 'settings',
+		title: i18n.ts.settings,
+		icon: 'ti ti-settings',
+	}];
+	if (props.channelId && (isChannelAdmin.value || isChannelModerator.value)) {
+		tabs.push({
+			key: 'log',
+			title: i18n.ts.channelModerationLog,
+			icon: 'ti ti-history',
+		});
+	}
+	return tabs;
+});
 
 definePage(() => ({
 	title: props.channelId ? i18n.ts.channelSettings : i18n.ts._channel.create,
@@ -561,5 +605,11 @@ definePage(() => ({
 .logAvatar {
 	width: 20px;
 	height: 20px;
+}
+
+.logFilterBar {
+	display: flex;
+	gap: 8px;
+	align-items: flex-end;
 }
 </style>

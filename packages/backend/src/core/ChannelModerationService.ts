@@ -256,6 +256,12 @@ export class ChannelModerationService {
 			throw new Error('CANNOT_BAN_ADMIN');
 		}
 
+		// Cannot ban server admins/moderators
+		const targetIsServerAdmin = await this.roleService.isModerator({ id: targetUserId } as MiUser);
+		if (targetIsServerAdmin) {
+			throw new Error('CANNOT_BAN_ADMIN');
+		}
+
 		// Check if already banned
 		const existing = await this.channelBansRepository.findOneBy({
 			channelId,
@@ -408,7 +414,7 @@ export class ChannelModerationService {
 	 * Get moderation log entries for a channel
 	 */
 	@bindThis
-	public async getLog(channelId: MiChannel['id'], limit = 50, sinceId?: string, untilId?: string): Promise<{
+	public async getLog(channelId: MiChannel['id'], limit = 50, sinceId?: string, untilId?: string, type?: string): Promise<{
 		id: string;
 		userId: string;
 		type: string;
@@ -424,6 +430,9 @@ export class ChannelModerationService {
 		}
 		if (untilId) {
 			query.andWhere('log.id < :untilId', { untilId });
+		}
+		if (type) {
+			query.andWhere('log.type = :type', { type });
 		}
 
 		const logs = await query.getMany();

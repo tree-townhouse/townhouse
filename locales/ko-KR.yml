@@ -1410,6 +1410,7 @@ transferOwnershipConfirm: "'{name}' 채널의 관리자를 @{user}(으)로 변�
 channelModeratorsOf: "'{name}' 채널의 부관리자"
 channelModerationLog: "관리 기록"
 noModerationLog: "관리 기록이 없어요."
+filterByType: "유형별 필터"
 logDeleteNote: "노트를 삭제했어요"
 logPinNote: "노트를 고정했어요"
 logUnpinNote: "노트 고정을 해제했어요"

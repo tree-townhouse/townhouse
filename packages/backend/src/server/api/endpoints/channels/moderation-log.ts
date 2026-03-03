@@ -65,6 +65,7 @@ export const paramDef = {
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 30 },
 		sinceId: { type: 'string', format: 'misskey:id' },
 		untilId: { type: 'string', format: 'misskey:id' },
+		type: { type: 'string', nullable: true },
 	},
 	required: ['channelId'],
 } as const;
@@ -83,7 +84,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.accessDenied);
 			}
 
-			const logs = await this.channelModerationService.getLog(ps.channelId, ps.limit, ps.sinceId, ps.untilId);
+			const logs = await this.channelModerationService.getLog(ps.channelId, ps.limit, ps.sinceId, ps.untilId, ps.type ?? undefined);
 
 			return await Promise.all(logs.map(async (log: { id: string; userId: string; type: string; info: Record<string, any> }) => {
 				const user = await this.userEntityService.pack(log.userId, me);

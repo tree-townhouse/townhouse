@@ -120,6 +120,12 @@ export const meta = {
 			id: '33510210-8452-094c-6227-4a6c05d99f00',
 		},
 
+		bannedFromChannel: {
+			message: 'You are banned from this channel.',
+			code: 'BANNED_FROM_CHANNEL',
+			id: 'd8e5e1e0-1234-4567-890a-bcdef0123456',
+		},
+
 		containsProhibitedWords: {
 			message: 'Cannot post because it contains prohibited words.',
 			code: 'CONTAINS_PROHIBITED_WORDS',
@@ -370,6 +376,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						throw new ApiError(meta.errors.cannotCreateAlreadyExpiredPoll);
 					} else if (err.id === 'bfa3905b-25f5-4894-b430-da331a490e4b') {
 						throw new ApiError(meta.errors.noSuchChannel);
+					} else if (err.id === 'd8e5e1e0-1234-4567-890a-bcdef0123456') {
+						throw new ApiError(meta.errors.bannedFromChannel);
 					}
 				}
 				throw err;
