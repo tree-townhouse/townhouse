@@ -670,6 +670,63 @@ export function getNoteMenu(props: {
 							}),
 						});
 					}
+
+					// Ban user from channel (if note author is not the current user and not the channel admin)
+					if (appearNote.userId !== $i.id && appearNote.channel!.userId !== appearNote.userId) {
+						channelChildMenu.push({ type: 'divider' });
+						channelChildMenu.push({
+							icon: 'ti ti-ban',
+							text: i18n.ts.channelBanUser,
+							danger: true,
+							action: async () => {
+								const { canceled, result: period } = await os.select({
+									title: i18n.ts.banDuration,
+									items: [{
+										value: 'oneDay', label: i18n.ts.ban1Day,
+									}, {
+										value: 'oneWeek', label: i18n.ts.ban7Days,
+									}, {
+										value: 'oneMonth', label: i18n.ts.ban30Days,
+									}, {
+										value: 'permanent', label: i18n.ts.banPermanent,
+									}],
+									default: 'permanent',
+								});
+								if (canceled) return;
+
+								const expiresAt = period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
+									: period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
+									: period === 'oneMonth' ? Date.now() + (1000 * 60 * 60 * 24 * 30)
+									: null;
+
+								os.apiWithDialog('channels/ban/create', {
+									channelId: appearNote.channel!.id,
+									userId: appearNote.userId,
+									expiresAt,
+								});
+							},
+						});
+					}
+
+					// Invite as moderator (if note author is not the current user, only channel admin or server admin)
+					if (appearNote.userId !== $i.id && (appearNote.channel!.userId === $i.id || $i.isAdmin)) {
+						channelChildMenu.push({
+							icon: 'ti ti-shield-check',
+							text: i18n.ts.channelInviteModerator,
+							action: () => {
+								os.apiWithDialog('channels/moderator/add', {
+									channelId: appearNote.channel!.id,
+									userId: appearNote.userId,
+								}).then(() => {
+									os.alert({
+										type: 'info',
+										text: i18n.ts.moderatorInvitationSent,
+									});
+								});
+							},
+						});
+					}
+
 					return channelChildMenu;
 				},
 			});
