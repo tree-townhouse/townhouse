@@ -171,7 +171,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch, defineAsyncComponent } from 'vue';
+import { computed, ref, watch, defineAsyncComponent, useCssModule } from 'vue';
 import * as Misskey from 'cherrypick-js';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
@@ -194,6 +194,7 @@ import { userPage } from '@/filters/user.js';
 
 const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
 
+const $style = useCssModule();
 const router = useRouter();
 
 const props = defineProps<{
