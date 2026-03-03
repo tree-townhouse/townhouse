@@ -217,6 +217,14 @@ export const packedNoteSchema = {
 					type: 'string',
 					optional: false, nullable: true,
 				},
+				isNoteUserChannelOwner: {
+					type: 'boolean',
+					optional: true, nullable: false,
+				},
+				isNoteUserChannelModerator: {
+					type: 'boolean',
+					optional: true, nullable: false,
+				},
 			},
 		},
 		localOnly: {

@@ -11,7 +11,7 @@ import type { Packed } from '@/misc/json-schema.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiNote } from '@/models/Note.js';
-import type { UsersRepository, NotesRepository, FollowingsRepository, PollsRepository, PollVotesRepository, NoteReactionsRepository, ChannelsRepository, InstancesRepository, MiMeta, EventsRepository } from '@/models/_.js';
+import type { UsersRepository, NotesRepository, FollowingsRepository, PollsRepository, PollVotesRepository, NoteReactionsRepository, ChannelsRepository, InstancesRepository, MiMeta, EventsRepository, ChannelModeratorsRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { DebounceLoader } from '@/misc/loader.js';
 import { IdService } from '@/core/IdService.js';
@@ -102,6 +102,9 @@ export class NoteEntityService implements OnModuleInit {
 
 		@Inject(DI.instancesRepository)
 		private instancesRepository: InstancesRepository,
+
+		@Inject(DI.channelModeratorsRepository)
+		private channelModeratorsRepository: ChannelModeratorsRepository,
 
 		//private userEntityService: UserEntityService,
 		//private driveFileEntityService: DriveFileEntityService,
@@ -487,6 +490,8 @@ export class NoteEntityService implements OnModuleInit {
 				isSensitive: channel.isSensitive,
 				allowRenoteToExternal: channel.allowRenoteToExternal,
 				userId: channel.userId,
+				isNoteUserChannelOwner: channel.userId === note.userId,
+				isNoteUserChannelModerator: this.channelModeratorsRepository.findOneBy({ channelId: channel.id, userId: note.userId, status: 'accepted' }).then(m => m != null),
 			} : undefined,
 			mentions: note.mentions.length > 0 ? note.mentions : undefined,
 			hasPoll: note.hasPoll || undefined,
