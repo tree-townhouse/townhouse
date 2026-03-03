@@ -377,12 +377,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					} else if (err.id === 'bfa3905b-25f5-4894-b430-da331a490e4b') {
 						throw new ApiError(meta.errors.noSuchChannel);
 					} else if (err.id === 'd8e5e1e0-1234-4567-890a-bcdef0123456') {
+						let banInfo;
 						try {
-							const banInfo = JSON.parse(err.message);
-							throw new ApiError(meta.errors.bannedFromChannel, banInfo);
-						} catch (parseErr) {
-							throw new ApiError(meta.errors.bannedFromChannel, { reason: err.message });
+							banInfo = JSON.parse(err.message);
+						} catch {
+							banInfo = { reason: err.message };
 						}
+						throw new ApiError(meta.errors.bannedFromChannel, banInfo);
 					}
 				}
 				throw err;
