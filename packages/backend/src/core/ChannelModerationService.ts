@@ -328,7 +328,7 @@ export class ChannelModerationService {
 	 * Check if a user is banned from a channel (respecting expiration)
 	 */
 	@bindThis
-	public async isBanned(channelId: MiChannel['id'], userId: MiUser['id']): Promise<{ banned: boolean; reason?: string }> {
+	public async isBanned(channelId: MiChannel['id'], userId: MiUser['id']): Promise<{ banned: boolean; reason?: string; expiresAt?: Date | null }> {
 		const ban = await this.channelBansRepository.findOneBy({ channelId, userId });
 		if (!ban) return { banned: false };
 
@@ -338,7 +338,7 @@ export class ChannelModerationService {
 			return { banned: false };
 		}
 
-		return { banned: true, reason: ban.reason || undefined };
+		return { banned: true, reason: ban.reason || undefined, expiresAt: ban.expiresAt ?? null };
 	}
 
 	/**

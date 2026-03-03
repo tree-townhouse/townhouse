@@ -43,30 +43,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</template>
 
-			<!-- Pinned Notes (admin + moderator) -->
-			<MkFolder v-if="!isChannelPending" :defaultOpen="true">
-				<template #label>{{ i18n.ts.pinnedNotes }}</template>
-
-				<div class="_gaps">
-					<MkButton primary rounded @click="addPinnedNote()"><i class="ti ti-plus"></i></MkButton>
-
-					<Sortable
-						v-model="pinnedNotes"
-						itemKey="id"
-						:handle="'.' + $style.pinnedNoteHandle"
-						:animation="150"
-					>
-						<template #item="{element,index}">
-							<div :class="$style.pinnedNote">
-								<button class="_button" :class="$style.pinnedNoteHandle"><i class="ti ti-menu"></i></button>
-								{{ element.id }}
-								<button class="_button" :class="$style.pinnedNoteRemove" @click="removePinnedNote(index)"><i class="ti ti-x"></i></button>
-							</div>
-						</template>
-					</Sortable>
-				</div>
-			</MkFolder>
-
 			<!-- Moderator Management (admin only) -->
 			<MkFolder v-if="isChannelAdmin && channelId && !isChannelPending">
 				<template #label><i class="ti ti-shield-check ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.channelModerators }}</template>
@@ -291,6 +267,12 @@ async function fetchChannel() {
 	allowRenoteToExternal.value = result.allowRenoteToExternal;
 
 	channel.value = result;
+
+	// Access check: only channel admin, channel moderator, or server moderator can access editor
+	if ($i && !iAmModerator && $i.id !== result.userId && !(result.isChannelModerator)) {
+		router.push(`/channels/${props.channelId}`);
+		return;
+	}
 
 	// Fetch moderators and banned users
 	await Promise.all([

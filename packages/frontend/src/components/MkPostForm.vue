@@ -1322,11 +1322,19 @@ async function post(ev?: MouseEvent) {
 			// handled by global interceptor in misskey-api.ts
 		} else if (err.code === 'BANNED_FROM_CHANNEL') {
 			const reason = err.info?.reason;
+			const expiresAt = err.info?.expiresAt;
+			let text = i18n.ts.youAreBannedFromThisChannel;
+			if (reason) {
+				text += `\n${i18n.ts.banReason}: ${reason}`;
+			}
+			if (expiresAt) {
+				text += `\n${i18n.ts.banDuration}: ${new Date(expiresAt).toLocaleString()}`;
+			} else {
+				text += `\n${i18n.ts.banDuration}: ${i18n.ts.indefinitely}`;
+			}
 			os.alert({
 				type: 'error',
-				text: reason
-					? `${i18n.ts.youAreBannedFromThisChannel}\n${i18n.ts.reason}: ${reason}`
-					: i18n.ts.youAreBannedFromThisChannel,
+				text,
 			});
 		} else {
 			os.alert({

@@ -394,7 +394,8 @@ export class NoteCreateService implements OnApplicationShutdown {
 			// Check if the user is banned from this channel
 			const banStatus = await this.channelModerationService.isBanned(channel.id, user.id);
 			if (banStatus.banned) {
-				throw new IdentifiableError('d8e5e1e0-1234-4567-890a-bcdef0123456', banStatus.reason || 'You are banned from this channel');
+				const banInfo = JSON.stringify({ reason: banStatus.reason || '', expiresAt: banStatus.expiresAt ?? null });
+				throw new IdentifiableError('d8e5e1e0-1234-4567-890a-bcdef0123456', banInfo);
 			}
 		}
 
