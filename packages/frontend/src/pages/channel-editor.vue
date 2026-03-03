@@ -106,17 +106,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<div v-if="moderationLog.length === 0" style="text-align: center; opacity: 0.5;">{{ i18n.ts.noModerationLog }}</div>
 					<div v-for="entry in moderationLog" :key="entry.id" :class="$style.logItem">
-						<MkAvatar :user="entry.user" :class="$style.moderatorAvatar"/>
 						<div :class="$style.logContent">
 							<div :class="$style.logAction">
-								<MkUserName :user="entry.user" style="font-weight: bold;"/>
-								<span style="margin-left: 0.5em;">{{ logTypeLabel(entry.type) }}</span>
-							</div>
-							<div v-if="entry.info.targetUserId" style="opacity: 0.7; font-size: 0.85em;">
-								{{ i18n.ts.target }}: {{ entry.info.targetUserId }}
+								<MkA v-user-preview="entry.user.id" :to="userPage(entry.user)" :class="$style.logUser">
+									<MkAvatar :user="entry.user" :class="$style.logAvatar"/>
+									<MkUserName :user="entry.user"/>
+								</MkA>
+								<span>{{ logTypeLabel(entry.type) }}</span>
+								<template v-if="entry.targetUser">
+									<span>(</span>
+									<MkA v-user-preview="entry.targetUser.id" :to="userPage(entry.targetUser)" :class="$style.logUser">
+										<MkAvatar :user="entry.targetUser" :class="$style.logAvatar"/>
+										<MkUserName :user="entry.targetUser"/>
+									</MkA>
+									<span>)</span>
+								</template>
 							</div>
 							<div v-if="entry.info.noteId" style="opacity: 0.7; font-size: 0.85em;">
-								{{ i18n.ts.note }}: {{ entry.info.noteId }}
+								{{ i18n.ts.note }}: <MkA :to="`/notes/${entry.info.noteId}`" class="_link">{{ entry.info.noteId }}</MkA>
 							</div>
 							<div style="opacity: 0.5; font-size: 0.8em;">{{ logTimestamp(entry.id) }}</div>
 						</div>
@@ -151,6 +158,7 @@ import MkSwitch from '@/components/MkSwitch.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
 import { useRouter } from '@/router.js';
 import { $i, iAmModerator } from '@/i.js';
+import { userPage } from '@/filters/user.js';
 
 const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
 
@@ -535,6 +543,23 @@ definePage(() => ({
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
-	gap: 2px;
+	gap: 4px;
+}
+
+.logUser {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-weight: bold;
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+.logAvatar {
+	width: 20px;
+	height: 20px;
 }
 </style>

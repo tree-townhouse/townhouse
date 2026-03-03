@@ -87,9 +87,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			return await Promise.all(logs.map(async (log: { id: string; userId: string; type: string; info: Record<string, any> }) => {
 				const user = await this.userEntityService.pack(log.userId, me);
+				const targetUser = log.info.targetUserId
+					? await this.userEntityService.pack(log.info.targetUserId, me).catch(() => null)
+					: null;
 				return {
 					...log,
 					user,
+					targetUser,
 				};
 			}));
 		});

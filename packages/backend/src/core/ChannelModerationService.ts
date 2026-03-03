@@ -134,18 +134,28 @@ export class ChannelModerationService {
 			await this.channelModeratorsRepository.delete(existing.id);
 		}
 
-		// Create moderator invitation with pending status
-		await this.channelModeratorsRepository.insertOne({
-			id: this.idService.gen(),
-			channelId,
-			userId: inviteeId,
-			status: 'pending',
-		});
+		// Server admin: immediately appoint without invitation
+		if (isServerAdmin) {
+			await this.channelModeratorsRepository.insertOne({
+				id: this.idService.gen(),
+				channelId,
+				userId: inviteeId,
+				status: 'accepted',
+			});
+		} else {
+			// Channel admin: create moderator invitation with pending status
+			await this.channelModeratorsRepository.insertOne({
+				id: this.idService.gen(),
+				channelId,
+				userId: inviteeId,
+				status: 'pending',
+			});
 
-		// Send notification to the invitee
-		this.notificationService.createNotification(inviteeId, 'channelModeratorInvitationReceived', {
-			channelId,
-		}, inviterId);
+			// Send notification to the invitee
+			this.notificationService.createNotification(inviteeId, 'channelModeratorInvitationReceived', {
+				channelId,
+			}, inviterId);
+		}
 
 		await this.log(channelId, inviterId, 'addModerator', { targetUserId: inviteeId });
 	}
