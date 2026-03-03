@@ -615,10 +615,11 @@ const urls = computed(() => parsed.value ? extractUrlFromMfm(parsed.value).filte
 const isLong = shouldCollapsed(appearNote, urls.value ?? []);
 const isMFM = shouldMfmCollapsed(appearNote);
 const iAmModerator = computed(() => $i && ($i.isAdmin || $i.policies?.canHideNote));
+const iAmChannelManager = computed(() => appearNote.channel?.isViewerChannelManager === true);
 // Include syncedNote as dependency to ensure re-evaluation when props.note changes
 const isEffectivelyHidden = computed(() => {
 	syncedNote.value; // Establish dependency on props.note changes
-	return $appearNote.isHidden || ($appearNote.isBlinded && !iAmModerator.value);
+	return $appearNote.isHidden || ($appearNote.isBlinded && !iAmModerator.value && !iAmChannelManager.value);
 });
 const collapsed = ref(appearNote.cw == null && ((isLong && prefer.s.collapseLongNoteContent) || (isMFM && prefer.s.collapseDefault) || ((appearNote.files?.length ?? 0) > 0 && prefer.s.allMediaNoteCollapse)));
 const muted = ref(checkMute(appearNote, $i?.mutedWords));

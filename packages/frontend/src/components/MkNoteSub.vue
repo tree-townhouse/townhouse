@@ -93,7 +93,8 @@ const onGlobalVisibilityChanged = ({ noteId, isBlinded }) => {
 		// Also update isHidden to match blind state for non-moderator/non-owner users
 		const iAmModerator = $i && ($i.isAdmin || $i.policies?.canHideNote);
 		const iAmOwner = $i && $i.id === props.note.userId;
-		if (isBlinded === true && !(iAmModerator || iAmOwner)) {
+		const iAmChannelManager = props.note.channel?.isViewerChannelManager === true;
+		if (isBlinded === true && !(iAmModerator || iAmOwner || iAmChannelManager)) {
 			props.note.isHidden = true;
 		} else if (isBlinded === false) {
 			props.note.isHidden = false;

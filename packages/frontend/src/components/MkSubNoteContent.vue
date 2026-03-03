@@ -255,7 +255,8 @@ const isMFM = shouldMfmCollapsed(props.note);
 
 const isBlindedInThisContext = computed(() => $note.isBlinded && inGlobalTimeline.value && inGlobalTimeline.value);
 const iAmModerator = computed(() => $i && ($i.isAdmin || $i.policies?.canHideNote));
-const isEffectivelyHidden = computed(() => props.note.isHidden || (isBlindedInThisContext.value && !iAmModerator.value));
+const iAmChannelManager = computed(() => props.note.channel?.isViewerChannelManager === true);
+const isEffectivelyHidden = computed(() => props.note.isHidden || (isBlindedInThisContext.value && !iAmModerator.value && !iAmChannelManager.value));
 
 const collapsed = ref((isLong && prefer.s.collapseLongNoteContent) || (isMFM && prefer.s.collapseDefault) || (props.note.files && props.note.files.length > 0) || !!props.note.poll);
 

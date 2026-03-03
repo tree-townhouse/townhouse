@@ -19,6 +19,8 @@ import { IdService } from '@/core/IdService.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { NoteDeleteService } from '@/core/NoteDeleteService.js';
 import { RoleService } from '@/core/RoleService.js';
+import { GlobalEventService } from '@/core/GlobalEventService.js';
+import { SearchService } from '@/core/SearchService.js';
 import type { ChannelModerationLogType } from '@/models/ChannelModerationLog.js';
 import { bindThis } from '@/decorators.js';
 
@@ -47,6 +49,8 @@ export class ChannelModerationService {
 		private notificationService: NotificationService,
 		private noteDeleteService: NoteDeleteService,
 		private roleService: RoleService,
+		private globalEventService: GlobalEventService,
+		private searchService: SearchService,
 	) {}
 
 	/**
@@ -389,6 +393,54 @@ export class ChannelModerationService {
 		await this.noteDeleteService.delete(noteAuthor, note, false, deleter);
 
 		await this.log(channelId, deleterId, 'deleteNote', { noteId, noteUserId: note.userId });
+	}
+
+	/**
+	 * Blind or unblind a note in a channel (by channel admin/moderator or server admin/moderator)
+	 */
+	@bindThis
+	public async blindNote(channelId: MiChannel['id'], operatorId: MiUser['id'], noteId: string, isBlinded: boolean): Promise<void> {
+		const isServerMod = await this.roleService.isModerator({ id: operatorId });
+		if (!isServerMod && !await this.hasChannelManagePermission(channelId, operatorId)) {
+			throw new Error('ACCESS_DENIED');
+		}
+
+		const note = await this.notesRepository.findOneBy({
+			id: noteId,
+			channelId,
+		});
+
+		if (!note) {
+			throw new Error('NO_SUCH_NOTE');
+		}
+
+		if (note.isBlinded === isBlinded) {
+			return;
+		}
+
+		await this.notesRepository.update({ id: note.id }, {
+			isBlinded,
+		});
+
+		note.isBlinded = isBlinded;
+		this.searchService.unindexNote(note);
+		this.searchService.indexNote(note);
+
+		this.globalEventService.publishNoteStream(note.id, 'updated', {
+			deleteAt: note.deleteAt ?? null,
+			isBlinded: note.isBlinded,
+		});
+
+		this.globalEventService.publishBroadcastStream('noteUpdated', {
+			id: note.id,
+			type: 'updated',
+			body: {
+				deleteAt: note.deleteAt ?? null,
+				isBlinded: note.isBlinded,
+			},
+		});
+
+		await this.log(channelId, operatorId, isBlinded ? 'blindNote' : 'unblindNote', { noteId, noteUserId: note.userId });
 	}
 
 	/**

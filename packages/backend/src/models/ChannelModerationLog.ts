@@ -15,7 +15,9 @@ export type ChannelModerationLogType =
 	| 'addModerator'
 	| 'removeModerator'
 	| 'banUser'
-	| 'unbanUser';
+	| 'unbanUser'
+	| 'blindNote'
+	| 'unblindNote';
 
 @Entity('channel_moderation_log')
 export class MiChannelModerationLog {

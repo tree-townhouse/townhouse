@@ -138,8 +138,9 @@ export class NoteEntityService implements OnModuleInit {
 
 	@bindThis
 	private async hideNote(packedNote: Packed<'Note'>, meId: MiUser['id'] | null, iAmModerator = false): Promise<void> {
-		// 블라인드 처리된 노트: 모더레이터가 아닌 모든 사용자에게 콘텐츠 숨김 (노트 작성자 및 팔로워 포함)
-		if (packedNote.isBlinded && !iAmModerator) {
+		// 블라인드 처리된 노트: 모더레이터/채널 관리자가 아닌 모든 사용자에게 콘텐츠 숨김 (노트 작성자 및 팔로워 포함)
+		const isChannelManager = packedNote.channel?.isViewerChannelManager === true;
+		if (packedNote.isBlinded && !iAmModerator && !isChannelManager) {
 			packedNote.visibleUserIds = undefined;
 			packedNote.fileIds = [];
 			packedNote.files = [];
@@ -492,6 +493,7 @@ export class NoteEntityService implements OnModuleInit {
 				userId: channel.userId,
 				isNoteUserChannelOwner: channel.userId === note.userId,
 				isNoteUserChannelModerator: this.channelModeratorsRepository.findOneBy({ channelId: channel.id, userId: note.userId, status: 'accepted' }).then(m => m != null),
+				isViewerChannelManager: me ? (channel.userId === me.id ? true : this.channelModeratorsRepository.findOneBy({ channelId: channel.id, userId: me.id, status: 'accepted' }).then(m => m != null)) : undefined,
 			} : undefined,
 			mentions: note.mentions.length > 0 ? note.mentions : undefined,
 			hasPoll: note.hasPoll || undefined,

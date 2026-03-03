@@ -359,7 +359,8 @@ export function useNoteCapture(props: {
 			// Control visibility with isHidden flag only, preserve content for restoration
 			const iAmModerator = $i && ($i.isAdmin || $i.policies?.canHideNote);
 			const iAmOwner = $i && $i.id === note.userId;
-			if (payload.isBlinded === true && !(iAmModerator || iAmOwner)) {
+			const iAmChannelManager = note.channel?.isViewerChannelManager === true;
+			if (payload.isBlinded === true && !(iAmModerator || iAmOwner || iAmChannelManager)) {
 				// Only hide content, don't delete it - we need it for unblind restoration
 				note.isHidden = true;
 				$note.isHidden = true;

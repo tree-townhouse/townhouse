@@ -640,7 +640,7 @@ export function getNoteMenu(props: {
 			if (props.note.userId !== $i.id) menuItems.push(getAbuseNoteMenu(props.note, i18n.ts.reportAbuseRenote));
 		}
 
-		if (appearNote.channel && (appearNote.channel.userId === $i.id || $i.isModerator || $i.isAdmin)) {
+		if (appearNote.channel && (appearNote.channel.userId === $i.id || appearNote.channel.isViewerChannelManager || $i.isModerator || $i.isAdmin)) {
 			menuItems.push({ type: 'divider' });
 			menuItems.push({
 				type: 'parent',
@@ -670,6 +670,33 @@ export function getNoteMenu(props: {
 							}),
 						});
 					}
+
+					// Blind/unblind note in channel
+					channelChildMenu.push({ type: 'divider' });
+					channelChildMenu.push({
+						icon: appearNote.isBlinded ? 'ti ti-eye' : 'ti ti-eye-off',
+						text: appearNote.isBlinded ? i18n.ts.unblind : i18n.ts.blind,
+						danger: !appearNote.isBlinded,
+						action: async () => {
+							const targetBlindState = !appearNote.isBlinded;
+							const { canceled } = await os.confirm({
+								type: 'warning',
+								text: appearNote.isBlinded ? i18n.ts.unblindConfirm : i18n.ts.blindConfirm,
+							});
+							if (canceled) return;
+
+							misskeyApi('channels/notes/blind', {
+								channelId: appearNote.channel!.id,
+								noteId: appearNote.id,
+								isBlinded: targetBlindState,
+							}).then(() => {
+								appearNote.isBlinded = targetBlindState;
+								noteEvents.emit(`updated:${appearNote.id}`, {
+									isBlinded: targetBlindState,
+								});
+							});
+						},
+					});
 
 					// Ban user from channel (if note author is not the current user and not the channel admin)
 					if (appearNote.userId !== $i.id && appearNote.channel!.userId !== appearNote.userId) {

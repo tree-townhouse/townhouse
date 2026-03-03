@@ -241,6 +241,8 @@ const {
 		{ label: i18n.ts.logRemoveModerator, value: 'removeModerator' },
 		{ label: i18n.ts.logBanUser, value: 'banUser' },
 		{ label: i18n.ts.logUnbanUser, value: 'unbanUser' },
+		{ label: i18n.ts.logBlindNote, value: 'blindNote' },
+		{ label: i18n.ts.logUnblindNote, value: 'unblindNote' },
 	],
 	initialValue: null,
 });
@@ -380,6 +382,8 @@ function logTypeLabel(type: string): string {
 		case 'removeModerator': return i18n.ts.logRemoveModerator;
 		case 'banUser': return i18n.ts.logBanUser;
 		case 'unbanUser': return i18n.ts.logUnbanUser;
+		case 'blindNote': return i18n.ts.logBlindNote;
+		case 'unblindNote': return i18n.ts.logUnblindNote;
 		default: return type;
 	}
 }
@@ -393,6 +397,8 @@ function logTypeColorClass(type: string): string {
 		case 'removeModerator': return $style.logColorRed;
 		case 'banUser': return $style.logColorRed;
 		case 'unbanUser': return $style.logColorGreen;
+		case 'blindNote': return $style.logColorRed;
+		case 'unblindNote': return $style.logColorGreen;
 		default: return '';
 	}
 }

@@ -225,6 +225,10 @@ export const packedNoteSchema = {
 					type: 'boolean',
 					optional: true, nullable: false,
 				},
+				isViewerChannelManager: {
+					type: 'boolean',
+					optional: true, nullable: false,
+				},
 			},
 		},
 		localOnly: {
