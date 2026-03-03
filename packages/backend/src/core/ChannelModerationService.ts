@@ -440,7 +440,7 @@ export class ChannelModerationService {
 			},
 		});
 
-		await this.log(channelId, operatorId, isBlinded ? 'blindNote' : 'unblindNote', { noteId, noteUserId: note.userId });
+		await this.log(channelId, operatorId, isBlinded ? 'blindNote' : 'unblindNote', { noteId, noteUserId: note.userId, targetUserId: note.userId });
 	}
 
 	/**

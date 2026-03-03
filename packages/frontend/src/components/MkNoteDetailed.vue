@@ -69,6 +69,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<MkUserName :nowrap="true" :user="appearNote.user"/>
 							</MkA>
 							<span v-if="appearNote.user.isLocked" :class="$style.userBadge"><i class="ti ti-lock"></i></span>
+							<span v-if="appearNote.channel?.isNoteUserChannelOwner" v-tooltip="i18n.ts.channelOwner" :class="$style.channelOwnerBadge"><i class="ti ti-shield-star"></i></span>
+							<span v-else-if="appearNote.channel?.isNoteUserChannelModerator" v-tooltip="i18n.ts.channelModerator" :class="$style.channelModeratorBadge"><i class="ti ti-shield-check"></i></span>
 							<span v-if="appearNote.user.isBot" :class="$style.userBadge"><i class="ti ti-robot"></i></span>
 							<span v-if="appearNote.user.isProxy" :class="$style.userBadge"><i class="ti ti-ghost"></i></span>
 							<span v-if="appearNote.user.badgeRoles" :class="$style.badgeRoles">
@@ -1150,6 +1152,16 @@ function loadHistories() {
 
 .userBadge {
 	margin: 0 .5em 0 0;
+}
+
+.channelOwnerBadge {
+	margin: 0 .5em 0 0;
+	color: var(--MI_THEME-warn);
+}
+
+.channelModeratorBadge {
+	margin: 0 .5em 0 0;
+	color: var(--MI_THEME-accent);
 }
 
 .isBot {
