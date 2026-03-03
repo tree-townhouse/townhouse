@@ -8,7 +8,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { ChannelModerationService } from '@/core/ChannelModerationService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { RoleService } from '@/core/RoleService.js';
-import { ApiError } from '../../../error.js';
+import { ApiError } from '../../error.js';
 
 export const meta = {
 	tags: ['channels'],
