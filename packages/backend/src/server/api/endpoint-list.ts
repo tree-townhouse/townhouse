@@ -34,6 +34,7 @@ export * as 'admin/announcements/update' from './endpoints/admin/announcements/u
 export * as 'admin/approve-user' from './endpoints/admin/approve-user.js';
 export * as 'admin/channels/approve' from './endpoints/admin/channels/approve.js';
 export * as 'admin/channels/delete' from './endpoints/admin/channels/delete.js';
+export * as 'admin/channels/list' from './endpoints/admin/channels/list.js';
 export * as 'admin/channels/pending' from './endpoints/admin/channels/pending.js';
 export * as 'admin/channels/transfer' from './endpoints/admin/channels/transfer.js';
 export * as 'admin/avatar-decorations/copy' from './endpoints/admin/avatar-decorations/copy.js';

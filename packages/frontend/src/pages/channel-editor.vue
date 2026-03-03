@@ -9,8 +9,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-if="channelId == null || channel != null" class="_gaps_m">
 			<!-- Admin-only settings (channel owner / server moderator) -->
 			<template v-if="isChannelAdmin">
-				<MkInput v-model="name">
+				<MkInput v-model="name" :disabled="props.channelId != null && !iAmModerator">
 					<template #label>{{ i18n.ts.name }}</template>
+					<template v-if="props.channelId != null && !iAmModerator" #caption>{{ i18n.ts.cannotChangeChannelName }}</template>
 				</MkInput>
 
 				<MkTextarea v-model="description" mfmAutocomplete :mfmPreview="true">

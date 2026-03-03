@@ -47,7 +47,10 @@ export class ChannelModeration1772000000000 {
 		await queryRunner.query(`ALTER TABLE "meta" ADD "requireChannelApproval" boolean NOT NULL DEFAULT false`);
 		await queryRunner.query(`COMMENT ON COLUMN "meta"."requireChannelApproval" IS 'Whether channel creation requires approval from server admin.'`);
 
-		// 6. Create channel_moderation_log table
+		// 6. Add unique constraint on channel name
+		await queryRunner.query(`CREATE UNIQUE INDEX "IDX_channel_name_unique" ON "channel" ("name")`);
+
+		// 7. Create channel_moderation_log table
 		await queryRunner.query(`CREATE TABLE "channel_moderation_log" ("id" character varying(32) NOT NULL, "channelId" character varying(32) NOT NULL, "userId" character varying(32) NOT NULL, "type" character varying(64) NOT NULL, "info" jsonb NOT NULL DEFAULT '{}', CONSTRAINT "PK_channel_moderation_log_id" PRIMARY KEY ("id"))`);
 		await queryRunner.query(`CREATE INDEX "IDX_channel_moderation_log_channelId" ON "channel_moderation_log" ("channelId")`);
 		await queryRunner.query(`CREATE INDEX "IDX_channel_moderation_log_userId" ON "channel_moderation_log" ("userId")`);
@@ -69,6 +72,9 @@ export class ChannelModeration1772000000000 {
 
 		// Reverse: remove requireChannelApproval from meta
 		await queryRunner.query(`ALTER TABLE "meta" DROP COLUMN "requireChannelApproval"`);
+
+		// Reverse: drop unique constraint on channel name
+		await queryRunner.query(`DROP INDEX "IDX_channel_name_unique"`);
 
 		// Reverse: add isArchived back, drop isApproved
 		await queryRunner.query(`ALTER TABLE "channel" ADD "isArchived" boolean NOT NULL DEFAULT false`);

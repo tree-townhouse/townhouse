@@ -45,6 +45,18 @@ export const meta = {
 			code: 'NO_SUCH_FILE',
 			id: 'e86c14a4-0da2-4032-8df3-e737a04c7f3b',
 		},
+
+		cannotChangeChannelName: {
+			message: 'Channel name cannot be changed by the channel admin.',
+			code: 'CANNOT_CHANGE_CHANNEL_NAME',
+			id: 'e0460b5e-1a02-4c29-a8b0-005002000002',
+		},
+
+		duplicateChannelName: {
+			message: 'A channel with this name already exists.',
+			code: 'DUPLICATE_CHANNEL_NAME',
+			id: 'e0460b5e-1a02-4c29-a8b0-005002000003',
+		},
 	},
 } as const;
 
@@ -120,6 +132,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}
 			} else if (ps.bannerId === null) {
 				banner = null;
+			}
+
+			// Channel admin cannot change name after creation; only server admin can
+			if (ps.name !== undefined && ps.name !== channel.name && !iAmModerator) {
+				throw new ApiError(meta.errors.cannotChangeChannelName);
+			}
+
+			// Duplicate name check (for server admin changing name)
+			if (ps.name !== undefined && ps.name !== channel.name) {
+				const existing = await this.channelsRepository.findOneBy({ name: ps.name });
+				if (existing) {
+					throw new ApiError(meta.errors.duplicateChannelName);
+				}
 			}
 
 			await this.channelsRepository.update(channel.id, {

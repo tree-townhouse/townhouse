@@ -42,6 +42,11 @@ export const meta = {
 			code: 'NO_SUCH_FILE',
 			id: 'cd1e9f3e-5a12-4ab4-96f6-5d0a2cc32050',
 		},
+		duplicateChannelName: {
+			message: 'A channel with this name already exists.',
+			code: 'DUPLICATE_CHANNEL_NAME',
+			id: 'e0460b5e-1a02-4c29-a8b0-005002000001',
+		},
 	},
 } as const;
 
@@ -84,6 +89,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				if (banner == null) {
 					throw new ApiError(meta.errors.noSuchFile);
 				}
+			}
+
+			const existing = await this.channelsRepository.findOneBy({ name: ps.name });
+			if (existing) {
+				throw new ApiError(meta.errors.duplicateChannelName);
 			}
 
 			const channel = await this.channelsRepository.insertOne({

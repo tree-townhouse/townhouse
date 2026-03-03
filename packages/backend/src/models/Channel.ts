@@ -33,6 +33,7 @@ export class MiChannel {
 	@JoinColumn()
 	public user: MiUser | null;
 
+	@Index({ unique: true })
 	@Column('varchar', {
 		length: 128,
 		comment: 'The name of the Channel.',

@@ -33,11 +33,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<!-- All Channels (for delete) -->
 		<div v-else-if="tab === 'all'" class="_gaps_m">
-			<MkInput v-model="searchQuery" @enter="searchChannels()">
+			<MkInput v-model="searchQuery" @enter="fetchAllChannels()">
 				<template #prefix><i class="ti ti-search"></i></template>
 				<template #label>{{ i18n.ts.search }}</template>
 			</MkInput>
-			<MkButton primary rounded @click="searchChannels()">{{ i18n.ts.search }}</MkButton>
 
 			<div v-if="allChannels.length === 0" style="text-align: center; opacity: 0.5; padding: 16px;">
 				{{ i18n.ts.nothing }}
@@ -56,6 +55,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkButton danger small @click="deleteChannel(ch)"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 				</div>
 			</div>
+			<MkButton v-if="hasMoreChannels" rounded @click="fetchMoreChannels()">{{ i18n.ts.loadMore }}</MkButton>
 		</div>
 	</div>
 </PageWithHeader>
@@ -75,6 +75,7 @@ const tab = ref('settings');
 const requireChannelApproval = ref(false);
 const pendingChannels = ref<any[]>([]);
 const allChannels = ref<any[]>([]);
+const hasMoreChannels = ref(false);
 const searchQuery = ref('');
 
 // Fetch initial settings
@@ -97,14 +98,33 @@ async function fetchPendingChannels() {
 	}
 }
 
-async function searchChannels() {
+async function fetchAllChannels() {
 	try {
-		allChannels.value = await misskeyApi('channels/search', {
-			query: searchQuery.value,
+		const result = await misskeyApi('admin/channels/list', {
+			query: searchQuery.value || undefined,
 			limit: 30,
 		});
+		allChannels.value = result;
+		hasMoreChannels.value = result.length >= 30;
 	} catch {
 		allChannels.value = [];
+		hasMoreChannels.value = false;
+	}
+}
+
+async function fetchMoreChannels() {
+	if (allChannels.value.length === 0) return;
+	const lastId = allChannels.value[allChannels.value.length - 1].id;
+	try {
+		const result = await misskeyApi('admin/channels/list', {
+			query: searchQuery.value || undefined,
+			untilId: lastId,
+			limit: 30,
+		});
+		allChannels.value = [...allChannels.value, ...result];
+		hasMoreChannels.value = result.length >= 30;
+	} catch {
+		hasMoreChannels.value = false;
 	}
 }
 
@@ -136,7 +156,7 @@ async function deleteChannel(ch: any) {
 	// Refresh both lists
 	await Promise.all([
 		fetchPendingChannels(),
-		allChannels.value.length > 0 ? searchChannels() : Promise.resolve(),
+		allChannels.value.length > 0 ? fetchAllChannels() : Promise.resolve(),
 	]);
 }
 
@@ -155,7 +175,7 @@ async function transferOwnership(ch: any) {
 		userId: user.id,
 	});
 
-	if (allChannels.value.length > 0) await searchChannels();
+	if (allChannels.value.length > 0) await fetchAllChannels();
 }
 
 async function manageModerators(ch: any) {
@@ -213,6 +233,8 @@ async function manageModerators(ch: any) {
 watch(tab, (newTab) => {
 	if (newTab === 'pending') {
 		fetchPendingChannels();
+	} else if (newTab === 'all') {
+		fetchAllChannels();
 	}
 }, { immediate: true });
 
