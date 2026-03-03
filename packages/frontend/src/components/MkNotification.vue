@@ -127,6 +127,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 			<div v-else-if="notification.type === 'channelModeratorInvitationReceived'" :class="$style.text">
 				{{ notification.channel?.name }}
+				<div v-if="full && !moderatorInvitationDone" :class="$style.followRequestCommands">
+					<MkButton :class="$style.followRequestCommandButton" rounded primary @click="acceptModeratorInvitation()"><i class="ti ti-check"/> {{ i18n.ts.accept }}</MkButton>
+					<MkButton :class="$style.followRequestCommandButton" rounded danger @click="rejectModeratorInvitation()"><i class="ti ti-x"/> {{ i18n.ts.reject }}</MkButton>
+				</div>
 			</div>
 			<MkA v-else-if="notification.type === 'achievementEarned'" :class="$style.text" to="/my/achievements">
 				{{ i18n.ts._achievements._types['_' + notification.achievement].title }}
@@ -243,6 +247,20 @@ const rejectFollowRequest = () => {
 	if (!('user' in props.notification)) return;
 	followRequestDone.value = true;
 	misskeyApi('following/requests/reject', { userId: props.notification.user.id });
+};
+
+const moderatorInvitationDone = ref(false);
+
+const acceptModeratorInvitation = () => {
+	if (props.notification.type !== 'channelModeratorInvitationReceived') return;
+	moderatorInvitationDone.value = true;
+	misskeyApi('channels/moderator/accept', { channelId: props.notification.channel!.id });
+};
+
+const rejectModeratorInvitation = () => {
+	if (props.notification.type !== 'channelModeratorInvitationReceived') return;
+	moderatorInvitationDone.value = true;
+	misskeyApi('channels/moderator/reject', { channelId: props.notification.channel!.id });
 };
 
 function getActualReactedUsersCount(notification: Misskey.entities.Notification) {
