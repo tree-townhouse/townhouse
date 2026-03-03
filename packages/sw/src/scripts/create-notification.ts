@@ -243,6 +243,14 @@ async function composeNotification(data: PushNotificationDataMap[keyof PushNotif
 						tag: `achievement:${data.body.achievement}`,
 					}];
 
+				case 'channelModeratorInvitationReceived':
+					return [i18n.ts._notification.channelModeratorInvitationReceived, {
+						body: data.body.channel?.name ?? '',
+						icon: data.body.user?.avatarUrl ?? undefined,
+						badge: iconUrl('shield-check'),
+						data,
+					}];
+
 				case 'login':
 					return [i18n.ts._notification.login, {
 						body: i18n.tsx._notification.loginDescription({ ip: data.body.ip, text: i18n.ts.regenerateLoginToken }),

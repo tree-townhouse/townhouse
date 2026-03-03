@@ -31,6 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				[$style.t_login]: notification.type === 'login',
 				[$style.t_createToken]: notification.type === 'createToken',
 				[$style.t_chatRoomInvitationReceived]: notification.type === 'chatRoomInvitationReceived',
+				[$style.t_channelModeratorInvitationReceived]: notification.type === 'channelModeratorInvitationReceived',
 				[$style.t_roleAssigned]: notification.type === 'roleAssigned' && notification.role.iconUrl == null,
 			}]"
 		>
@@ -49,6 +50,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<i v-else-if="notification.type === 'login'" class="ti ti-login-2"></i>
 			<i v-else-if="notification.type === 'createToken'" class="ti ti-key"></i>
 			<i v-else-if="notification.type === 'chatRoomInvitationReceived'" class="ti ti-messages"></i>
+			<i v-else-if="notification.type === 'channelModeratorInvitationReceived'" class="ti ti-shield-check"></i>
 			<template v-else-if="notification.type === 'roleAssigned'">
 				<img v-if="notification.role.iconUrl" style="height: 1.3em; vertical-align: -22%; border-radius: 0.4em;" :src="notification.role.iconUrl" alt=""/>
 				<i v-else class="ti ti-badges"></i>
@@ -70,6 +72,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-else-if="notification.type === 'note'" :class="$style.headerText">{{ i18n.ts._notification.newNote }}: <MkUserName :user="notification.note.user"/></span>
 			<span v-else-if="notification.type === 'roleAssigned'" :class="$style.headerText">{{ i18n.ts._notification.roleAssigned }}</span>
 			<span v-else-if="notification.type === 'chatRoomInvitationReceived'" :class="$style.headerText">{{ i18n.ts._notification.chatRoomInvitationReceived }}</span>
+			<span v-else-if="notification.type === 'channelModeratorInvitationReceived'" :class="$style.headerText">{{ i18n.ts._notification.channelModeratorInvitationReceived }}</span>
 			<span v-else-if="notification.type === 'achievementEarned'" :class="$style.headerText">{{ i18n.ts._notification.achievementEarned }}</span>
 			<span v-else-if="notification.type === 'login'" :class="$style.headerText">{{ i18n.ts._notification.login }}</span>
 			<span v-else-if="notification.type === 'createToken'" :class="$style.headerText">{{ i18n.ts._notification.createToken }}</span>
@@ -121,6 +124,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 			<div v-else-if="notification.type === 'chatRoomInvitationReceived'" :class="$style.text">
 				{{ notification.invitation.room.name }}
+			</div>
+			<div v-else-if="notification.type === 'channelModeratorInvitationReceived'" :class="$style.text">
+				{{ notification.channel?.name }}
 			</div>
 			<MkA v-else-if="notification.type === 'achievementEarned'" :class="$style.text" to="/my/achievements">
 				{{ i18n.ts._achievements._types['_' + notification.achievement].title }}
@@ -403,6 +409,11 @@ function getActualReactedUsersCount(notification: Misskey.entities.Notification)
 }
 
 .t_chatRoomInvitationReceived {
+	background: var(--eventOther);
+	pointer-events: none;
+}
+
+.t_channelModeratorInvitationReceived {
 	background: var(--eventOther);
 	pointer-events: none;
 }

@@ -363,6 +363,11 @@ async function addModerator() {
 		channelId: props.channelId,
 		userId: user.id,
 	});
+
+	os.alert({
+		type: 'info',
+		text: i18n.ts.moderatorInvitationSent,
+	});
 }
 
 async function removeModerator(mod: any) {
