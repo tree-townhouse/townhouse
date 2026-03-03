@@ -153,7 +153,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 						<template v-if="log.targetUser">
 							<div :class="$style.logTarget">
-								<MkAvatar :user="log.targetUser" :class="$style.logTargetAvatar"/>
+								{{ i18n.ts.target }}: <MkAvatar :user="log.targetUser" :class="$style.logTargetAvatar"/>
 								<MkA v-user-preview="log.targetUser.id" :to="userPage(log.targetUser)" class="_link">@{{ log.targetUser.username }}</MkA>
 							</div>
 						</template>
