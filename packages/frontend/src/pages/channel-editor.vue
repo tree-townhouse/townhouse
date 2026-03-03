@@ -115,7 +115,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-else-if="tab === 'log'" class="_gaps">
 			<div :class="$style.logControl">
 				<MkSelect v-model="logTypeFilter" :items="logTypeDef" :class="$style.logFilterSelect">
-					<template #label>{{ i18n.ts.filter }}</template>
+					<template #prefix><i class="ti ti-filter"></i></template>
 				</MkSelect>
 				<MkSelect v-model="logOrder" :items="logOrderDef" :class="$style.logOrderSelect">
 					<template #prefix><i class="ti ti-arrows-sort"></i></template>
