@@ -63,7 +63,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			await this.moderationLogService.log(me, 'approveChannel', {
 				channelId: channel.id,
-				channel: channel,
+				channelName: channel.name,
 			});
 		});
 	}

@@ -62,7 +62,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import MkButton from '@/components/MkButton.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkInput from '@/components/MkInput.vue';
@@ -210,7 +210,6 @@ async function manageModerators(ch: any) {
 }
 
 // Watch tab changes to load data
-import { watch } from 'vue';
 watch(tab, (newTab) => {
 	if (newTab === 'pending') {
 		fetchPendingChannels();

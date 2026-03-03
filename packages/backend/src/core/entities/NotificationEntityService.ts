@@ -20,6 +20,7 @@ import { ChatEntityService } from './ChatEntityService.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { UserEntityService } from './UserEntityService.js';
 import type { NoteEntityService } from './NoteEntityService.js';
+import type { ChannelEntityService } from './ChannelEntityService.js';
 
 const NOTE_REQUIRED_NOTIFICATION_TYPES = new Set([
 	'note',
@@ -40,6 +41,7 @@ export class NotificationEntityService implements OnModuleInit {
 	private noteEntityService: NoteEntityService;
 	private roleEntityService: RoleEntityService;
 	private chatEntityService: ChatEntityService;
+	private channelEntityService: ChannelEntityService;
 
 	constructor(
 		private moduleRef: ModuleRef,
@@ -62,6 +64,7 @@ export class NotificationEntityService implements OnModuleInit {
 		this.noteEntityService = this.moduleRef.get('NoteEntityService');
 		this.roleEntityService = this.moduleRef.get('RoleEntityService');
 		this.chatEntityService = this.moduleRef.get('ChatEntityService');
+		this.channelEntityService = this.moduleRef.get('ChannelEntityService');
 	}
 
 	/**
@@ -184,6 +187,12 @@ export class NotificationEntityService implements OnModuleInit {
 			return null;
 		}
 
+		const needsChannel = notification.type === 'channelModeratorInvitationReceived';
+		const channel = needsChannel ? await this.channelEntityService.pack(notification.channelId, { id: meId }).catch(() => null) : undefined;
+		if (needsChannel && !channel) {
+			return null;
+		}
+
 		return await awaitAll({
 			id: notification.id,
 			createdAt: new Date(notification.createdAt).toISOString(),
@@ -199,6 +208,9 @@ export class NotificationEntityService implements OnModuleInit {
 			} : {}),
 			...(notification.type === 'chatRoomInvitationReceived' ? {
 				invitation: chatRoomInvitation,
+			} : {}),
+			...(notification.type === 'channelModeratorInvitationReceived' ? {
+				channel: channel,
 			} : {}),
 			...(notification.type === 'followRequestAccepted' ? {
 				message: notification.message,

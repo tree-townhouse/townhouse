@@ -60,7 +60,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// Log moderation action
 			await this.moderationLogService.log(me, 'deleteChannel', {
 				channelId: channel.id,
-				channel: channel,
+				channelName: channel.name,
 			});
 		});
 	}

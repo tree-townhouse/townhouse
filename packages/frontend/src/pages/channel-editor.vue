@@ -86,7 +86,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkButton primary rounded @click="banUser()"><i class="ti ti-plus"></i> {{ i18n.ts.banUser }}</MkButton>
 
 					<div v-if="bannedUsers.length === 0" style="text-align: center; opacity: 0.5;">{{ i18n.ts.noBannedUsers }}</div>
-					<div v-for="ban in bannedUsers" :key="ban.id" :class="$style.moderatorItem">
+					<div v-for="ban in bannedUsers" :key="ban.userId" :class="$style.moderatorItem">
 						<MkAvatar :user="ban.user" :class="$style.moderatorAvatar"/>
 						<MkUserName :user="ban.user" :class="$style.moderatorName"/>
 						<span v-if="ban.expiresAt" style="opacity: 0.7; font-size: 0.85em; margin-left: 0.5em;">{{ banRemainingLabel(ban.expiresAt) }}</span>
@@ -356,11 +356,6 @@ async function addModerator() {
 	await os.apiWithDialog('channels/moderator/add', {
 		channelId: props.channelId,
 		userId: user.id,
-	});
-
-	os.alert({
-		type: 'success',
-		text: i18n.ts.moderatorInvitationSent,
 	});
 }
 

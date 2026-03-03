@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { ChannelModeratorsRepository, UsersRepository } from '@/models/_.js';
+import type { ChannelModeratorsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 
@@ -52,9 +52,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		@Inject(DI.channelModeratorsRepository)
 		private channelModeratorsRepository: ChannelModeratorsRepository,
-
-		@Inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
 
 		private userEntityService: UserEntityService,
 	) {

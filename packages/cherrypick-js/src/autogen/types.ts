@@ -5213,7 +5213,6 @@ export type components = {
             bannerId: string | null;
             pinnedNoteIds: string[];
             color: string;
-            isArchived: boolean;
             isApproved: boolean;
             usersCount: number;
             notesCount: number;

@@ -75,6 +75,9 @@ import { MiUserSecurityKey } from '@/models/UserSecurityKey.js';
 import { MiWebhook } from '@/models/Webhook.js';
 import { MiSystemWebhook } from '@/models/SystemWebhook.js';
 import { MiChannel } from '@/models/Channel.js';
+import { MiChannelModerator } from '@/models/ChannelModerator.js';
+import { MiChannelBan } from '@/models/ChannelBan.js';
+import { MiChannelModerationLog } from '@/models/ChannelModerationLog.js';
 import { MiRetentionAggregation } from '@/models/RetentionAggregation.js';
 import { MiRole } from '@/models/Role.js';
 import { MiRoleAssignment } from '@/models/RoleAssignment.js';
@@ -239,6 +242,9 @@ export const entities = [
 	MiChannelFollowing,
 	MiChannelFavorite,
 	MiChannelMuting,
+	MiChannelModerator,
+	MiChannelBan,
+	MiChannelModerationLog,
 	MiRegistryItem,
 	MiAd,
 	MiPasswordResetRequest,

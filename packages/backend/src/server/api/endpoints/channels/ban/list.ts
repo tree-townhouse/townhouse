@@ -15,7 +15,7 @@ export const meta = {
 
 	requireCredential: true,
 
-	kind: 'write:channels',
+	kind: 'read:channels',
 
 	res: {
 		type: 'array',
@@ -81,7 +81,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			return await Promise.all(bans.map(async (ban: { userId: string; bannedById: string; expiresAt: Date | null }) => {
 				const user = await this.userEntityService.pack(ban.userId, me);
 				return {
-					...ban,
+					userId: ban.userId,
+					bannedById: ban.bannedById,
+					expiresAt: ban.expiresAt?.toISOString() ?? null,
 					user,
 				};
 			}));

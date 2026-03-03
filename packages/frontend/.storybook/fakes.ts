@@ -36,7 +36,6 @@ export function channel(id = 'somechannelid', name = 'Some Channel', bannerUrl: 
 		bannerId: null,
 		pinnedNoteIds: [],
 		color: '#000',
-		isArchived: false,
 		isApproved: true,
 		usersCount: 1,
 		notesCount: 1,
