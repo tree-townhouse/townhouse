@@ -329,9 +329,14 @@ function save() {
 			...params,
 			channelId: props.channelId,
 			pinnedNoteIds: pinnedNotes.value.map(x => x.id),
+		}, undefined, {
+			'e0460b5e-1a02-4c29-a8b0-005002000002': { text: i18n.ts.cannotChangeChannelName },
+			'e0460b5e-1a02-4c29-a8b0-005002000003': { text: i18n.ts.duplicateChannelName },
 		});
 	} else {
-		os.apiWithDialog('channels/create', params).then(created => {
+		os.apiWithDialog('channels/create', params, undefined, {
+			'e0460b5e-1a02-4c29-a8b0-005002000001': { text: i18n.ts.duplicateChannelName },
+		}).then(created => {
 			router.push('/channels/:channelId', {
 				params: {
 					channelId: created.id,
