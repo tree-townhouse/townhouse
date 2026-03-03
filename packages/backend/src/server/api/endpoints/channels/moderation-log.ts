@@ -8,6 +8,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { ChannelModerationService } from '@/core/ChannelModerationService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { RoleService } from '@/core/RoleService.js';
+import { IdService } from '@/core/IdService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -76,6 +77,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private channelModerationService: ChannelModerationService,
 		private userEntityService: UserEntityService,
 		private roleService: RoleService,
+		private idService: IdService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Only channel admin/moderators or server admin can view logs
@@ -91,8 +93,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				const targetUser = log.info.targetUserId
 					? await this.userEntityService.pack(log.info.targetUserId, me).catch(() => null)
 					: null;
+				const createdAt = this.idService.parse(log.id).date.toISOString();
 				return {
 					...log,
+					createdAt,
 					user,
 					targetUser,
 				};

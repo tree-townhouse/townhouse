@@ -106,46 +106,54 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<!-- Moderation Log Tab -->
 		<div v-else-if="tab === 'log'" class="_gaps_m">
-			<div :class="$style.logFilterBar">
-				<MkSelect v-model="logTypeFilter" small>
-					<template #label>{{ i18n.ts.filterByType }}</template>
-					<option :value="null">{{ i18n.ts.all }}</option>
-					<option value="deleteNote">{{ i18n.ts.logDeleteNote }}</option>
-					<option value="pinNote">{{ i18n.ts.logPinNote }}</option>
-					<option value="unpinNote">{{ i18n.ts.logUnpinNote }}</option>
-					<option value="addModerator">{{ i18n.ts.logAddModerator }}</option>
-					<option value="removeModerator">{{ i18n.ts.logRemoveModerator }}</option>
-					<option value="banUser">{{ i18n.ts.logBanUser }}</option>
-					<option value="unbanUser">{{ i18n.ts.logUnbanUser }}</option>
+			<div :class="$style.logControl">
+				<MkSelect v-model="logOrder" :items="logOrderDef" :class="$style.logOrderSelect">
+					<template #prefix><i class="ti ti-arrows-sort"></i></template>
 				</MkSelect>
+				<MkButton v-tooltip="i18n.ts.filter" iconOnly transparent rounded :active="logFilterOpened" @click="logFilterOpened = !logFilterOpened"><i class="ti ti-filter"></i></MkButton>
+				<MkButton v-tooltip="i18n.ts.reload" iconOnly transparent rounded @click="fetchModerationLog()"><i class="ti ti-refresh"></i></MkButton>
 			</div>
 
-			<div v-if="moderationLog.length === 0" style="text-align: center; opacity: 0.5; padding: 16px;">{{ i18n.ts.noModerationLog }}</div>
-			<div v-for="entry in moderationLog" :key="entry.id" :class="$style.logItem">
-				<div :class="$style.logContent">
-					<div :class="$style.logAction">
-						<MkA v-user-preview="entry.user.id" :to="userPage(entry.user)" :class="$style.logUser">
-							<MkAvatar :user="entry.user" :class="$style.logAvatar"/>
-							<MkUserName :user="entry.user"/>
-						</MkA>
-						<span>{{ logTypeLabel(entry.type) }}</span>
-						<template v-if="entry.targetUser">
-							<span>(</span>
-							<MkA v-user-preview="entry.targetUser.id" :to="userPage(entry.targetUser)" :class="$style.logUser">
-								<MkAvatar :user="entry.targetUser" :class="$style.logAvatar"/>
-								<MkUserName :user="entry.targetUser"/>
+			<template v-if="logFilterOpened">
+				<MkSelect v-model="logTypeFilter" :items="logTypeDef" style="margin: 0; flex: 1;">
+					<template #label>{{ i18n.ts.type }}</template>
+				</MkSelect>
+			</template>
+
+			<MkLoading v-if="logLoading"/>
+
+			<div v-else-if="moderationLog.length === 0" style="text-align: center; opacity: 0.5; padding: 16px;">{{ i18n.ts.noModerationLog }}</div>
+
+			<MkTl v-else :events="logTimeline" groupBy="d">
+				<template #left="{ event }">
+					<div>
+						<MkAvatar :user="event.user" style="width: 26px; height: 26px;"/>
+					</div>
+				</template>
+				<template #right="{ event }">
+					<div style="margin: 4px 0;">
+						<div :class="$style.logAction">
+							<MkA v-user-preview="event.user.id" :to="userPage(event.user)" :class="$style.logUser">
+								<MkUserName :user="event.user"/>
 							</MkA>
-							<span>)</span>
-						</template>
+							<span>{{ logTypeLabel(event.type) }}</span>
+							<template v-if="event.targetUser">
+								<span>(</span>
+								<MkA v-user-preview="event.targetUser.id" :to="userPage(event.targetUser)" :class="$style.logUser">
+									<MkAvatar :user="event.targetUser" :class="$style.logAvatar"/>
+									<MkUserName :user="event.targetUser"/>
+								</MkA>
+								<span>)</span>
+							</template>
+						</div>
+						<div v-if="event.info.noteId" style="opacity: 0.7; font-size: 0.85em;">
+							{{ i18n.ts.note }}: <MkA :to="`/notes/${event.info.noteId}`" class="_link">{{ event.info.noteId }}</MkA>
+						</div>
 					</div>
-					<div v-if="entry.info.noteId" style="opacity: 0.7; font-size: 0.85em;">
-						{{ i18n.ts.note }}: <MkA :to="`/notes/${entry.info.noteId}`" class="_link">{{ entry.info.noteId }}</MkA>
-					</div>
-					<div style="opacity: 0.5; font-size: 0.8em;">{{ logTimestamp(entry.id) }}</div>
-				</div>
-			</div>
+				</template>
+			</MkTl>
 
-			<MkButton v-if="moderationLog.length > 0 && hasMoreLog" rounded @click="fetchMoreModerationLog()">{{ i18n.ts.loadMore }}</MkButton>
+			<MkButton v-if="moderationLog.length > 0 && hasMoreLog" primary rounded style="margin: 0 auto;" @click="fetchMoreModerationLog()">{{ i18n.ts.loadMore }}</MkButton>
 		</div>
 	</div>
 </PageWithHeader>
@@ -166,6 +174,8 @@ import MkFolder from '@/components/MkFolder.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
 import MkSelect from '@/components/MkSelect.vue';
+import MkTl from '@/components/MkTl.vue';
+import { useMkSelect } from '@/composables/use-mkselect.js';
 import { useRouter } from '@/router.js';
 import { $i, iAmModerator } from '@/i.js';
 import { userPage } from '@/filters/user.js';
@@ -191,8 +201,45 @@ const moderators = ref<any[]>([]);
 const bannedUsers = ref<any[]>([]);
 const moderationLog = ref<any[]>([]);
 const hasMoreLog = ref(false);
+const logLoading = ref(false);
 const tab = ref('settings');
-const logTypeFilter = ref<string | null>(null);
+const logFilterOpened = ref(false);
+
+const {
+	model: logOrder,
+	def: logOrderDef,
+} = useMkSelect({
+	items: [
+		{ label: i18n.ts._order.newest, value: 'newest' },
+		{ label: i18n.ts._order.oldest, value: 'oldest' },
+	],
+	initialValue: 'newest' as const,
+});
+
+const {
+	model: logTypeFilter,
+	def: logTypeDef,
+} = useMkSelect({
+	items: [
+		{ label: i18n.ts.all, value: null },
+		{ label: i18n.ts.logDeleteNote, value: 'deleteNote' },
+		{ label: i18n.ts.logPinNote, value: 'pinNote' },
+		{ label: i18n.ts.logUnpinNote, value: 'unpinNote' },
+		{ label: i18n.ts.logAddModerator, value: 'addModerator' },
+		{ label: i18n.ts.logRemoveModerator, value: 'removeModerator' },
+		{ label: i18n.ts.logBanUser, value: 'banUser' },
+		{ label: i18n.ts.logUnbanUser, value: 'unbanUser' },
+	],
+	initialValue: null,
+});
+
+const logTimeline = computed(() => {
+	return moderationLog.value.map(x => ({
+		id: x.id,
+		timestamp: new Date(x.createdAt).getTime(),
+		data: x,
+	}));
+});
 
 const isChannelAdmin = computed(() => {
 	if (!channel.value || !$i) return props.channelId == null; // new channel = admin
@@ -265,6 +312,7 @@ async function fetchBannedUsers() {
 
 async function fetchModerationLog() {
 	if (!props.channelId) return;
+	logLoading.value = true;
 	try {
 		const params: any = {
 			channelId: props.channelId,
@@ -274,11 +322,16 @@ async function fetchModerationLog() {
 			params.type = logTypeFilter.value;
 		}
 		const result = await misskeyApi('channels/moderation-log', params);
+		if (logOrder.value === 'oldest') {
+			result.reverse();
+		}
 		moderationLog.value = result;
 		hasMoreLog.value = result.length >= 30;
 	} catch {
 		moderationLog.value = [];
 		hasMoreLog.value = false;
+	} finally {
+		logLoading.value = false;
 	}
 }
 
@@ -315,13 +368,6 @@ function logTypeLabel(type: string): string {
 	}
 }
 
-function logTimestamp(id: string): string {
-	// Misskey ID encodes timestamp - extract from aid format
-	const EPOCH = new Date('2000-01-01T00:00:00.000Z').getTime();
-	const time = parseInt(id.slice(0, 8), 36) + EPOCH;
-	return new Date(time).toLocaleString();
-}
-
 fetchChannel();
 
 watch(tab, (newTab) => {
@@ -330,7 +376,7 @@ watch(tab, (newTab) => {
 	}
 });
 
-watch(logTypeFilter, () => {
+watch([logTypeFilter, logOrder], () => {
 	fetchModerationLog();
 });
 
@@ -570,19 +616,6 @@ definePage(() => ({
 	white-space: nowrap;
 }
 
-.logItem {
-	display: flex;
-	align-items: flex-start;
-	gap: 8px;
-	padding: 8px;
-	border-bottom: 1px solid var(--MI_THEME-divider, rgba(0, 0, 0, 0.1));
-}
-
-.logContent {
-	flex: 1;
-	min-width: 0;
-}
-
 .logAction {
 	display: flex;
 	align-items: center;
@@ -607,9 +640,15 @@ definePage(() => ({
 	height: 20px;
 }
 
-.logFilterBar {
+.logControl {
 	display: flex;
-	gap: 8px;
-	align-items: flex-end;
+	align-items: center;
+	gap: 4px;
+	margin-bottom: 10px;
+}
+
+.logOrderSelect {
+	flex: 1;
+	margin-right: 6px;
 }
 </style>
