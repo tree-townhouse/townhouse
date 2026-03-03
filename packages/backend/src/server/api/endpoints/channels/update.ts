@@ -8,6 +8,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { DriveFilesRepository, ChannelsRepository } from '@/models/_.js';
 import { ChannelEntityService } from '@/core/entities/ChannelEntityService.js';
 import { ChannelModerationService } from '@/core/ChannelModerationService.js';
+import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
 import { ApiError } from '../../error.js';
@@ -93,6 +94,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private channelModerationService: ChannelModerationService,
 
+		private moderationLogService: ModerationLogService,
+
 		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
@@ -156,6 +159,28 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...(typeof ps.isSensitive === 'boolean' ? { isSensitive: ps.isSensitive } : {}),
 				...(typeof ps.allowRenoteToExternal === 'boolean' ? { allowRenoteToExternal: ps.allowRenoteToExternal } : {}),
 			});
+
+			// Log to moderation log when server admin (not channel admin) updates channel settings
+			if (iAmModerator && !isChannelAdmin) {
+				const before: Record<string, any> = {};
+				const after: Record<string, any> = {};
+				if (ps.name !== undefined && ps.name !== channel.name) { before.name = channel.name; after.name = ps.name; }
+				if (ps.description !== undefined && ps.description !== channel.description) { before.description = channel.description; after.description = ps.description; }
+				if (ps.color !== undefined && ps.color !== channel.color) { before.color = channel.color; after.color = ps.color; }
+				if (typeof ps.isSensitive === 'boolean' && ps.isSensitive !== channel.isSensitive) { before.isSensitive = channel.isSensitive; after.isSensitive = ps.isSensitive; }
+				if (typeof ps.allowRenoteToExternal === 'boolean' && ps.allowRenoteToExternal !== channel.allowRenoteToExternal) { before.allowRenoteToExternal = channel.allowRenoteToExternal; after.allowRenoteToExternal = ps.allowRenoteToExternal; }
+				if (ps.pinnedNoteIds !== undefined) { before.pinnedNoteIds = channel.pinnedNoteIds; after.pinnedNoteIds = ps.pinnedNoteIds; }
+				if (banner !== undefined) { before.bannerId = channel.bannerId; after.bannerId = banner ? banner.id : null; }
+
+				if (Object.keys(after).length > 0) {
+					await this.moderationLogService.log(me, 'updateChannel', {
+						channelId: channel.id,
+						channelName: channel.name,
+						before,
+						after,
+					});
+				}
+			}
 
 			// Log pin/unpin changes
 			if (ps.pinnedNoteIds !== undefined) {

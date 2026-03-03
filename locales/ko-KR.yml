@@ -3448,6 +3448,10 @@ _moderationLogTypes:
   resetWarning: "경고 초기화"
   editModerationLog: "내역 수정"
   deleteModerationLog: "내역 삭제"
+  deleteChannel: "채널 삭제"
+  approveChannel: "채널 승인"
+  updateChannel: "채널 설정 변경"
+  transferChannelOwnership: "채널 소유권 이전"
 _fileViewer:
   title: "파일 상세"
   type: "파일 유형"

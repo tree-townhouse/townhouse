@@ -22,6 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'unsilence',
 					'unrestrict',
 					'unsuspend',
+					'approveChannel',
 				].includes(log.type),
 				[$style.logYellow]: [
 					'markSensitiveDriveFile',
@@ -33,6 +34,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'restrict',
 					'warn',
 					'updateNoteBlind',
+					'updateChannel',
+					'transferChannelOwnership',
 				].includes(log.type),
 				[$style.logRed]: [
 					'suspend',
@@ -52,6 +55,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'deleteGalleryPost',
 					'deleteChatRoom',
 					'decline',
+					'deleteChannel',
 				].includes(log.type)
 			}"
 		>{{ i18n.ts._moderationLogTypes[log.type] }}</b>
@@ -103,6 +107,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else-if="log.type === 'warn'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
 		<span v-else-if="log.type === 'updateNoteBlind'">: @{{ log.info.noteUserUsername }}{{ log.info.noteUserHost ? '@' + log.info.noteUserHost : '' }}</span>
 		<span v-else-if="log.type === 'resetWarning'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
+		<span v-else-if="log.type === 'deleteChannel'">: {{ log.info.channelName }}</span>
+		<span v-else-if="log.type === 'approveChannel'">: {{ log.info.channelName }}</span>
+		<span v-else-if="log.type === 'updateChannel'">: {{ log.info.channelName }}</span>
+		<span v-else-if="log.type === 'transferChannelOwnership'">: {{ log.info.channelId }}</span>
 	</template>
 	<template #icon>
 		<i v-if="log.type === 'updateServerSettings'" class="ti ti-settings"></i>
@@ -155,6 +163,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="log.type === 'unrestrict'" class="ti ti-lock-open"></i>
 		<i v-else-if="log.type === 'warn'" class="ti ti-alert-triangle"></i>
 		<i v-else-if="log.type === 'updateNoteBlind'" class="ti ti-eye-off"></i>
+		<i v-else-if="log.type === 'deleteChannel'" class="ti ti-trash"></i>
+		<i v-else-if="log.type === 'approveChannel'" class="ti ti-check"></i>
+		<i v-else-if="log.type === 'updateChannel'" class="ti ti-pencil"></i>
+		<i v-else-if="log.type === 'transferChannelOwnership'" class="ti ti-transfer"></i>
 	</template>
 	<template #suffix>
 		<MkTime :time="log.createdAt"/>
@@ -289,6 +301,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div :class="$style.diff">
 				<CodeDiff :context="5" :hideHeader="true" :oldString="log.info.before ?? ''" :newString="log.info.after ?? ''" maxHeight="300px"/>
 			</div>
+		</template>
+		<template v-else-if="log.type === 'deleteChannel'">
+			<div>{{ i18n.ts.channel }}: {{ log.info.channelName }} [{{ log.info.channelId }}]</div>
+		</template>
+		<template v-else-if="log.type === 'approveChannel'">
+			<div>{{ i18n.ts.channel }}: {{ log.info.channelName }} [{{ log.info.channelId }}]</div>
+		</template>
+		<template v-else-if="log.type === 'updateChannel'">
+			<div>{{ i18n.ts.channel }}: {{ log.info.channelName }} [{{ log.info.channelId }}]</div>
+			<div :class="$style.diff">
+				<CodeDiff :context="5" :hideHeader="true" :oldString="JSON5.stringify(log.info.before, null, '\t')" :newString="JSON5.stringify(log.info.after, null, '\t')" language="javascript" maxHeight="300px"/>
+			</div>
+		</template>
+		<template v-else-if="log.type === 'transferChannelOwnership'">
+			<div>{{ i18n.ts.channel }}: {{ log.info.channelId }}</div>
+			<div>New Owner: {{ log.info.newOwnerId }}</div>
 		</template>
 
 		<details>

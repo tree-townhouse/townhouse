@@ -3443,6 +3443,10 @@ _moderationLogTypes:
   resetWarning: "Reset warnings"
   editModerationLog: "Edit moderation log"
   deleteModerationLog: "Delete moderation log"
+  deleteChannel: "Delete channel"
+  approveChannel: "Approve channel"
+  updateChannel: "Update channel settings"
+  transferChannelOwnership: "Transfer channel ownership"
 _fileViewer:
   title: "File details"
   type: "File type"
