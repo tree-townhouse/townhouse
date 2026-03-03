@@ -112,57 +112,61 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 
 		<!-- Moderation Log Tab -->
-		<div v-else-if="tab === 'log'" class="_gaps_m">
+		<div v-else-if="tab === 'log'" class="_gaps">
 			<div :class="$style.logControl">
+				<MkSelect v-model="logTypeFilter" :items="logTypeDef" :class="$style.logFilterSelect">
+					<template #label>{{ i18n.ts.filter }}</template>
+				</MkSelect>
 				<MkSelect v-model="logOrder" :items="logOrderDef" :class="$style.logOrderSelect">
 					<template #prefix><i class="ti ti-arrows-sort"></i></template>
 				</MkSelect>
-				<MkButton v-tooltip="i18n.ts.filter" iconOnly transparent rounded :active="logFilterOpened" @click="logFilterOpened = !logFilterOpened"><i class="ti ti-filter"></i></MkButton>
 				<MkButton v-tooltip="i18n.ts.reload" iconOnly transparent rounded @click="fetchModerationLog()"><i class="ti ti-refresh"></i></MkButton>
 			</div>
 
-			<template v-if="logFilterOpened">
-				<MkSelect v-model="logTypeFilter" :items="logTypeDef" style="margin: 0; flex: 1;">
-					<template #label>{{ i18n.ts.type }}</template>
-				</MkSelect>
-			</template>
-
 			<MkLoading v-if="logLoading"/>
 
-			<div v-else-if="moderationLog.length === 0" style="text-align: center; opacity: 0.5; padding: 16px;">{{ i18n.ts.noModerationLog }}</div>
+			<div v-else-if="moderationLog.length === 0" :class="$style.logEmpty">{{ i18n.ts.noModerationLog }}</div>
 
-			<MkTl v-else :events="logTimeline" groupBy="d">
-				<template #left="{ event }">
-					<div>
-						<MkAvatar :user="event.user" style="width: 26px; height: 26px;"/>
+			<div v-else class="_gaps_s">
+				<div v-for="log in moderationLog" :key="log.id" v-panel :class="$style.logItem">
+					<div :class="$style.logHeader">
+						<span :class="$style.logIcon">
+							<i v-if="log.type === 'deleteNote'" class="ti ti-trash" style="color: var(--MI_THEME-error);"></i>
+							<i v-else-if="log.type === 'pinNote'" class="ti ti-pin" style="color: var(--MI_THEME-success);"></i>
+							<i v-else-if="log.type === 'unpinNote'" class="ti ti-pinned-off" style="color: var(--MI_THEME-warn);"></i>
+							<i v-else-if="log.type === 'addModerator'" class="ti ti-shield-check" style="color: var(--MI_THEME-success);"></i>
+							<i v-else-if="log.type === 'removeModerator'" class="ti ti-shield-off" style="color: var(--MI_THEME-error);"></i>
+							<i v-else-if="log.type === 'banUser'" class="ti ti-ban" style="color: var(--MI_THEME-error);"></i>
+							<i v-else-if="log.type === 'unbanUser'" class="ti ti-circle-check" style="color: var(--MI_THEME-success);"></i>
+							<i v-else-if="log.type === 'blindNote'" class="ti ti-eye-off" style="color: var(--MI_THEME-error);"></i>
+							<i v-else-if="log.type === 'unblindNote'" class="ti ti-eye" style="color: var(--MI_THEME-success);"></i>
+							<i v-else class="ti ti-file-info"></i>
+						</span>
+						<span :class="$style.logType">{{ logTypeLabel(log.type) }}</span>
+						<span :class="$style.logTime"><MkTime :time="log.createdAt" mode="detail"/></span>
 					</div>
-				</template>
-				<template #right="{ event }">
-					<div style="margin: 4px 0;">
-						<div :class="$style.logAction">
-							<MkA v-user-preview="event.user.id" :to="userPage(event.user)" :class="$style.logUser">@{{ event.user.username }}</MkA>
-							<span :class="logTypeColorClass(event.type)">{{ logTypeLabel(event.type) }}</span>
-							<template v-if="event.targetUser">
-								<span>(</span>
-								<MkA v-user-preview="event.targetUser.id" :to="userPage(event.targetUser)" :class="$style.logUser">
-									<MkAvatar :user="event.targetUser" :class="$style.logAvatar"/>
-									@{{ event.targetUser.username }}
-								</MkA>
-								<span>)</span>
-							</template>
+
+					<div :class="$style.logBody">
+						<div :class="$style.logModerator">
+							{{ i18n.ts.moderator }}: <MkA v-user-preview="log.user.id" :to="userPage(log.user)" class="_link">@{{ log.user.username }}</MkA>
 						</div>
-						<div v-if="event.info.noteId" style="opacity: 0.7; font-size: 0.85em;">
-							{{ i18n.ts.note }}: <MkA :to="`/notes/${event.info.noteId}`" class="_link">{{ event.info.noteId }}</MkA>
+
+						<template v-if="log.targetUser">
+							<div :class="$style.logTarget">
+								<MkAvatar :user="log.targetUser" :class="$style.logTargetAvatar"/>
+								<MkA v-user-preview="log.targetUser.id" :to="userPage(log.targetUser)" class="_link">@{{ log.targetUser.username }}</MkA>
+							</div>
+						</template>
+
+						<div v-if="log.info.noteId" :class="$style.logDetail">
+							{{ i18n.ts.note }}: <MkA :to="`/notes/${log.info.noteId}`" class="_link">{{ log.info.noteId }}</MkA>
 						</div>
-						<div v-if="event.info.reason" style="opacity: 0.7; font-size: 0.85em;">
-							<i class="ti ti-message-report"></i> {{ event.info.reason }}
-						</div>
-						<div style="opacity: 0.5; font-size: 0.8em;">
-							<MkTime :time="event.createdAt" mode="detail"/>
+						<div v-if="log.info.reason" :class="$style.logDetail">
+							{{ i18n.ts.reason }}: {{ log.info.reason }}
 						</div>
 					</div>
-				</template>
-			</MkTl>
+				</div>
+			</div>
 
 			<MkButton v-if="moderationLog.length > 0 && hasMoreLog" primary rounded style="margin: 0 auto;" @click="fetchMoreModerationLog()">{{ i18n.ts.loadMore }}</MkButton>
 		</div>
@@ -171,7 +175,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch, defineAsyncComponent, useCssModule } from 'vue';
+import { computed, ref, watch, defineAsyncComponent } from 'vue';
 import * as Misskey from 'cherrypick-js';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
@@ -186,7 +190,6 @@ import MkFolder from '@/components/MkFolder.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
 import MkSelect from '@/components/MkSelect.vue';
-import MkTl from '@/components/MkTl.vue';
 import { useMkSelect } from '@/composables/use-mkselect.js';
 import { useRouter } from '@/router.js';
 import { $i, iAmModerator } from '@/i.js';
@@ -194,7 +197,6 @@ import { userPage } from '@/filters/user.js';
 
 const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
 
-const $style = useCssModule();
 const router = useRouter();
 
 const props = defineProps<{
@@ -216,7 +218,6 @@ const moderationLog = ref<any[]>([]);
 const hasMoreLog = ref(false);
 const logLoading = ref(false);
 const tab = ref('settings');
-const logFilterOpened = ref(false);
 
 const {
 	model: logOrder,
@@ -246,14 +247,6 @@ const {
 		{ label: i18n.ts.logUnblindNote, value: 'unblindNote' },
 	],
 	initialValue: null,
-});
-
-const logTimeline = computed(() => {
-	return moderationLog.value.map(x => ({
-		id: x.id,
-		timestamp: new Date(x.createdAt).getTime(),
-		data: x,
-	}));
 });
 
 const isChannelAdmin = computed(() => {
@@ -389,20 +382,6 @@ function logTypeLabel(type: string): string {
 	}
 }
 
-function logTypeColorClass(type: string): string {
-	switch (type) {
-		case 'deleteNote': return $style.logColorRed;
-		case 'pinNote': return $style.logColorGreen;
-		case 'unpinNote': return $style.logColorYellow;
-		case 'addModerator': return $style.logColorGreen;
-		case 'removeModerator': return $style.logColorRed;
-		case 'banUser': return $style.logColorRed;
-		case 'unbanUser': return $style.logColorGreen;
-		case 'blindNote': return $style.logColorRed;
-		case 'unblindNote': return $style.logColorGreen;
-		default: return '';
-	}
-}
 
 fetchChannel();
 
@@ -689,55 +668,81 @@ definePage(() => ({
 	white-space: nowrap;
 }
 
-.logAction {
+.logControl {
 	display: flex;
 	align-items: center;
-	flex-wrap: wrap;
-	gap: 4px;
+	gap: 8px;
 }
 
-.logUser {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	font-weight: bold;
-	text-decoration: none;
+.logFilterSelect {
+	flex: 1;
+}
 
-	&:hover {
-		text-decoration: underline;
+.logOrderSelect {
+	width: 140px;
+	flex-shrink: 0;
+}
+
+.logItem {
+	padding: 12px 16px;
+	border-radius: 8px;
+}
+
+.logHeader {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 8px;
+}
+
+.logIcon {
+	font-size: 1.2em;
+}
+
+.logType {
+	font-weight: bold;
+	flex: 1;
+}
+
+.logTime {
+	font-size: 0.85em;
+	opacity: 0.7;
+}
+
+.logBody {
+	font-size: 0.95em;
+
+	> div {
+		margin: 2px 0;
 	}
 }
 
-.logAvatar {
+.logModerator {
+	opacity: 0.7;
+	font-size: 0.9em;
+}
+
+.logTarget {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 0.9em;
+}
+
+.logTargetAvatar {
 	width: 20px;
 	height: 20px;
 }
 
-.logControl {
-	display: flex;
-	align-items: center;
-	gap: 4px;
-	margin-bottom: 10px;
+.logDetail {
+	opacity: 0.7;
+	font-size: 0.9em;
 }
 
-.logOrderSelect {
-	flex: 1;
-	margin-right: 6px;
-}
-
-.logColorRed {
-	color: #ff2a2a;
-	font-weight: bold;
-}
-
-.logColorGreen {
-	color: #2ade5f;
-	font-weight: bold;
-}
-
-.logColorYellow {
-	color: #daa520;
-	font-weight: bold;
+.logEmpty {
+	text-align: center;
+	padding: 32px;
+	opacity: 0.7;
 }
 
 .banItem {
