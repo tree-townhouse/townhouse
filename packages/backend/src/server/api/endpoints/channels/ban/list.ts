@@ -6,6 +6,8 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { ChannelModerationService } from '@/core/ChannelModerationService.js';
+import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { RoleService } from '@/core/RoleService.js';
 import { ApiError } from '../../../error.js';
 
 export const meta = {
@@ -35,6 +37,11 @@ export const meta = {
 					optional: false, nullable: true,
 					format: 'date-time',
 				},
+				user: {
+					type: 'object',
+					optional: false, nullable: false,
+					ref: 'UserLite',
+				},
 			},
 		},
 	},
@@ -60,14 +67,24 @@ export const paramDef = {
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
 		private channelModerationService: ChannelModerationService,
+		private userEntityService: UserEntityService,
+		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			// Only channel admin/moderators can view banned users
-			if (!await this.channelModerationService.hasChannelManagePermission(ps.channelId, me.id)) {
+			// Channel admin/moderators or server admin can view banned users
+			const isServerAdmin = await this.roleService.isAdministrator({ id: me.id });
+			if (!isServerAdmin && !await this.channelModerationService.hasChannelManagePermission(ps.channelId, me.id)) {
 				throw new ApiError(meta.errors.accessDenied);
 			}
 
-			return await this.channelModerationService.getBannedUsers(ps.channelId);
+			const bans = await this.channelModerationService.getBannedUsers(ps.channelId);
+			return await Promise.all(bans.map(async (ban: { userId: string; bannedById: string; expiresAt: Date | null }) => {
+				const user = await this.userEntityService.pack(ban.userId, me);
+				return {
+					...ban,
+					user,
+				};
+			}));
 		});
 	}
 }

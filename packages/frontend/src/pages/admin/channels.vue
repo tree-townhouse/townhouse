@@ -51,6 +51,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</span>
 				</div>
 				<div :class="$style.channelActions">
+					<MkButton small @click="transferOwnership(ch)"><i class="ti ti-transfer"></i> {{ i18n.ts.transferOwnership }}</MkButton>
+					<MkButton small @click="manageModerators(ch)"><i class="ti ti-shield"></i> {{ i18n.ts.channelModerators }}</MkButton>
 					<MkButton danger small @click="deleteChannel(ch)"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 				</div>
 			</div>
@@ -136,6 +138,75 @@ async function deleteChannel(ch: any) {
 		fetchPendingChannels(),
 		allChannels.value.length > 0 ? searchChannels() : Promise.resolve(),
 	]);
+}
+
+async function transferOwnership(ch: any) {
+	const user = await os.selectUser();
+	if (!user) return;
+
+	const { canceled } = await os.confirm({
+		type: 'warning',
+		text: i18n.tsx.transferOwnershipConfirm({ name: ch.name, user: user.username }),
+	});
+	if (canceled) return;
+
+	await os.apiWithDialog('admin/channels/transfer', {
+		channelId: ch.id,
+		userId: user.id,
+	});
+
+	if (allChannels.value.length > 0) await searchChannels();
+}
+
+async function manageModerators(ch: any) {
+	// Fetch current moderators
+	let moderators: any[] = [];
+	try {
+		moderators = await misskeyApi('channels/moderator/list', {
+			channelId: ch.id,
+		});
+	} catch {
+		moderators = [];
+	}
+
+	const { canceled, result } = await os.select({
+		title: i18n.tsx.channelModeratorsOf({ name: ch.name }),
+		items: [{
+			value: 'add', label: i18n.ts.addModerator,
+		}, {
+			value: 'remove', label: i18n.ts.removeModerator,
+		}],
+	});
+	if (canceled) return;
+
+	if (result === 'add') {
+		const user = await os.selectUser();
+		if (!user) return;
+
+		await os.apiWithDialog('channels/moderator/add', {
+			channelId: ch.id,
+			userId: user.id,
+		});
+	} else if (result === 'remove') {
+		if (moderators.length === 0) {
+			os.alert({ type: 'info', text: i18n.ts.noModerators });
+			return;
+		}
+
+		const { canceled: canceled2, result: userId } = await os.select({
+			title: i18n.ts.removeModerator,
+			items: moderators.map((m: any) => ({
+				value: m.user.id,
+				label: m.user.username,
+			})),
+		});
+		if (canceled2) return;
+
+		await os.apiWithDialog('channels/moderator/remove', {
+			channelId: ch.id,
+			userId,
+		});
+	}
 }
 
 // Watch tab changes to load data

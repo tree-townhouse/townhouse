@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { ChannelModeratorsRepository, UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
+import { UserEntityService } from '@/core/entities/UserEntityService.js';
 
 export const meta = {
 	tags: ['channels'],
@@ -28,6 +29,11 @@ export const meta = {
 					type: 'string',
 					optional: false, nullable: false,
 				},
+				user: {
+					type: 'object',
+					optional: false, nullable: false,
+					ref: 'UserLite',
+				},
 			},
 		},
 	},
@@ -46,6 +52,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		@Inject(DI.channelModeratorsRepository)
 		private channelModeratorsRepository: ChannelModeratorsRepository,
+
+		@Inject(DI.usersRepository)
+		private usersRepository: UsersRepository,
+
+		private userEntityService: UserEntityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const moderators = await this.channelModeratorsRepository.findBy({
@@ -53,10 +64,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				status: 'accepted',
 			});
 
-			return moderators.map((m: { userId: string; status: string }) => ({
-				userId: m.userId,
-				status: m.status,
+			const result = await Promise.all(moderators.map(async (m: { userId: string; status: string }) => {
+				const user = await this.userEntityService.pack(m.userId, me);
+				return {
+					userId: m.userId,
+					status: m.status,
+					user,
+				};
 			}));
+
+			return result;
 		});
 	}
 }

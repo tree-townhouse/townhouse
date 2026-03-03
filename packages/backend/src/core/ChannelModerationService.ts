@@ -17,6 +17,7 @@ import type { MiUser } from '@/models/User.js';
 import { IdService } from '@/core/IdService.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { NoteDeleteService } from '@/core/NoteDeleteService.js';
+import { RoleService } from '@/core/RoleService.js';
 import { bindThis } from '@/decorators.js';
 
 @Injectable()
@@ -40,6 +41,7 @@ export class ChannelModerationService {
 		private idService: IdService,
 		private notificationService: NotificationService,
 		private noteDeleteService: NoteDeleteService,
+		private roleService: RoleService,
 	) {}
 
 	/**
@@ -78,8 +80,9 @@ export class ChannelModerationService {
 	 */
 	@bindThis
 	public async inviteModerator(channelId: MiChannel['id'], inviterId: MiUser['id'], inviteeId: MiUser['id']): Promise<void> {
-		// Only channel admin can invite moderators
-		if (!await this.isChannelAdmin(channelId, inviterId)) {
+		// Channel admin or server admin can invite moderators
+		const isServerAdmin = await this.roleService.isAdministrator({ id: inviterId });
+		if (!isServerAdmin && !await this.isChannelAdmin(channelId, inviterId)) {
 			throw new Error('ACCESS_DENIED');
 		}
 
@@ -159,11 +162,12 @@ export class ChannelModerationService {
 	}
 
 	/**
-	 * Remove a moderator (only channel admin can do this)
+	 * Remove a moderator (channel admin or server admin can do this)
 	 */
 	@bindThis
 	public async removeModerator(channelId: MiChannel['id'], adminId: MiUser['id'], moderatorId: MiUser['id']): Promise<void> {
-		if (!await this.isChannelAdmin(channelId, adminId)) {
+		const isServerAdmin = await this.roleService.isAdministrator({ id: adminId });
+		if (!isServerAdmin && !await this.isChannelAdmin(channelId, adminId)) {
 			throw new Error('ACCESS_DENIED');
 		}
 
@@ -192,8 +196,9 @@ export class ChannelModerationService {
 	 */
 	@bindThis
 	public async banUser(channelId: MiChannel['id'], bannerId: MiUser['id'], targetUserId: MiUser['id'], expiresAt?: Date | null): Promise<void> {
-		// Check permission
-		if (!await this.hasChannelManagePermission(channelId, bannerId)) {
+		// Check permission (channel admin/moderator or server admin)
+		const isServerAdmin = await this.roleService.isAdministrator({ id: bannerId });
+		if (!isServerAdmin && !await this.hasChannelManagePermission(channelId, bannerId)) {
 			throw new Error('ACCESS_DENIED');
 		}
 
@@ -292,11 +297,12 @@ export class ChannelModerationService {
 	}
 
 	/**
-	 * Delete a note from a channel (by channel admin/moderator)
+	 * Delete a note from a channel (by channel admin/moderator or server admin)
 	 */
 	@bindThis
 	public async deleteNote(channelId: MiChannel['id'], deleterId: MiUser['id'], noteId: string): Promise<void> {
-		if (!await this.hasChannelManagePermission(channelId, deleterId)) {
+		const isServerAdmin = await this.roleService.isAdministrator({ id: deleterId });
+		if (!isServerAdmin && !await this.hasChannelManagePermission(channelId, deleterId)) {
 			throw new Error('ACCESS_DENIED');
 		}
 
@@ -313,5 +319,31 @@ export class ChannelModerationService {
 		const deleter = await this.usersRepository.findOneByOrFail({ id: deleterId });
 
 		await this.noteDeleteService.delete(noteAuthor, note, false, deleter);
+	}
+
+	/**
+	 * Transfer channel ownership to another user (server admin only)
+	 */
+	@bindThis
+	public async transferOwnership(channelId: MiChannel['id'], requesterId: MiUser['id'], newOwnerId: MiUser['id']): Promise<void> {
+		const isServerAdmin = await this.roleService.isAdministrator({ id: requesterId });
+		if (!isServerAdmin) {
+			throw new Error('ACCESS_DENIED');
+		}
+
+		const channel = await this.channelsRepository.findOneBy({ id: channelId });
+		if (!channel) {
+			throw new Error('NO_SUCH_CHANNEL');
+		}
+
+		// Remove new owner from moderators if they were one
+		await this.channelModeratorsRepository.delete({
+			channelId,
+			userId: newOwnerId,
+		});
+
+		await this.channelsRepository.update(channelId, {
+			userId: newOwnerId,
+		});
 	}
 }

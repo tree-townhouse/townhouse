@@ -147,6 +147,7 @@ export const moderationLogTypes = [
 	'deleteModerationLog',
 	'deleteChannel',
 	'approveChannel',
+	'transferChannelOwnership',
 ] as const;
 
 export type ModerationLogPayloads = {
@@ -488,6 +489,10 @@ export type ModerationLogPayloads = {
 	approveChannel: {
 		channelId: string;
 		channelName: string;
+	};
+	transferChannelOwnership: {
+		channelId: string;
+		newOwnerId: string;
 	};
 };
 

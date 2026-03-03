@@ -70,7 +70,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkButton primary rounded @click="addModerator()"><i class="ti ti-plus"></i> {{ i18n.ts.addModerator }}</MkButton>
 
 					<div v-if="moderators.length === 0" style="text-align: center; opacity: 0.5;">{{ i18n.ts.noModerators }}</div>
-					<div v-for="mod in moderators" :key="mod.id" :class="$style.moderatorItem">
+					<div v-for="mod in moderators" :key="mod.userId" :class="$style.moderatorItem">
 						<MkAvatar :user="mod.user" :class="$style.moderatorAvatar"/>
 						<MkUserName :user="mod.user" :class="$style.moderatorName"/>
 						<MkButton danger small @click="removeModerator(mod)"><i class="ti ti-x"></i></MkButton>
