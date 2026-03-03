@@ -187,7 +187,7 @@ export class NotificationEntityService implements OnModuleInit {
 			return null;
 		}
 
-		const needsChannel = notification.type === 'channelModeratorInvitationReceived';
+		const needsChannel = notification.type === 'channelModeratorInvitationReceived' || notification.type === 'channelModeratorInvitationAccepted';
 		const channel = needsChannel ? await this.channelEntityService.pack(notification.channelId, { id: meId }).catch(() => null) : undefined;
 		if (needsChannel && !channel) {
 			return null;
@@ -210,6 +210,9 @@ export class NotificationEntityService implements OnModuleInit {
 				invitation: chatRoomInvitation,
 			} : {}),
 			...(notification.type === 'channelModeratorInvitationReceived' ? {
+				channel: channel,
+			} : {}),
+			...(notification.type === 'channelModeratorInvitationAccepted' ? {
 				channel: channel,
 			} : {}),
 			...(notification.type === 'followRequestAccepted' ? {

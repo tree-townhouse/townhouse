@@ -100,6 +100,12 @@ export type MiNotification = {
 	notifierId: MiUser['id'];
 	channelId: string;
 } | {
+	type: 'channelModeratorInvitationAccepted';
+	id: string;
+	createdAt: string;
+	notifierId: MiUser['id'];
+	channelId: string;
+} | {
 	type: 'achievementEarned';
 	id: string;
 	createdAt: string;

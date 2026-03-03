@@ -168,6 +168,14 @@ export class ChannelModerationService {
 		await this.channelModeratorsRepository.update(invitation.id, {
 			status: 'accepted',
 		});
+
+		// Notify the channel owner that the invitation was accepted
+		const channel = await this.channelsRepository.findOneBy({ id: channelId });
+		if (channel && channel.userId) {
+			this.notificationService.createNotification(channel.userId, 'channelModeratorInvitationAccepted', {
+				channelId,
+			}, userId);
+		}
 	}
 
 	/**

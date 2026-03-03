@@ -34,6 +34,7 @@ export const notificationTypes = [
 	'roleAssigned',
 	'chatRoomInvitationReceived',
 	'channelModeratorInvitationReceived',
+	'channelModeratorInvitationAccepted',
 	'achievementEarned',
 	'exportCompleted',
 	'test',

@@ -251,6 +251,14 @@ async function composeNotification(data: PushNotificationDataMap[keyof PushNotif
 						data,
 					}];
 
+				case 'channelModeratorInvitationAccepted':
+					return [i18n.ts._notification.channelModeratorInvitationAccepted, {
+						body: data.body.channel?.name ?? '',
+						icon: data.body.user?.avatarUrl ?? undefined,
+						badge: iconUrl('shield-check'),
+						data,
+					}];
+
 				case 'login':
 					return [i18n.ts._notification.login, {
 						body: i18n.tsx._notification.loginDescription({ ip: data.body.ip, text: i18n.ts.regenerateLoginToken }),
