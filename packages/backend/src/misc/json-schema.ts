@@ -26,7 +26,6 @@ import { packedNoteReactionSchema, packedNoteReactionWithNoteSchema } from '@/mo
 import { packedHashtagSchema } from '@/models/json-schema/hashtag.js';
 import { packedInviteCodeSchema } from '@/models/json-schema/invite-code.js';
 import { packedPageBlockSchema, packedPageSchema } from '@/models/json-schema/page.js';
-import { packedUserGroupSchema } from '@/models/json-schema/user-group.js';
 import { packedNoteFavoriteSchema } from '@/models/json-schema/note-favorite.js';
 import { packedChannelSchema } from '@/models/json-schema/channel.js';
 import { packedAntennaSchema } from '@/models/json-schema/antenna.js';
@@ -87,7 +86,6 @@ export const refs = {
 	User: packedUserSchema,
 
 	UserList: packedUserListSchema,
-	UserGroup: packedUserGroupSchema,
 	Achievement: packedAchievementSchema,
 	AchievementName: packedAchievementNameSchema,
 	Ad: packedAdSchema,

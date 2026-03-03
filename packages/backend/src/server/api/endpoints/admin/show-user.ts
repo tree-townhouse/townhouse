@@ -107,7 +107,6 @@ export const meta = {
 					scheduledNotePostFailed: { optional: true, ...notificationRecieveConfig },
 					receiveFollowRequest: { optional: true, ...notificationRecieveConfig },
 					followRequestAccepted: { optional: true, ...notificationRecieveConfig },
-					groupInvited: { optional: true, ...notificationRecieveConfig },
 					roleAssigned: { optional: true, ...notificationRecieveConfig },
 					chatRoomInvitationReceived: { optional: true, ...notificationRecieveConfig },
 					achievementEarned: { optional: true, ...notificationRecieveConfig },

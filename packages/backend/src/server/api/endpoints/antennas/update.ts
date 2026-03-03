@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AntennasRepository, UserListsRepository, UserGroupJoiningsRepository } from '@/models/_.js';
+import type { AntennasRepository, UserListsRepository } from '@/models/_.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { AntennaEntityService } from '@/core/entities/AntennaEntityService.js';
 import { DI } from '@/di-symbols.js';
@@ -38,12 +38,6 @@ export const meta = {
 			code: 'EMPTY_KEYWORD',
 			id: '721aaff6-4e1b-4d88-8de6-877fae9f68c4',
 		},
-
-		noSuchUserGroup: {
-			message: 'No such user group.',
-			code: 'NO_SUCH_USER_GROUP',
-			id: '109ed789-b6eb-456e-b8a9-6059d567d385',
-		},
 	},
 
 	res: {
@@ -58,9 +52,8 @@ export const paramDef = {
 	properties: {
 		antennaId: { type: 'string', format: 'misskey:id' },
 		name: { type: 'string', minLength: 1, maxLength: 100 },
-		src: { type: 'string', enum: ['home', 'all', 'users', 'list', 'group', 'users_blacklist'] },
+		src: { type: 'string', enum: ['home', 'all', 'users', 'list', 'users_blacklist'] },
 		userListId: { type: 'string', format: 'misskey:id', nullable: true },
-		userGroupId: { type: 'string', format: 'misskey:id', nullable: true },
 		keywords: { type: 'array', items: {
 			type: 'array', items: {
 				type: 'string',
@@ -93,9 +86,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.userListsRepository)
 		private userListsRepository: UserListsRepository,
 
-		@Inject(DI.userGroupJoiningsRepository)
-		private userGroupJoiningsRepository: UserGroupJoiningsRepository,
-
 		private antennaEntityService: AntennaEntityService,
 		private globalEventService: GlobalEventService,
 	) {
@@ -116,7 +106,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			let userList;
-			let userGroupJoining;
 
 			if ((ps.src === 'list' || antenna.src === 'list') && ps.userListId) {
 				userList = await this.userListsRepository.findOneBy({
@@ -127,22 +116,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				if (userList == null) {
 					throw new ApiError(meta.errors.noSuchUserList);
 				}
-			} else if (ps.src === 'group' && ps.userGroupId) {
-				userGroupJoining = await this.userGroupJoiningsRepository.findOneBy({
-					userGroupId: ps.userGroupId,
-					userId: me.id,
-				});
-
-				if (userGroupJoining == null) {
-					throw new ApiError(meta.errors.noSuchUserGroup);
-				}
 			}
 
 			await this.antennasRepository.update(antenna.id, {
 				name: ps.name,
 				src: ps.src,
 				userListId: ps.userListId !== undefined ? userList ? userList.id : null : undefined,
-				userGroupJoiningId: userGroupJoining ? userGroupJoining.id : null,
 				keywords: ps.keywords,
 				excludeKeywords: ps.excludeKeywords,
 				users: ps.users,

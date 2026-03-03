@@ -488,8 +488,6 @@ import type {
 	IUpdateAutoDeleteSettingsRequest,
 	IUpdateEmailRequest,
 	IUpdateEmailResponse,
-	IUserGroupInvitesRequest,
-	IUserGroupInvitesResponse,
 	IWebhooksCreateRequest,
 	IWebhooksCreateResponse,
 	IWebhooksDeleteRequest,
@@ -653,22 +651,6 @@ import type {
 	UsersGalleryPostsResponse,
 	UsersGetFrequentlyRepliedUsersRequest,
 	UsersGetFrequentlyRepliedUsersResponse,
-	UsersGroupsCreateRequest,
-	UsersGroupsCreateResponse,
-	UsersGroupsDeleteRequest,
-	UsersGroupsInvitationsAcceptRequest,
-	UsersGroupsInvitationsRejectRequest,
-	UsersGroupsInviteRequest,
-	UsersGroupsJoinedResponse,
-	UsersGroupsLeaveRequest,
-	UsersGroupsOwnedResponse,
-	UsersGroupsPullRequest,
-	UsersGroupsShowRequest,
-	UsersGroupsShowResponse,
-	UsersGroupsTransferRequest,
-	UsersGroupsTransferResponse,
-	UsersGroupsUpdateRequest,
-	UsersGroupsUpdateResponse,
 	UsersListsCreateRequest,
 	UsersListsCreateResponse,
 	UsersListsCreateFromPublicRequest,
@@ -1039,7 +1021,6 @@ export type Endpoints = {
 	'i/update': { req: IUpdateRequest; res: IUpdateResponse };
 	'i/update-auto-delete-settings': { req: IUpdateAutoDeleteSettingsRequest; res: EmptyResponse };
 	'i/update-email': { req: IUpdateEmailRequest; res: IUpdateEmailResponse };
-	'i/user-group-invites': { req: IUserGroupInvitesRequest; res: IUserGroupInvitesResponse };
 	'i/webhooks/create': { req: IWebhooksCreateRequest; res: IWebhooksCreateResponse };
 	'i/webhooks/delete': { req: IWebhooksDeleteRequest; res: EmptyResponse };
 	'i/webhooks/list': { req: EmptyRequest; res: IWebhooksListResponse };
@@ -1147,18 +1128,6 @@ export type Endpoints = {
 	'users/following': { req: UsersFollowingRequest; res: UsersFollowingResponse };
 	'users/gallery/posts': { req: UsersGalleryPostsRequest; res: UsersGalleryPostsResponse };
 	'users/get-frequently-replied-users': { req: UsersGetFrequentlyRepliedUsersRequest; res: UsersGetFrequentlyRepliedUsersResponse };
-	'users/groups/create': { req: UsersGroupsCreateRequest; res: UsersGroupsCreateResponse };
-	'users/groups/delete': { req: UsersGroupsDeleteRequest; res: EmptyResponse };
-	'users/groups/invitations/accept': { req: UsersGroupsInvitationsAcceptRequest; res: EmptyResponse };
-	'users/groups/invitations/reject': { req: UsersGroupsInvitationsRejectRequest; res: EmptyResponse };
-	'users/groups/invite': { req: UsersGroupsInviteRequest; res: EmptyResponse };
-	'users/groups/joined': { req: EmptyRequest; res: UsersGroupsJoinedResponse };
-	'users/groups/leave': { req: UsersGroupsLeaveRequest; res: EmptyResponse };
-	'users/groups/owned': { req: EmptyRequest; res: UsersGroupsOwnedResponse };
-	'users/groups/pull': { req: UsersGroupsPullRequest; res: EmptyResponse };
-	'users/groups/show': { req: UsersGroupsShowRequest; res: UsersGroupsShowResponse };
-	'users/groups/transfer': { req: UsersGroupsTransferRequest; res: UsersGroupsTransferResponse };
-	'users/groups/update': { req: UsersGroupsUpdateRequest; res: UsersGroupsUpdateResponse };
 	'users/lists/create': { req: UsersListsCreateRequest; res: UsersListsCreateResponse };
 	'users/lists/create-from-public': { req: UsersListsCreateFromPublicRequest; res: UsersListsCreateFromPublicResponse };
 	'users/lists/delete': { req: UsersListsDeleteRequest; res: EmptyResponse };

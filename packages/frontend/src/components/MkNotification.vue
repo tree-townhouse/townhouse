@@ -19,7 +19,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 				[$style.t_follow]: notification.type === 'follow',
 				[$style.t_followRequestAccepted]: notification.type === 'followRequestAccepted',
 				[$style.t_receiveFollowRequest]: notification.type === 'receiveFollowRequest',
-				[$style.t_groupInvited]: notification.type === 'groupInvited',
 				[$style.t_renote]: notification.type === 'renote',
 				[$style.t_reply]: notification.type === 'reply',
 				[$style.t_mention]: notification.type === 'mention',
@@ -38,7 +37,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<i v-if="notification.type === 'follow'" class="ti ti-plus"></i>
 			<i v-else-if="notification.type === 'receiveFollowRequest'" class="ti ti-clock"></i>
 			<i v-else-if="notification.type === 'followRequestAccepted'" class="ti ti-check"></i>
-			<i v-else-if="notification.type === 'groupInvited'" class="ti ti-users-group"></i>
 			<i v-else-if="notification.type === 'renote'" class="ti ti-repeat"></i>
 			<i v-else-if="notification.type === 'reply'" class="ti ti-arrow-back-up"></i>
 			<i v-else-if="notification.type === 'mention'" class="ti ti-at"></i>
@@ -78,7 +76,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-else-if="notification.type === 'test'" :class="$style.headerText">{{ i18n.ts._notification.testNotification }}</span>
 			<span v-else-if="notification.type === 'exportCompleted'" :class="$style.headerText">{{ i18n.tsx._notification.exportOfXCompleted({ x: exportEntityName[notification.exportedEntity] }) }}</span>
 			<MkA v-else-if="notification.type === 'follow' || notification.type === 'mention' || notification.type === 'reply' || notification.type === 'renote' || notification.type === 'quote' || notification.type === 'reaction' || notification.type === 'receiveFollowRequest' || notification.type === 'followRequestAccepted'" v-user-preview="notification.user.id" :class="$style.headerName" :to="userPage(notification.user)"><MkUserName :user="notification.user"/></MkA>
-			<span v-else-if="notification.type === 'groupInvited'" :class="$style.headerText">{{ i18n.tsx._notification.youWereInvitedToGroup({ userName: notification.user.name ?? notification.user.username }) }}</span>
 			<span v-else-if="notification.type === 'reaction:grouped' && notification.note.reactionAcceptance === 'likeOnly'" :class="$style.headerText">{{ i18n.tsx._notification.likedBySomeUsers({ n: getActualReactedUsersCount(notification) }) }}</span>
 			<span v-else-if="notification.type === 'reaction:grouped'" :class="$style.headerText">{{ i18n.tsx._notification.reactedBySomeUsers({ n: getActualReactedUsersCount(notification) }) }}</span>
 			<span v-else-if="notification.type === 'renote:grouped'" :class="$style.headerText">{{ i18n.tsx._notification.renotedBySomeUsers({ n: notification.users.length }) }}</span>
@@ -156,13 +153,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkButton :class="$style.followRequestCommandButton" rounded danger @click="rejectFollowRequest()"><i class="ti ti-x"/> {{ i18n.ts.reject }}</MkButton>
 				</div>
 			</template>
-			<template v-else-if="notification.type === 'groupInvited'">
-				<span style="font-weight: bold;">{{ notification.invitation.group.name }}</span>
-				<div v-if="full && !groupInviteDone" :class="$style.followRequestCommands">
-					<MkButton :class="$style.followRequestCommandButton" rounded primary @click="acceptGroupInvitation()"><i class="ti ti-check"/> {{ i18n.ts.accept }}</MkButton>
-					<MkButton :class="$style.followRequestCommandButton" rounded danger @click="rejectGroupInvitation()"><i class="ti ti-x"/> {{ i18n.ts.reject }}</MkButton>
-				</div>
-			</template>
 			<span v-else-if="notification.type === 'test'" :class="$style.text">{{ i18n.ts._notification.notificationWillBeDisplayedLikeThis }}</span>
 			<span v-else-if="notification.type === 'app'" :class="$style.text">
 				<Mfm :text="notification.body" :nowrap="false"/>
@@ -236,7 +226,6 @@ const exportEntityName = {
 } as const satisfies Record<ExportCompletedNotification['exportedEntity'], string>;
 
 const followRequestDone = ref(false);
-const groupInviteDone = ref(false);
 
 const acceptFollowRequest = () => {
 	if (!('user' in props.notification)) return;
@@ -254,16 +243,6 @@ function getActualReactedUsersCount(notification: Misskey.entities.Notification)
 	if (notification.type !== 'reaction:grouped') return 0;
 	return new Set(notification.reactions.map((reaction) => reaction.user.id)).size;
 }
-
-const acceptGroupInvitation = () => {
-	groupInviteDone.value = true;
-	misskeyApi('users/groups/invitations/accept', { invitationId: props.notification.invitation.id });
-};
-
-const rejectGroupInvitation = () => {
-	groupInviteDone.value = true;
-	misskeyApi('users/groups/invitations/reject', { invitationId: props.notification.invitation.id });
-};
 </script>
 
 <style lang="scss" module>
@@ -358,7 +337,7 @@ const rejectGroupInvitation = () => {
 	}
 }
 
-.t_follow, .t_followRequestAccepted, .t_receiveFollowRequest, .t_groupInvited {
+.t_follow, .t_followRequestAccepted, .t_receiveFollowRequest {
 	background: var(--eventFollow);
 	pointer-events: none;
 }

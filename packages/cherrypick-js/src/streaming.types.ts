@@ -8,7 +8,6 @@ import {
 	Notification,
 	Signin,
 	User,
-	UserGroup,
 	UserDetailed,
 	UserDetailedNotMe,
 	UserLite,

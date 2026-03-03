@@ -213,23 +213,6 @@ async function composeNotification(data: PushNotificationDataMap[keyof PushNotif
 						data,
 					}];
 
-				case 'groupInvited':
-					return [i18n.tsx._notification.youWereInvitedToGroup({ userName: getUserName(data.body.user) }), {
-						body: data.body.invitation.group.name,
-						badge: iconUrl('users'),
-						data,
-						actions: [
-							{
-								action: 'accept',
-								title: i18n.ts.accept,
-							},
-							{
-								action: 'reject',
-								title: i18n.ts.reject,
-							},
-						],
-					}];
-
 				case 'chatRoomInvitationReceived':
 					return [i18n.ts._notification.chatRoomInvitationReceived, {
 						body: `${data.body.invitation.room.name}\n${getUserName(data.body.invitation.user)} (@${data.body.invitation.user.username}${data.body.invitation.user.host != null ? '@' + data.body.invitation.user.host : ''})`,

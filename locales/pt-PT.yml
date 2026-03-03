@@ -2369,8 +2369,6 @@ _permissions:
   "write:pages": "Editar ou excluir as suas páginas"
   "read:page-likes": "Visualizar as suas curtidas em páginas"
   "write:page-likes": "Editar as suas curtidas em páginas"
-  "read:user-groups": "Visualizar os seus grupos de usuários"
-  "write:user-groups": "Editar ou excluir os seus grupos de usuários"
   "read:channels": "Visualizar os seus canais"
   "write:channels": "Editar os seus canais"
   "read:gallery": "Visualizar a sua galeria"

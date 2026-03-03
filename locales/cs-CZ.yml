@@ -1731,8 +1731,6 @@ _permissions:
   "write:pages": "Upravit nebo odstranit stránky"
   "read:page-likes": "Zobrazit to se mi líbí na stránkách"
   "write:page-likes": "Upravit to se mi líbí na stránkách"
-  "read:user-groups": "Zobrazit skupiny uživatelů"
-  "write:user-groups": "Upravit nebo odstranit skupiny uživatelů"
   "read:channels": "Zobrazit své kanály"
   "write:channels": "Upravit kanály"
   "read:gallery": "Zobrazit galerii"

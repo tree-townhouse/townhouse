@@ -28,28 +28,6 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 
 	const cleanups = [] as (() => void)[];
 
-	async function inviteGroup() {
-		const groups = await misskeyApi('users/groups/owned');
-		if (groups.length === 0) {
-			os.alert({
-				type: 'error',
-				text: i18n.ts.youHaveNoGroups,
-			});
-			return;
-		}
-		const { canceled, result: groupId } = await os.select({
-			title: i18n.ts.group,
-			items: groups.map(group => ({
-				value: group.id, label: group.name,
-			})),
-		});
-		if (canceled || !groupId) return;
-		os.apiWithDialog('users/groups/invite', {
-			groupId: groupId,
-			userId: user.id,
-		});
-	}
-
 	const meta = ref<Misskey.entities.AdminMetaResponse | null>(null);
 	const instance = ref<Misskey.entities.FederationInstance | null>(null);
 
@@ -610,14 +588,6 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 				icon: 'ti ti-messages',
 				text: i18n.ts._chat.chatWithThisUser,
 				to: `/chat/user/${user.id}`,
-			});
-		}
-
-		if (meId !== user.id) {
-			menuItems.push({
-				icon: 'ti ti-users',
-				text: i18n.ts.inviteToGroup,
-				action: inviteGroup,
 			});
 		}
 

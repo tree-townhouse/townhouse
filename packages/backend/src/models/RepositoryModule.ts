@@ -69,9 +69,6 @@ import {
 	MiSystemWebhook,
 	MiUsedUsername,
 	MiUser,
-	MiUserGroup,
-	MiUserGroupJoining,
-	MiUserGroupInvitation,
 	MiUserIp,
 	MiUserKeypair,
 	MiUserList,
@@ -211,24 +208,6 @@ const $userListFavoritesRepository: Provider = {
 const $userListMembershipsRepository: Provider = {
 	provide: DI.userListMembershipsRepository,
 	useFactory: (db: DataSource) => db.getRepository(MiUserListMembership).extend(miRepository as MiRepository<MiUserListMembership>),
-	inject: [DI.db],
-};
-
-const $userGroupsRepository: Provider = {
-	provide: DI.userGroupsRepository,
-	useFactory: (db: DataSource) => db.getRepository(MiUserGroup).extend(miRepository as MiRepository<MiUserGroup>),
-	inject: [DI.db],
-};
-
-const $userGroupJoiningsRepository: Provider = {
-	provide: DI.userGroupJoiningsRepository,
-	useFactory: (db: DataSource) => db.getRepository(MiUserGroupJoining).extend(miRepository as MiRepository<MiUserGroupJoining>),
-	inject: [DI.db],
-};
-
-const $userGroupInvitationsRepository: Provider = {
-	provide: DI.userGroupInvitationsRepository,
-	useFactory: (db: DataSource) => db.getRepository(MiUserGroupInvitation).extend(miRepository as MiRepository<MiUserGroupInvitation>),
 	inject: [DI.db],
 };
 
@@ -609,9 +588,6 @@ const $noteHistoryRepository: Provider = {
 		$userListsRepository,
 		$userListFavoritesRepository,
 		$userListMembershipsRepository,
-		$userGroupsRepository,
-		$userGroupJoiningsRepository,
-		$userGroupInvitationsRepository,
 		$userNotePiningsRepository,
 		$userIpsRepository,
 		$usedUsernamesRepository,
@@ -693,9 +669,6 @@ const $noteHistoryRepository: Provider = {
 		$userListsRepository,
 		$userListFavoritesRepository,
 		$userListMembershipsRepository,
-		$userGroupsRepository,
-		$userGroupJoiningsRepository,
-		$userGroupInvitationsRepository,
 		$userNotePiningsRepository,
 		$userIpsRepository,
 		$usedUsernamesRepository,

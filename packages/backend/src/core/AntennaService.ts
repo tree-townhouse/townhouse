@@ -14,7 +14,7 @@ import { bindThis } from '@/decorators.js';
 import { DI } from '@/di-symbols.js';
 import * as Acct from '@/misc/acct.js';
 import type { Packed } from '@/misc/json-schema.js';
-import type { AntennasRepository, UserGroupJoiningsRepository, UserListMembershipsRepository } from '@/models/_.js';
+import type { AntennasRepository, UserListMembershipsRepository } from '@/models/_.js';
 import type { MiAntenna } from '@/models/Antenna.js';
 import type { MiNote } from '@/models/Note.js';
 import type { MiUser } from '@/models/User.js';
@@ -36,9 +36,6 @@ export class AntennaService implements OnApplicationShutdown {
 
 		@Inject(DI.antennasRepository)
 		private antennasRepository: AntennasRepository,
-
-		@Inject(DI.userGroupJoiningsRepository)
-		private userGroupJoiningsRepository: UserGroupJoiningsRepository,
 
 		@Inject(DI.userListMembershipsRepository)
 		private userListMembershipsRepository: UserListMembershipsRepository,
@@ -129,17 +126,6 @@ export class AntennaService implements OnApplicationShutdown {
 			const exists = await this.userListMembershipsRepository.exists({
 				where: {
 					userListId: antenna.userListId,
-					userId: note.userId,
-				},
-			});
-			if (!exists) return false;
-		} else if (antenna.src === 'group') {
-			const joining = await this.userGroupJoiningsRepository.findOneByOrFail({ id: antenna.userGroupJoiningId! });
-
-			if (antenna.userGroupJoiningId == null) return false;
-			const exists = await this.userGroupJoiningsRepository.exists({
-				where: {
-					userGroupId: joining.userGroupId,
 					userId: note.userId,
 				},
 			});

@@ -132,8 +132,6 @@ import { PageEntityService } from './entities/PageEntityService.js';
 import { PageLikeEntityService } from './entities/PageLikeEntityService.js';
 import { SigninEntityService } from './entities/SigninEntityService.js';
 import { UserEntityService } from './entities/UserEntityService.js';
-import { UserGroupEntityService } from './entities/UserGroupEntityService.js';
-import { UserGroupInvitationEntityService } from './entities/UserGroupInvitationEntityService.js';
 import { UserListEntityService } from './entities/UserListEntityService.js';
 import { FlashEntityService } from './entities/FlashEntityService.js';
 import { FlashLikeEntityService } from './entities/FlashLikeEntityService.js';
@@ -167,7 +165,7 @@ import { NoteHistorySerivce } from './NoteHistoryService.js';
 import { NoteHistoryEntityService } from './entities/NoteHistoryEntityService.js';
 import type { Provider } from '@nestjs/common';
 
-//#region 文字列ベースでのinjection用(循環参照対応のため)
+//#region ?�字?�ベ?�ス?�のinjection??循環?�照対応??��??
 const $LoggerService: Provider = { provide: 'LoggerService', useExisting: LoggerService };
 const $AbuseReportService: Provider = { provide: 'AbuseReportService', useExisting: AbuseReportService };
 const $AbuseReportNotificationService: Provider = { provide: 'AbuseReportNotificationService', useExisting: AbuseReportNotificationService };
@@ -295,8 +293,6 @@ const $PageEntityService: Provider = { provide: 'PageEntityService', useExisting
 const $PageLikeEntityService: Provider = { provide: 'PageLikeEntityService', useExisting: PageLikeEntityService };
 const $SigninEntityService: Provider = { provide: 'SigninEntityService', useExisting: SigninEntityService };
 const $UserEntityService: Provider = { provide: 'UserEntityService', useExisting: UserEntityService };
-const $UserGroupEntityService: Provider = { provide: 'UserGroupEntityService', useExisting: UserGroupEntityService };
-const $UserGroupInvitationEntityService: Provider = { provide: 'UserGroupInvitationEntityService', useExisting: UserGroupInvitationEntityService };
 const $UserListEntityService: Provider = { provide: 'UserListEntityService', useExisting: UserListEntityService };
 const $FlashEntityService: Provider = { provide: 'FlashEntityService', useExisting: FlashEntityService };
 const $FlashLikeEntityService: Provider = { provide: 'FlashLikeEntityService', useExisting: FlashLikeEntityService };
@@ -459,8 +455,6 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		PageLikeEntityService,
 		SigninEntityService,
 		UserEntityService,
-		UserGroupEntityService,
-		UserGroupInvitationEntityService,
 		UserListEntityService,
 		FlashEntityService,
 		FlashLikeEntityService,
@@ -490,7 +484,7 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		ApEventService,
 		QueueService,
 
-		//#region 文字列ベースでのinjection用(循環参照対応のため)
+		//#region ?�字?�ベ?�ス?�のinjection??循環?�照対応??��??
 		$LoggerService,
 		$AbuseReportService,
 		$AbuseReportNotificationService,
@@ -618,8 +612,6 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		$PageLikeEntityService,
 		$SigninEntityService,
 		$UserEntityService,
-		$UserGroupEntityService,
-		$UserGroupInvitationEntityService,
 		$UserListEntityService,
 		$FlashEntityService,
 		$FlashLikeEntityService,
@@ -778,8 +770,6 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		PageLikeEntityService,
 		SigninEntityService,
 		UserEntityService,
-		UserGroupEntityService,
-		UserGroupInvitationEntityService,
 		UserListEntityService,
 		FlashEntityService,
 		FlashLikeEntityService,
@@ -809,7 +799,7 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		ApEventService,
 		QueueService,
 
-		//#region 文字列ベースでのinjection用(循環参照対応のため)
+		//#region ?�字?�ベ?�ス?�のinjection??循環?�照対応??��??
 		$LoggerService,
 		$AbuseReportService,
 		$AbuseReportNotificationService,
@@ -935,8 +925,6 @@ const $ApEventService: Provider = { provide: 'ApEventService', useExisting: ApEv
 		$PageLikeEntityService,
 		$SigninEntityService,
 		$UserEntityService,
-		$UserGroupEntityService,
-		$UserGroupInvitationEntityService,
 		$UserListEntityService,
 		$FlashEntityService,
 		$FlashLikeEntityService,

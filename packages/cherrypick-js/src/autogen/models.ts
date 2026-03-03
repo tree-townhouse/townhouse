@@ -8,7 +8,6 @@ export type MeDetailed = components['schemas']['MeDetailed'];
 export type UserDetailed = components['schemas']['UserDetailed'];
 export type User = components['schemas']['User'];
 export type UserList = components['schemas']['UserList'];
-export type UserGroup = components['schemas']['UserGroup'];
 export type Achievement = components['schemas']['Achievement'];
 export type AchievementName = components['schemas']['AchievementName'];
 export type Ad = components['schemas']['Ad'];

@@ -7,7 +7,6 @@ import { PrimaryColumn, Entity, Index, JoinColumn, Column, ManyToOne } from 'typ
 import { id } from './util/id.js';
 import { MiUser } from './User.js';
 import { MiUserList } from './UserList.js';
-import { MiUserGroupJoining } from './UserGroupJoining.js';
 
 @Entity('antenna')
 export class MiAntenna {
@@ -56,13 +55,7 @@ export class MiAntenna {
 		...id(),
 		nullable: true,
 	})
-	public userGroupJoiningId: MiUserGroupJoining['id'] | null;
-
-	@ManyToOne(type => MiUserGroupJoining, {
-		onDelete: 'CASCADE',
-	})
-	@JoinColumn()
-	public userGroupJoining: MiUserGroupJoining | null;
+	public userGroupJoiningId: string | null;
 
 	@Column('varchar', {
 		length: 1024, array: true,

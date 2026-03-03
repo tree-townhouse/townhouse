@@ -16,9 +16,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkSelect v-if="src === 'list'" v-model="userListId" :items="userListsSelectDef">
 				<template #label>{{ i18n.ts.userList }}</template>
 			</MkSelect>
-			<MkSelect v-else-if="src === 'group'" v-model="userGroupId" :items="userGroupsSelectDef">
-				<template #label>{{ i18n.ts.group }}</template>
-			</MkSelect>
 			<MkTextarea v-else-if="src === 'users' || src === 'users_blacklist'" v-model="users">
 				<template #label>{{ i18n.ts.users }}</template>
 				<template #caption>{{ i18n.ts.antennaUsersDescription }} <button class="_textButton" @click="addUser">{{ i18n.ts.addUser }}</button></template>
@@ -77,7 +74,6 @@ const initialAntenna = deepMerge<PartialAllowedAntenna>(props.antenna ?? {}, {
 	name: '',
 	src: 'all',
 	userListId: null,
-	userGroupId: null,
 	users: [],
 	keywords: [],
 	excludeKeywords: [],
@@ -126,20 +122,6 @@ const {
 	initialValue: initialAntenna.userListId,
 });
 
-const {
-	model: userGroupId,
-	def: userGroupsSelectDef,
-} = useMkSelect({
-	items: computed(() => {
-		if (userGroups.value == null) return [];
-		return userGroups.value.map(group => ({
-			value: group.id,
-			label: group.name,
-		}));
-	}),
-	initialValue: initialAntenna.userGroupId,
-});
-
 const name = ref<string>(initialAntenna.name);
 const users = ref<string>(initialAntenna.users.join('\n'));
 const keywords = ref<string>(initialAntenna.keywords.map(x => x.join(' ')).join('\n'));
@@ -151,18 +133,10 @@ const withReplies = ref<boolean>(initialAntenna.withReplies);
 const withFile = ref<boolean>(initialAntenna.withFile);
 const excludeNotesInSensitiveChannel = ref<boolean>(initialAntenna.excludeNotesInSensitiveChannel);
 const userLists = ref<Misskey.entities.UserList[] | null>(null);
-const userGroups = ref<Misskey.entities.UserGroup[] | null>(null);
 
 watch(() => src.value, async () => {
 	if (src.value === 'list' && userLists.value === null) {
 		userLists.value = await misskeyApi('users/lists/list');
-	}
-
-	if (src.value === 'group' && userGroups.value === null) {
-		const groups1 = await misskeyApi('users/groups/owned');
-		const groups2 = await misskeyApi('users/groups/joined');
-
-		userGroups.value = [...groups1, ...groups2];
 	}
 });
 
@@ -175,7 +149,6 @@ async function saveAntenna() {
 		name: name.value,
 		src: src.value,
 		userListId: userListId.value,
-		userGroupId: userGroupId.value,
 		excludeBots: excludeBots.value,
 		withReplies: withReplies.value,
 		withFile: withFile.value,

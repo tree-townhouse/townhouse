@@ -215,7 +215,6 @@ export const paramDef = {
 				scheduledNotePostFailed: notificationRecieveConfig,
 				receiveFollowRequest: notificationRecieveConfig,
 				followRequestAccepted: notificationRecieveConfig,
-				groupInvited: notificationRecieveConfig,
 				roleAssigned: notificationRecieveConfig,
 				chatRoomInvitationReceived: notificationRecieveConfig,
 				achievementEarned: notificationRecieveConfig,

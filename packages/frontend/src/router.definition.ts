@@ -590,14 +590,6 @@ export const ROUTE_DEF = [{
 	component: page(() => import('@/pages/my-antennas/index.vue')),
 	loginRequired: true,
 }, {
-	path: '/my/groups',
-	component: page(() => import('@/pages/my-groups/index.vue')),
-	loginRequired: true,
-}, {
-	path: '/my/groups/:groupId',
-	component: page(() => import('@/pages/my-groups/group.vue')),
-	loginRequired: true,
-}, {
 	path: '/timeline/list/:listId',
 	component: page(() => import('@/pages/user-list-timeline.vue')),
 	loginRequired: true,

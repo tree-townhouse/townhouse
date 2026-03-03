@@ -62,9 +62,6 @@ import { MiSignin } from '@/models/Signin.js';
 import { MiSwSubscription } from '@/models/SwSubscription.js';
 import { MiUsedUsername } from '@/models/UsedUsername.js';
 import { MiUser } from '@/models/User.js';
-import { MiUserGroup } from '@/models/UserGroup.js';
-import { MiUserGroupInvitation } from '@/models/UserGroupInvitation.js';
-import { MiUserGroupJoining } from '@/models/UserGroupJoining.js';
 import { MiUserIp } from '@/models/UserIp.js';
 import { MiUserKeypair } from '@/models/UserKeypair.js';
 import { MiUserList } from '@/models/UserList.js';
@@ -200,9 +197,6 @@ export const entities = [
 	MiUserList,
 	MiUserListFavorite,
 	MiUserListMembership,
-	MiUserGroup,
-	MiUserGroupJoining,
-	MiUserGroupInvitation,
 	MiUserNotePining,
 	MiUserSecurityKey,
 	MiUsedUsername,

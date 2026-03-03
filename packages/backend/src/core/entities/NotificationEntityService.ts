@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import type { FollowRequestsRepository, NotesRepository, MiUser, UsersRepository, UserGroupInvitationsRepository } from '@/models/_.js';
+import type { FollowRequestsRepository, NotesRepository, MiUser, UsersRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
 import type { MiGroupedNotification, MiNotification } from '@/models/Notification.js';
 import type { MiNote } from '@/models/Note.js';
@@ -20,7 +20,6 @@ import { ChatEntityService } from './ChatEntityService.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { UserEntityService } from './UserEntityService.js';
 import type { NoteEntityService } from './NoteEntityService.js';
-import type { UserGroupInvitationEntityService } from './UserGroupInvitationEntityService.js';
 
 const NOTE_REQUIRED_NOTIFICATION_TYPES = new Set([
 	'note',
@@ -41,7 +40,6 @@ export class NotificationEntityService implements OnModuleInit {
 	private noteEntityService: NoteEntityService;
 	private roleEntityService: RoleEntityService;
 	private chatEntityService: ChatEntityService;
-	private userGroupInvitationEntityService: UserGroupInvitationEntityService;
 
 	constructor(
 		private moduleRef: ModuleRef,
@@ -55,9 +53,6 @@ export class NotificationEntityService implements OnModuleInit {
 		@Inject(DI.followRequestsRepository)
 		private followRequestsRepository: FollowRequestsRepository,
 
-		@Inject(DI.userGroupInvitationsRepository)
-		private userGroupInvitationsRepository: UserGroupInvitationsRepository,
-
 		private cacheService: CacheService,
 	) {
 	}
@@ -67,7 +62,6 @@ export class NotificationEntityService implements OnModuleInit {
 		this.noteEntityService = this.moduleRef.get('NoteEntityService');
 		this.roleEntityService = this.moduleRef.get('RoleEntityService');
 		this.chatEntityService = this.moduleRef.get('ChatEntityService');
-		this.userGroupInvitationEntityService = this.moduleRef.get('UserGroupInvitationEntityService');
 	}
 
 	/**
@@ -199,9 +193,6 @@ export class NotificationEntityService implements OnModuleInit {
 			...(noteIfNeed != null ? { note: noteIfNeed } : {}),
 			...(notification.type === 'reaction' ? {
 				reaction: notification.reaction,
-			} : {}),
-			...(notification.type === 'groupInvited' ? {
-				invitation: this.userGroupInvitationEntityService.pack(notification.userGroupInvitationId),
 			} : {}),
 			...(notification.type === 'roleAssigned' ? {
 				role: role,

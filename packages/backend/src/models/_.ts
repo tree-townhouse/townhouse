@@ -74,9 +74,6 @@ import { MiSystemAccount } from '@/models/SystemAccount.js';
 import { MiSystemWebhook } from '@/models/SystemWebhook.js';
 import { MiUsedUsername } from '@/models/UsedUsername.js';
 import { MiUser } from '@/models/User.js';
-import { MiUserGroup } from '@/models/UserGroup.js';
-import { MiUserGroupInvitation } from '@/models/UserGroupInvitation.js';
-import { MiUserGroupJoining } from '@/models/UserGroupJoining.js';
 import { MiUserIp } from '@/models/UserIp.js';
 import { MiUserKeypair } from '@/models/UserKeypair.js';
 import { MiUserList } from '@/models/UserList.js';
@@ -155,9 +152,6 @@ export {
 	MiSystemAccount,
 	MiUsedUsername,
 	MiUser,
-	MiUserGroup,
-	MiUserGroupInvitation,
-	MiUserGroupJoining,
 	MiUserIp,
 	MiUserKeypair,
 	MiUserList,
@@ -240,9 +234,6 @@ export type SwSubscriptionsRepository = Repository<MiSwSubscription> & MiReposit
 export type SystemAccountsRepository = Repository<MiSystemAccount> & MiRepository<MiSystemAccount>;
 export type UsedUsernamesRepository = Repository<MiUsedUsername> & MiRepository<MiUsedUsername>;
 export type UsersRepository = Repository<MiUser> & MiRepository<MiUser>;
-export type UserGroupsRepository = Repository<MiUserGroup> & MiRepository<MiUserGroup>;
-export type UserGroupInvitationsRepository = Repository<MiUserGroupInvitation> & MiRepository<MiUserGroupInvitation>;
-export type UserGroupJoiningsRepository = Repository<MiUserGroupJoining> & MiRepository<MiUserGroupJoining>;
 export type UserIpsRepository = Repository<MiUserIp> & MiRepository<MiUserIp>;
 export type UserKeypairsRepository = Repository<MiUserKeypair> & MiRepository<MiUserKeypair>;
 export type UserListsRepository = Repository<MiUserList> & MiRepository<MiUserList>;

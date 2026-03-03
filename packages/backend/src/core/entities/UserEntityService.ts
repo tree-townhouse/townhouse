@@ -33,7 +33,6 @@ import type {
 	MiUserProfile,
 	MutingsRepository,
 	RenoteMutingsRepository,
-	UserGroupJoiningsRepository,
 	UserMemoRepository,
 	UserNotePiningsRepository,
 	UserProfilesRepository,
@@ -134,9 +133,6 @@ export class UserEntityService implements OnModuleInit {
 
 		@Inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
-
-		@Inject(DI.userGroupJoiningsRepository)
-		private userGroupJoiningsRepository: UserGroupJoiningsRepository,
 
 		@Inject(DI.userMemosRepository)
 		private userMemosRepository: UserMemoRepository,

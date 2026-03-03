@@ -16,7 +16,6 @@
  * scheduledNotePostFailed - 予約したノートの投稿に失敗した
  * receiveFollowRequest - フォローリクエストされた
  * followRequestAccepted - 自分の送ったフォローリクエストが承認された
- * groupInvited - グループに招待された
  * roleAssigned - ロールが付与された
  * chatRoomInvitationReceived - チャットルームに招待された
  * achievementEarned - 実績を獲得
@@ -39,7 +38,6 @@ export const notificationTypes = [
 	'scheduledNotePostFailed',
 	'receiveFollowRequest',
 	'followRequestAccepted',
-	'groupInvited',
 	'roleAssigned',
 	'chatRoomInvitationReceived',
 	'achievementEarned',
@@ -57,7 +55,7 @@ export const groupedNotificationTypes = [
 	'note:grouped',
 ] as const;
 
-export const obsoleteNotificationTypes = ['pollVote'/*, 'groupInvited'*/] as const;
+export const obsoleteNotificationTypes = ['pollVote', 'groupInvited'] as const;
 
 export const noteVisibilities = ['public', 'home', 'followers', 'specified'] as const;
 

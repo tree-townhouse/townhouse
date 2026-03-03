@@ -2345,8 +2345,6 @@ _permissions:
   "write:pages": "Sayfalarını düzenle veya sil"
   "read:page-likes": "Beğenilen sayfaların listesini görüntüle"
   "write:page-likes": "Beğenilen sayfaların listesini düzenle"
-  "read:user-groups": "Kullanıcı gruplarını görüntüle"
-  "write:user-groups": "Kullanıcı gruplarını düzenle veya sil"
   "read:channels": "Kanallarını görüntüle"
   "write:channels": "Kanallarını düzenle"
   "read:gallery": "Galeriyi görüntüle"

@@ -2420,8 +2420,6 @@ _permissions:
   "write:pages": "Editar o esborrar les teves pàgines "
   "read:page-likes": "Veure la llista de les pàgines que t'han agradat"
   "write:page-likes": "Editar la llista de les pàgines que t'han agradat"
-  "read:user-groups": "Veure els teus grups d'usuaris "
-  "write:user-groups": "Editar o esborrar els teus grups d'usuaris "
   "read:channels": "Veure els teus canals"
   "write:channels": "Editar els teus canals"
   "read:gallery": "Veure la teva galeria "

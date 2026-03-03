@@ -6,7 +6,6 @@
 import { userExportableEntities } from '@/types.js';
 import { MiUser } from './User.js';
 import { MiNote } from './Note.js';
-import { MiUserGroupInvitation } from './UserGroupInvitation.js';
 import { MiAccessToken } from './AccessToken.js';
 import { MiRole } from './Role.js';
 import { MiDriveFile } from './DriveFile.js';
@@ -83,12 +82,6 @@ export type MiNotification = {
 	createdAt: string;
 	notifierId: MiUser['id'];
 	message: string | null;
-} | {
-	type: 'groupInvited';
-	id: string;
-	createdAt: string;
-	notifierId: MiUser['id'];
-	userGroupInvitationId: MiUserGroupInvitation['id'];
 } | {
 	type: 'roleAssigned';
 	id: string;
