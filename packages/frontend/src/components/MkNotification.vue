@@ -125,12 +125,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div v-else-if="notification.type === 'chatRoomInvitationReceived'" :class="$style.text">
 				{{ notification.invitation.room.name }}
 			</div>
-			<div v-else-if="notification.type === 'channelModeratorInvitationReceived'" :class="$style.text">
+			<div v-else-if="notification.type === 'channelModeratorInvitationReceived'" :class="$style.text" style="cursor: pointer;" @click="handleModeratorInvitation()">
 				{{ notification.channel?.name }}
-				<div v-if="full && !moderatorInvitationDone" :class="$style.followRequestCommands">
-					<MkButton :class="$style.followRequestCommandButton" rounded primary @click="acceptModeratorInvitation()"><i class="ti ti-check"/> {{ i18n.ts.accept }}</MkButton>
-					<MkButton :class="$style.followRequestCommandButton" rounded danger @click="rejectModeratorInvitation()"><i class="ti ti-x"/> {{ i18n.ts.reject }}</MkButton>
-				</div>
 			</div>
 			<MkA v-else-if="notification.type === 'achievementEarned'" :class="$style.text" to="/my/achievements">
 				{{ i18n.ts._achievements._types['_' + notification.achievement].title }}
@@ -207,6 +203,7 @@ import { notePage } from '@/filters/note.js';
 import { userPage } from '@/filters/user.js';
 import { i18n } from '@/i18n.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
+import * as os from '@/os.js';
 import { ensureSignin } from '@/i.js';
 import { prefer } from '@/preferences.js';
 
@@ -251,16 +248,33 @@ const rejectFollowRequest = () => {
 
 const moderatorInvitationDone = ref(false);
 
-const acceptModeratorInvitation = () => {
+const handleModeratorInvitation = async () => {
 	if (props.notification.type !== 'channelModeratorInvitationReceived') return;
-	moderatorInvitationDone.value = true;
-	misskeyApi('channels/moderator/accept', { channelId: props.notification.channel!.id });
-};
+	if (moderatorInvitationDone.value) return;
 
-const rejectModeratorInvitation = () => {
-	if (props.notification.type !== 'channelModeratorInvitationReceived') return;
+	const channelName = props.notification.channel?.name ?? '';
+	const { canceled, result } = await os.actions({
+		type: 'question',
+		title: i18n.ts._notification.channelModeratorInvitationReceived,
+		text: channelName,
+		actions: [{
+			value: 'accept',
+			text: i18n.ts.accept,
+			primary: true,
+		}, {
+			value: 'reject',
+			text: i18n.ts.reject,
+			danger: true,
+		}],
+	});
+	if (canceled) return;
+
+	if (result === 'accept') {
+		await misskeyApi('channels/moderator/accept', { channelId: props.notification.channel!.id });
+	} else if (result === 'reject') {
+		await misskeyApi('channels/moderator/reject', { channelId: props.notification.channel!.id });
+	}
 	moderatorInvitationDone.value = true;
-	misskeyApi('channels/moderator/reject', { channelId: props.notification.channel!.id });
 };
 
 function getActualReactedUsersCount(notification: Misskey.entities.Notification) {
