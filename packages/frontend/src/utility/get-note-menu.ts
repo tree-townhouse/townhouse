@@ -671,33 +671,6 @@ export function getNoteMenu(props: {
 						});
 					}
 
-					// Blind/unblind note in channel
-					channelChildMenu.push({ type: 'divider' });
-					channelChildMenu.push({
-						icon: appearNote.isBlinded ? 'ti ti-eye' : 'ti ti-eye-off',
-						text: appearNote.isBlinded ? i18n.ts.unblind : i18n.ts.blind,
-						danger: !appearNote.isBlinded,
-						action: async () => {
-							const targetBlindState = !appearNote.isBlinded;
-							const { canceled } = await os.confirm({
-								type: 'warning',
-								text: appearNote.isBlinded ? i18n.ts.unblindConfirm : i18n.ts.blindConfirm,
-							});
-							if (canceled) return;
-
-							misskeyApi('channels/notes/blind', {
-								channelId: appearNote.channel!.id,
-								noteId: appearNote.id,
-								isBlinded: targetBlindState,
-							}).then(() => {
-								appearNote.isBlinded = targetBlindState;
-								noteEvents.emit(`updated:${appearNote.id}`, {
-									isBlinded: targetBlindState,
-								});
-							});
-						},
-					});
-
 					// Ban user from channel (if note author is not the current user and not the channel admin)
 					if (appearNote.userId !== $i.id && appearNote.channel!.userId !== appearNote.userId) {
 						channelChildMenu.push({ type: 'divider' });
@@ -770,52 +743,55 @@ export function getNoteMenu(props: {
 		const isAdminOrModerator = $i.isModerator || $i.isAdmin;
 
 		// 2. 다른 로컬 유저가 쓴 노트의 경우 모더레이터/관리자에게는 삭제 버튼과 공개 범위 변경 버튼이 표시되어야 함
+		// 단, 채널에 게시된 노트에는 공개 범위 변경 버튼을 표시하지 않음
 		if (isAdminOrModerator && isOtherLocalUser) {
 			menuItems.push({ type: 'divider' });
 
-			const updateNoteVisibility = async (newVisibility: 'public' | 'home' | 'followers') => {
-				const { canceled } = await os.confirm({
-					type: 'warning',
-					text: i18n.ts.areYouSure,
-				});
-				if (canceled) return;
+			if (!appearNote.channel) {
+				const updateNoteVisibility = async (newVisibility: 'public' | 'home' | 'followers') => {
+					const { canceled } = await os.confirm({
+						type: 'warning',
+						text: i18n.ts.areYouSure,
+					});
+					if (canceled) return;
 
-				os.apiWithDialog('admin/update-note-visibility', {
-					noteId: appearNote.id,
-					visibility: newVisibility,
-					localOnly: appearNote.localOnly,
-				}).then(() => {
-					appearNote.visibility = newVisibility;
-					noteEvents.emit(`updated:${appearNote.id}`, {
+					os.apiWithDialog('admin/update-note-visibility', {
+						noteId: appearNote.id,
 						visibility: newVisibility,
+						localOnly: appearNote.localOnly,
+					}).then(() => {
+						appearNote.visibility = newVisibility;
+						noteEvents.emit(`updated:${appearNote.id}`, {
+							visibility: newVisibility,
+						});
 					});
+				};
+
+				menuItems.push({
+					type: 'parent',
+					icon: 'ti ti-eye',
+					text: i18n.ts.visibility || '공개 범위',
+					children: async () => {
+						const visibilityChildMenu = [] as MenuItem[];
+
+						visibilityChildMenu.push({
+							icon: 'ti ti-world',
+							text: i18n.ts._visibility.public,
+							action: () => updateNoteVisibility('public'),
+						}, {
+							icon: 'ti ti-home',
+							text: i18n.ts._visibility.home,
+							action: () => updateNoteVisibility('home'),
+						}, {
+							icon: 'ti ti-lock',
+							text: i18n.ts._visibility.followers,
+							action: () => updateNoteVisibility('followers'),
+						});
+
+						return visibilityChildMenu;
+					},
 				});
-			};
-
-			menuItems.push({
-				type: 'parent',
-				icon: 'ti ti-eye',
-				text: i18n.ts.visibility || '공개 범위',
-				children: async () => {
-					const visibilityChildMenu = [] as MenuItem[];
-
-					visibilityChildMenu.push({
-						icon: 'ti ti-world',
-						text: i18n.ts._visibility.public,
-						action: () => updateNoteVisibility('public'),
-					}, {
-						icon: 'ti ti-home',
-						text: i18n.ts._visibility.home,
-						action: () => updateNoteVisibility('home'),
-					}, {
-						icon: 'ti ti-lock',
-						text: i18n.ts._visibility.followers,
-						action: () => updateNoteVisibility('followers'),
-					});
-
-					return visibilityChildMenu;
-				},
-			});
+			}
 		}
 
 		if (isAdminOrModerator && appearNote.user.host != null) {
@@ -873,6 +849,35 @@ export function getNoteMenu(props: {
 				text: i18n.ts.delete,
 				danger: true,
 				action: del,
+			});
+		}
+
+		// Blind/unblind note in channel (shown at bottom, near delete)
+		if (appearNote.channel && (appearNote.channel.userId === $i.id || appearNote.channel.isViewerChannelManager || $i.isModerator || $i.isAdmin)) {
+			menuItems.push({ type: 'divider' });
+			menuItems.push({
+				icon: appearNote.isBlinded ? 'ti ti-eye' : 'ti ti-eye-off',
+				text: appearNote.isBlinded ? i18n.ts.unblind : i18n.ts.blind,
+				danger: !appearNote.isBlinded,
+				action: async () => {
+					const targetBlindState = !appearNote.isBlinded;
+					const { canceled } = await os.confirm({
+						type: 'warning',
+						text: appearNote.isBlinded ? i18n.ts.unblindConfirm : i18n.ts.blindConfirm,
+					});
+					if (canceled) return;
+
+					misskeyApi('channels/notes/blind', {
+						channelId: appearNote.channel!.id,
+						noteId: appearNote.id,
+						isBlinded: targetBlindState,
+					}).then(() => {
+						appearNote.isBlinded = targetBlindState;
+						noteEvents.emit(`updated:${appearNote.id}`, {
+							isBlinded: targetBlindState,
+						});
+					});
+				},
 			});
 		}
 	} else {

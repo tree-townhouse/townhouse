@@ -139,12 +139,12 @@ function showOnRemote() {
 
 .channelOwnerBadge {
 	margin: 0 .5em 0 0;
-	color: var(--MI_THEME-warn);
+	color: #E67E22;
 }
 
 .channelModeratorBadge {
 	margin: 0 .5em 0 0;
-	color: var(--MI_THEME-accent);
+	color: #E67E22;
 }
 
 .isBot {
