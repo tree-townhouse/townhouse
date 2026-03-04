@@ -5224,6 +5224,8 @@ export type components = {
             isChannelAdmin?: boolean;
             isChannelModerator?: boolean;
             isBanned?: boolean;
+            banReason?: string | null;
+            banExpiresAt?: string | null;
             pinnedNotes?: components['schemas']['Note'][];
         };
         QueueCount: {

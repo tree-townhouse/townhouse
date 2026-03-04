@@ -679,6 +679,12 @@ export function getNoteMenu(props: {
 							text: i18n.ts.channelBanUser,
 							danger: true,
 							action: async () => {
+								const { canceled: reasonCanceled, result: reason } = await os.inputText({
+									title: i18n.ts.banReason,
+									placeholder: i18n.ts.optional,
+								});
+								if (reasonCanceled) return;
+
 								const { canceled, result: period } = await os.select({
 									title: i18n.ts.banDuration,
 									items: [{
@@ -694,12 +700,6 @@ export function getNoteMenu(props: {
 								});
 								if (canceled) return;
 
-								const { canceled: reasonCanceled, result: reason } = await os.inputText({
-									title: i18n.ts.banReason,
-									placeholder: i18n.ts.optional,
-								});
-								if (reasonCanceled) return;
-
 								const expiresAt = period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
 									: period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
 									: period === 'oneMonth' ? Date.now() + (1000 * 60 * 60 * 24 * 30)
@@ -710,28 +710,67 @@ export function getNoteMenu(props: {
 									userId: appearNote.userId,
 									expiresAt,
 									reason: reason ?? '',
+								}, undefined, {
+									'e0460b5e-1a02-4c29-a8b0-002001000002': { text: i18n.ts.banErrorCannotBanAdmin },
+									'e0460b5e-1a02-4c29-a8b0-002001000003': { text: i18n.ts.banErrorAlreadyBanned },
 								});
 							},
 						});
 					}
 
-					// Invite as moderator (only for channel admin, not server admin)
+					// Invite as moderator / Remove moderator (only for channel admin, not server admin)
 					if (appearNote.userId !== $i.id && appearNote.channel!.userId === $i.id) {
-						channelChildMenu.push({
-							icon: 'ti ti-shield-check',
-							text: i18n.ts.channelInviteModerator,
-							action: () => {
-								os.apiWithDialog('channels/moderator/add', {
-									channelId: appearNote.channel!.id,
-									userId: appearNote.userId,
-								}).then(() => {
-									os.alert({
-										type: 'info',
-										text: i18n.ts.moderatorInvitationSent,
-									});
-								});
-							},
+						const moderators = await misskeyApi('channels/moderator/list', {
+							channelId: appearNote.channel!.id,
 						});
+						const isModerator = moderators.some(m => m.userId === appearNote.userId);
+
+						if (isModerator) {
+							channelChildMenu.push({
+								icon: 'ti ti-shield-off',
+								text: i18n.ts.removeModerator,
+								danger: true,
+								action: async () => {
+									const { canceled } = await os.confirm({
+										type: 'warning',
+										text: i18n.ts.removeModeratorConfirm,
+									});
+									if (canceled) return;
+
+									os.apiWithDialog('channels/moderator/remove', {
+										channelId: appearNote.channel!.id,
+										userId: appearNote.userId,
+									}).then(() => {
+										os.alert({
+											type: 'info',
+											text: i18n.ts.moderatorRemoved,
+										});
+									});
+								},
+							});
+						} else {
+							channelChildMenu.push({
+								icon: 'ti ti-shield-check',
+								text: i18n.ts.channelInviteModerator,
+								action: async () => {
+									const { canceled } = await os.confirm({
+										type: 'question',
+										text: i18n.ts.inviteModeratorConfirm,
+									});
+									if (canceled) return;
+
+									os.apiWithDialog('channels/moderator/add', {
+										channelId: appearNote.channel!.id,
+										userId: appearNote.userId,
+									}).then(() => {
+										os.alert({
+											type: 'info',
+											text: i18n.ts.moderatorInvitationSent,
+										});
+									});
+								},
+							});
+						}
 					}
 
 					return channelChildMenu;

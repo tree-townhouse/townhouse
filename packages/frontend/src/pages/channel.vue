@@ -35,7 +35,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 		<div v-if="channel && tab === 'timeline'" class="_gaps">
 			<MkInfo v-if="!channel.isApproved" warn>{{ i18n.ts.thisChannelPendingApproval }}</MkInfo>
-			<MkInfo v-if="channel.isBanned" warn>{{ i18n.ts.youAreBannedFromThisChannel }}</MkInfo>
+			<MkInfo v-if="channel.isBanned" warn>
+				{{ i18n.ts.youAreBannedFromThisChannel }}
+				<template v-if="channel.banReason">
+					<br/>{{ i18n.ts.banReason }}: {{ channel.banReason }}
+				</template>
+				<template v-if="channel.banExpiresAt">
+					<br/>{{ i18n.ts.banDuration }}: {{ new Date(channel.banExpiresAt).toLocaleString() }}
+				</template>
+				<template v-else-if="channel.isBanned">
+					<br/>{{ i18n.ts.banDuration }}: {{ i18n.ts.indefinitely }}
+				</template>
+			</MkInfo>
 
 			<!-- スマホ・タブレットの場合、キーボードが表示されると投稿が見づらくなるので、デスクトップ場合のみ自動でフォーカスを当てる -->
 			<MkPostForm v-if="$i && channel.isApproved && prefer.r.showFixedPostFormInChannel.value" :channel="channel" class="post-form _panel" fixed :autofocus="deviceKind === 'desktop'"/>
