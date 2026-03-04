@@ -679,37 +679,40 @@ export function getNoteMenu(props: {
 							text: i18n.ts.channelBanUser,
 							danger: true,
 							action: async () => {
-								const { canceled: reasonCanceled, result: reason } = await os.inputText({
-									title: i18n.ts.banReason,
-									placeholder: i18n.ts.optional,
-								});
-								if (reasonCanceled) return;
-
-								const { canceled, result: period } = await os.select({
-									title: i18n.ts.banDuration,
-									items: [{
-										value: 'oneDay', label: i18n.ts.ban1Day,
-									}, {
-										value: 'oneWeek', label: i18n.ts.ban7Days,
-									}, {
-										value: 'oneMonth', label: i18n.ts.ban30Days,
-									}, {
-										value: 'permanent', label: i18n.ts.banPermanent,
-									}],
-									default: 'permanent',
+								const { canceled, result } = await os.form(i18n.ts.channelBanUser, {
+									reason: {
+										type: 'string',
+										label: i18n.ts.banReason,
+										required: false,
+										default: '',
+									},
+									period: {
+										type: 'enum',
+										label: i18n.ts.banDuration,
+										enum: [{
+											value: 'oneDay', label: i18n.ts.ban1Day,
+										}, {
+											value: 'oneWeek', label: i18n.ts.ban7Days,
+										}, {
+											value: 'oneMonth', label: i18n.ts.ban30Days,
+										}, {
+											value: 'permanent', label: i18n.ts.banPermanent,
+										}],
+										default: 'permanent',
+									},
 								});
 								if (canceled) return;
 
-								const expiresAt = period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
-									: period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
-									: period === 'oneMonth' ? Date.now() + (1000 * 60 * 60 * 24 * 30)
+								const expiresAt = result.period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
+									: result.period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
+									: result.period === 'oneMonth' ? Date.now() + (1000 * 60 * 60 * 24 * 30)
 									: null;
 
 								os.apiWithDialog('channels/ban/create', {
 									channelId: appearNote.channel!.id,
 									userId: appearNote.userId,
 									expiresAt,
-									reason: reason ?? '',
+									reason: result.reason ?? '',
 								}, undefined, {
 									'e0460b5e-1a02-4c29-a8b0-002001000002': { text: i18n.ts.banErrorCannotBanAdmin },
 									'e0460b5e-1a02-4c29-a8b0-002001000003': { text: i18n.ts.banErrorAlreadyBanned },
