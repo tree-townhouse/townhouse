@@ -277,6 +277,11 @@ export class ChannelModerationService {
 			throw new Error('CANNOT_BAN_ADMIN');
 		}
 
+		// Cannot ban channel moderators
+		if (await this.isChannelModerator(channelId, targetUserId)) {
+			throw new Error('CANNOT_BAN_ADMIN');
+		}
+
 		// Cannot ban server admins/moderators
 		const targetIsServerAdmin = await this.roleService.isModerator({ id: targetUserId } as MiUser);
 		if (targetIsServerAdmin) {

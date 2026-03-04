@@ -22,7 +22,7 @@ export const meta = {
 			id: 'e0460b5e-1a02-4c29-a8b0-002001000001',
 		},
 		cannotBanAdmin: {
-			message: 'You cannot ban the channel admin.',
+			message: 'You cannot ban server staff or channel staff.',
 			code: 'CANNOT_BAN_ADMIN',
 			id: 'e0460b5e-1a02-4c29-a8b0-002001000002',
 		},
