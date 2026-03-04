@@ -21,6 +21,7 @@ import { NoteDeleteService } from '@/core/NoteDeleteService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { SearchService } from '@/core/SearchService.js';
+import { UserRestrictionService } from '@/core/UserRestrictionService.js';
 import type { ChannelModerationLogType } from '@/models/ChannelModerationLog.js';
 import { bindThis } from '@/decorators.js';
 
@@ -51,6 +52,7 @@ export class ChannelModerationService {
 		private roleService: RoleService,
 		private globalEventService: GlobalEventService,
 		private searchService: SearchService,
+		private userRestrictionService: UserRestrictionService,
 	) {}
 
 	/**
@@ -417,6 +419,12 @@ export class ChannelModerationService {
 	 */
 	@bindThis
 	public async blindNote(channelId: MiChannel['id'], operatorId: MiUser['id'], noteId: string, isBlinded: boolean): Promise<void> {
+		// Restricted users cannot perform blind actions
+		const operator = await this.usersRepository.findOneByOrFail({ id: operatorId });
+		if (this.userRestrictionService.isEffectivelyRestricted(operator)) {
+			throw new Error('ACCESS_DENIED');
+		}
+
 		const isServerMod = await this.roleService.isModerator({ id: operatorId });
 		if (!isServerMod && !await this.hasChannelManagePermission(channelId, operatorId)) {
 			throw new Error('ACCESS_DENIED');

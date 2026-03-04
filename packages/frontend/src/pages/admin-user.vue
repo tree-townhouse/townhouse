@@ -259,6 +259,8 @@ import MkPagination from '@/components/MkPagination.vue';
 import { Paginator } from '@/utility/paginator.js';
 import UserModlog from '@/pages/admin/user-modlog.vue';
 
+import type { FormItem } from '@/utility/form.js';
+
 const $i = ensureSignin();
 
 const props = withDefaults(defineProps<{
@@ -375,65 +377,99 @@ async function resetPassword() {
 
 let cachedModerationReasons: { text: string; type: string }[] | null = null;
 
-async function askForReason(actionType: 'warn' | 'silence' | 'suspend' | 'restrict', title: string, description: string): Promise<string | null> {
+async function ensureModerationReasons() {
 	if (cachedModerationReasons === null) {
 		const meta = await misskeyApi('admin/meta');
 		cachedModerationReasons = meta.moderationReasons ?? [];
 	}
+	return cachedModerationReasons!;
+}
 
-	const reasons = cachedModerationReasons!;
-	const matchingReasons = reasons.filter(r => r.type === 'all' || r.type === actionType);
-
+function buildReasonFormFields(actionType: 'warn' | 'silence' | 'suspend' | 'restrict', matchingReasons: { text: string; type: string }[]): Record<string, FormItem> {
 	if (matchingReasons.length > 0) {
-		const items = [
-			...matchingReasons.map(r => ({ value: r.text, label: r.text })),
-			{ value: '__custom__', label: i18n.ts.customInput },
-		];
-
-		const { canceled, result } = await os.select({
-			title,
-			items,
-		});
-		if (canceled) return null;
-
-		if (result === '__custom__') {
-			const { canceled: canceled2, result: customReason } = await os.inputText({
-				title,
-				text: description,
-			});
-			if (canceled2) return null;
-			return customReason ?? '';
-		}
-
-		return result as string;
+		return {
+			reasonPreset: {
+				type: 'enum' as const,
+				label: i18n.ts.reason,
+				enum: [
+					...matchingReasons.map(r => ({ value: r.text, label: r.text })),
+					{ value: '__custom__', label: i18n.ts.customInput },
+				],
+				default: matchingReasons[0].text,
+			},
+			customReason: {
+				type: 'string' as const,
+				label: i18n.ts.reason,
+				required: false as const,
+				default: '',
+				hidden: (v: any) => v.reasonPreset !== '__custom__',
+			},
+		};
 	} else {
-		const { canceled, result: reason } = await os.inputText({
-			title,
-			text: description,
-		});
-		if (canceled) return null;
-		return reason ?? '';
+		return {
+			reason: {
+				type: 'string' as const,
+				label: i18n.ts.reason,
+				required: false as const,
+				default: '',
+			},
+		};
+	}
+}
+
+function extractReasonFromResult(result: any, hasPresets: boolean): string {
+	if (hasPresets) {
+		return result.reasonPreset === '__custom__' ? (result.customReason ?? '') : (result.reasonPreset as string);
+	}
+	return result.reason ?? '';
+}
+
+const periodItems = [{
+	value: 'oneDay', label: i18n.ts.oneDay,
+}, {
+	value: 'threeDays', label: i18n.ts.threeDays,
+}, {
+	value: 'oneWeek', label: i18n.ts.oneWeek,
+}, {
+	value: 'oneMonth', label: i18n.ts.oneMonth,
+}, {
+	value: 'threeMonths', label: i18n.ts.threeMonths,
+}, {
+	value: 'oneYear', label: i18n.ts.oneYear,
+}];
+
+function periodToExpiresAt(period: string): number | null {
+	switch (period) {
+		case 'tenMinutes': return Date.now() + (1000 * 60 * 10);
+		case 'oneHour': return Date.now() + (1000 * 60 * 60);
+		case 'oneDay': return Date.now() + (1000 * 60 * 60 * 24);
+		case 'threeDays': return Date.now() + (1000 * 60 * 60 * 24 * 3);
+		case 'oneWeek': return Date.now() + (1000 * 60 * 60 * 24 * 7);
+		case 'oneMonth': return Date.now() + (1000 * 60 * 60 * 24 * 30);
+		case 'threeMonths': return Date.now() + (1000 * 60 * 60 * 24 * 90);
+		case 'oneYear': return Date.now() + (1000 * 60 * 60 * 24 * 365);
+		default: return null;
 	}
 }
 
 async function toggleSuspend(v) {
 	if (v) {
-		const reason = await askForReason('suspend', i18n.ts.suspendReason, i18n.ts.suspendReasonDescription);
-		if (reason === null) {
-			suspended.value = false;
-			return;
-		}
+		const allReasons = await ensureModerationReasons();
+		const matchingReasons = allReasons.filter(r => r.type === 'all' || r.type === 'suspend');
+		const hasPresets = matchingReasons.length > 0;
+		const reasonFields = buildReasonFormFields('suspend', matchingReasons);
 
-		const confirm = await os.confirm({
-			type: 'warning',
-			text: i18n.ts.suspendConfirm,
+		const { canceled, result } = await os.form(i18n.ts.suspend, {
+			...reasonFields,
 		});
-		if (confirm.canceled) {
+		if (canceled) {
 			suspended.value = false;
 			return;
 		}
 
-		await misskeyApi('admin/suspend-user', { userId: user.value.id, reason: reason });
+		const reason = extractReasonFromResult(result, hasPresets);
+
+		await misskeyApi('admin/suspend-user', { userId: user.value.id, reason });
 		await refreshUser();
 	} else {
 		const confirm = await os.confirm({
@@ -450,48 +486,28 @@ async function toggleSuspend(v) {
 }
 
 async function silenceUser() {
-	const { canceled: canceled1, result: period } = await os.select({
-		title: i18n.ts.silencePeriod,
-		items: [{
-			value: 'indefinitely', label: i18n.ts.indefinitely,
-		}, {
-			value: 'tenMinutes', label: i18n.ts.tenMinutes,
-		}, {
-			value: 'oneHour', label: i18n.ts.oneHour,
-		}, {
-			value: 'oneDay', label: i18n.ts.oneDay,
-		}, {
-			value: 'threeDays', label: i18n.ts.threeDays,
-		}, {
-			value: 'oneWeek', label: i18n.ts.oneWeek,
-		}, {
-			value: 'oneMonth', label: i18n.ts.oneMonth,
-		}, {
-			value: 'threeMonths', label: i18n.ts.threeMonths,
-		}, {
-			value: 'oneYear', label: i18n.ts.oneYear,
-		}],
-		default: 'indefinitely',
+	const allReasons = await ensureModerationReasons();
+	const matchingReasons = allReasons.filter(r => r.type === 'all' || r.type === 'silence');
+	const hasPresets = matchingReasons.length > 0;
+	const reasonFields = buildReasonFormFields('silence', matchingReasons);
+
+	const { canceled, result } = await os.form(i18n.ts.silence, {
+		period: {
+			type: 'enum' as const,
+			label: i18n.ts.silencePeriod,
+			enum: periodItems,
+			default: 'indefinitely',
+		},
+		...reasonFields,
 	});
-	if (canceled1) return;
+	if (canceled) return;
 
-	const reason = await askForReason('silence', i18n.ts.silenceReason, i18n.ts.silenceReasonDescription);
-	if (reason === null) return;
-
-	const expiresAt = period === 'indefinitely' ? null
-		: period === 'tenMinutes' ? Date.now() + (1000 * 60 * 10)
-		: period === 'oneHour' ? Date.now() + (1000 * 60 * 60)
-		: period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
-		: period === 'threeDays' ? Date.now() + (1000 * 60 * 60 * 24 * 3)
-		: period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
-		: period === 'oneMonth' ? Date.now() + (1000 * 60 * 60 * 24 * 30)
-		: period === 'threeMonths' ? Date.now() + (1000 * 60 * 60 * 24 * 90)
-		: period === 'oneYear' ? Date.now() + (1000 * 60 * 60 * 24 * 365)
-		: null;
+	const reason = extractReasonFromResult(result, hasPresets);
+	const expiresAt = periodToExpiresAt(result.period as string);
 
 	await os.apiWithDialog('admin/silence-user', {
 		userId: user.value.id,
-		reason: reason,
+		reason,
 		expiresAt,
 	});
 	await refreshUser();
@@ -509,48 +525,28 @@ async function unsilenceUser() {
 }
 
 async function restrictUser() {
-	const { canceled: canceled1, result: period } = await os.select({
-		title: i18n.ts.restrictPeriod,
-		items: [{
-			value: 'indefinitely', label: i18n.ts.indefinitely,
-		}, {
-			value: 'tenMinutes', label: i18n.ts.tenMinutes,
-		}, {
-			value: 'oneHour', label: i18n.ts.oneHour,
-		}, {
-			value: 'oneDay', label: i18n.ts.oneDay,
-		}, {
-			value: 'threeDays', label: i18n.ts.threeDays,
-		}, {
-			value: 'oneWeek', label: i18n.ts.oneWeek,
-		}, {
-			value: 'oneMonth', label: i18n.ts.oneMonth,
-		}, {
-			value: 'threeMonths', label: i18n.ts.threeMonths,
-		}, {
-			value: 'oneYear', label: i18n.ts.oneYear,
-		}],
-		default: 'indefinitely',
+	const allReasons = await ensureModerationReasons();
+	const matchingReasons = allReasons.filter(r => r.type === 'all' || r.type === 'restrict');
+	const hasPresets = matchingReasons.length > 0;
+	const reasonFields = buildReasonFormFields('restrict', matchingReasons);
+
+	const { canceled, result } = await os.form(i18n.ts.restrict, {
+		period: {
+			type: 'enum' as const,
+			label: i18n.ts.restrictPeriod,
+			enum: periodItems,
+			default: 'indefinitely',
+		},
+		...reasonFields,
 	});
-	if (canceled1) return;
+	if (canceled) return;
 
-	const reason = await askForReason('restrict', i18n.ts.restrictReason, i18n.ts.restrictReasonDescription);
-	if (reason === null) return;
-
-	const expiresAt = period === 'indefinitely' ? null
-		: period === 'tenMinutes' ? Date.now() + (1000 * 60 * 10)
-		: period === 'oneHour' ? Date.now() + (1000 * 60 * 60)
-		: period === 'oneDay' ? Date.now() + (1000 * 60 * 60 * 24)
-		: period === 'threeDays' ? Date.now() + (1000 * 60 * 60 * 24 * 3)
-		: period === 'oneWeek' ? Date.now() + (1000 * 60 * 60 * 24 * 7)
-		: period === 'oneMonth' ? Date.now() + (1000 * 60 * 60 * 24 * 30)
-		: period === 'threeMonths' ? Date.now() + (1000 * 60 * 60 * 24 * 90)
-		: period === 'oneYear' ? Date.now() + (1000 * 60 * 60 * 24 * 365)
-		: null;
+	const reason = extractReasonFromResult(result, hasPresets);
+	const expiresAt = periodToExpiresAt(result.period as string);
 
 	await os.apiWithDialog('admin/restrict-user', {
 		userId: user.value.id,
-		reason: reason,
+		reason,
 		expiresAt,
 	});
 	await refreshUser();
@@ -568,12 +564,21 @@ async function unrestrictUser() {
 }
 
 async function warnUser() {
-	const reason = await askForReason('warn', i18n.ts.warnReason, i18n.ts.warnReasonDescription);
-	if (reason === null) return;
+	const allReasons = await ensureModerationReasons();
+	const matchingReasons = allReasons.filter(r => r.type === 'all' || r.type === 'warn');
+	const hasPresets = matchingReasons.length > 0;
+	const reasonFields = buildReasonFormFields('warn', matchingReasons);
+
+	const { canceled, result } = await os.form(i18n.ts.warn, {
+		...reasonFields,
+	});
+	if (canceled) return;
+
+	const reason = extractReasonFromResult(result, hasPresets);
 
 	await os.apiWithDialog('admin/warn-user', {
 		userId: user.value.id,
-		reason: reason,
+		reason,
 	});
 	await refreshUser();
 }
