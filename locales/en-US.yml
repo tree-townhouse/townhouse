@@ -1538,8 +1538,10 @@ showAvatarDecorations: "Show avatar decorations"
 releaseToRefresh: "Release to refresh"
 refreshing: "Refreshing..."
 pullDownToRefresh: "Pull down to refresh"
+disableStreamingTimeline: "Disable streaming timeline updates"
 useGroupedNotifications: "Display grouped notifications"
 emailVerificationFailedError: "A problem occurred while verifying your email address. The link may have expired."
+signupPendingError: "A problem occurred while verifying your email address. The link may have expired."
 cwNotationRequired: "If \"Hide content\" is enabled, a description must be provided."
 doReaction: "Add reaction"
 code: "Code"
@@ -3486,6 +3488,7 @@ _externalResourceInstaller:
     title: "Distributor information"
     endpoint: "Referenced endpoint"
     hashVerify: "Hash verification"
+    hashVerified: "Verified"
   _errors:
     _invalidParams:
       title: "Invalid parameters"
