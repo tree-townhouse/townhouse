@@ -745,9 +745,9 @@ export function getNoteMenu(props: {
 		// 2. 다른 로컬 유저가 쓴 노트의 경우 모더레이터/관리자에게는 삭제 버튼과 공개 범위 변경 버튼이 표시되어야 함
 		// 단, 채널에 게시된 노트에는 공개 범위 변경 버튼을 표시하지 않음
 		if (isAdminOrModerator && isOtherLocalUser) {
-			menuItems.push({ type: 'divider' });
-
 			if (!appearNote.channel) {
+				menuItems.push({ type: 'divider' });
+
 				const updateNoteVisibility = async (newVisibility: 'public' | 'home' | 'followers') => {
 					const { canceled } = await os.confirm({
 						type: 'warning',
