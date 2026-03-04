@@ -884,7 +884,7 @@ export function getNoteMenu(props: {
 		}
 
 		// Blind/unblind note in channel (shown at bottom, near delete)
-		if (appearNote.channel && (appearNote.channel.userId === $i.id || appearNote.channel.isViewerChannelManager || $i.isModerator || $i.isAdmin)) {
+		if (appearNote.channel && appearNote.userId !== $i.id && (appearNote.channel.userId === $i.id || appearNote.channel.isViewerChannelManager || $i.isModerator || $i.isAdmin)) {
 			menuItems.push({ type: 'divider' });
 			menuItems.push({
 				icon: appearNote.isBlinded ? 'ti ti-eye' : 'ti ti-eye-off',
