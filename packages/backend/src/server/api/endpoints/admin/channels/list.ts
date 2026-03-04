@@ -52,6 +52,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.channelsRepository.createQueryBuilder('channel'), ps.sinceId, ps.untilId);
 
+			// Hide pending (unapproved) channels from the all channels list
+			query.andWhere('channel.isApproved = :isApproved', { isApproved: true });
+
 			if (ps.query && ps.query !== '') {
 				query.andWhere('channel.name ILIKE :q', { q: `%${sqlLikeEscape(ps.query)}%` });
 			}

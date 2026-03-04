@@ -96,5 +96,8 @@ export class UserRestrictionService {
 		if (hours < 24) return `${hours}시간`;
 		const days = Math.round(diff / (1000 * 60 * 60 * 24));
 		if (days < 7) return `${days}일`;
+		if (days < 30) return `${Math.round(days / 7)}주`;
+		if (days < 365) return `${Math.round(days / 30)}개월`;
+		return `${Math.round(days / 365)}년`;
 	}
 }
