@@ -671,8 +671,8 @@ export function getNoteMenu(props: {
 						});
 					}
 
-					// Ban user from channel (if note author is not the current user and not the channel admin)
-					if (appearNote.userId !== $i.id && appearNote.channel!.userId !== appearNote.userId) {
+					// Ban user from channel (only for channel admin/moderator, not server admin)
+					if (appearNote.userId !== $i.id && appearNote.channel!.userId !== appearNote.userId && (appearNote.channel!.userId === $i.id || appearNote.channel!.isViewerChannelManager)) {
 						channelChildMenu.push({ type: 'divider' });
 						channelChildMenu.push({
 							icon: 'ti ti-ban',
@@ -715,8 +715,8 @@ export function getNoteMenu(props: {
 						});
 					}
 
-					// Invite as moderator (if note author is not the current user, only channel admin or server admin)
-					if (appearNote.userId !== $i.id && (appearNote.channel!.userId === $i.id || $i.isAdmin)) {
+					// Invite as moderator (only for channel admin, not server admin)
+					if (appearNote.userId !== $i.id && appearNote.channel!.userId === $i.id) {
 						channelChildMenu.push({
 							icon: 'ti ti-shield-check',
 							text: i18n.ts.channelInviteModerator,
@@ -842,14 +842,6 @@ export function getNoteMenu(props: {
 					action: delEdit,
 				});
 			}
-
-			// Both Owner and Admin/Mod get delete
-			menuItems.push({
-				icon: 'ti ti-trash',
-				text: i18n.ts.delete,
-				danger: true,
-				action: del,
-			});
 		}
 
 		// Blind/unblind note in channel (shown at bottom, near delete)
@@ -878,6 +870,16 @@ export function getNoteMenu(props: {
 						});
 					});
 				},
+			});
+		}
+
+		// Both Owner and Admin/Mod get delete (at the very bottom)
+		if (isOwner || (isAdminOrModerator && isOtherLocalUser)) {
+			menuItems.push({
+				icon: 'ti ti-trash',
+				text: i18n.ts.delete,
+				danger: true,
+				action: del,
 			});
 		}
 	} else {

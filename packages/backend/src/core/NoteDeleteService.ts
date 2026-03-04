@@ -7,7 +7,7 @@ import { Brackets, In, IsNull, Not } from 'typeorm';
 import { Injectable, Inject } from '@nestjs/common';
 import type { MiUser, MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import type { MiNote, IMentionedRemoteUsers } from '@/models/Note.js';
-import type { InstancesRepository, MiMeta, NotesRepository, UsersRepository } from '@/models/_.js';
+import type { ChannelsRepository, InstancesRepository, MiMeta, NotesRepository, UsersRepository } from '@/models/_.js';
 import { RelayService } from '@/core/RelayService.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { DI } from '@/di-symbols.js';
@@ -41,6 +41,9 @@ export class NoteDeleteService {
 
 		@Inject(DI.instancesRepository)
 		private instancesRepository: InstancesRepository,
+
+		@Inject(DI.channelsRepository)
+		private channelsRepository: ChannelsRepository,
 
 		private userEntityService: UserEntityService,
 		private globalEventService: GlobalEventService,
@@ -109,6 +112,21 @@ export class NoteDeleteService {
 		}
 
 		this.searchService.unindexNote(note);
+
+		// Decrement channel notesCount when deleting a note from a channel
+		if (note.channelId) {
+			this.channelsRepository.decrement({ id: note.channelId }, 'notesCount', 1);
+
+			// If this was the user's only note in the channel, decrement usersCount
+			const remainingCount = await this.notesRepository.countBy({
+				userId: user.id,
+				channelId: note.channelId,
+			});
+			if (remainingCount <= 1) {
+				// <= 1 because the note hasn't been deleted from DB yet at this point
+				this.channelsRepository.decrement({ id: note.channelId }, 'usersCount', 1);
+			}
+		}
 
 		await this.notesRepository.delete({
 			id: note.id,
