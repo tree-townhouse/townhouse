@@ -2740,6 +2740,7 @@ _channel:
   owned: "관리중"
   following: "팔로잉"
   usersCount: "{n}명이 참여 중"
+  followersCount: "{n}명이 팔로우 중"
   notesCount: "{n}노트"
   nameAndDescription: "이름과 설명"
   nameOnly: "이름만"

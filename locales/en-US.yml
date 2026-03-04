@@ -2737,6 +2737,7 @@ _channel:
   owned: "Owned"
   following: "Followed"
   usersCount: "{n} Participants"
+  followersCount: "{n} Followers"
   notesCount: "{n} Notes"
   nameAndDescription: "Name and description"
   nameOnly: "Name only"

@@ -123,6 +123,7 @@ export class ChannelEntityService {
 			pinnedNoteIds: channel.pinnedNoteIds,
 			color: channel.color,
 			isApproved: channel.isApproved,
+			followersCount: await this.channelFollowingsRepository.countBy({ followeeId: channel.id }),
 			usersCount: channel.usersCount,
 			notesCount: channel.notesCount,
 			isSensitive: channel.isSensitive,

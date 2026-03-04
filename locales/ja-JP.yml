@@ -2780,6 +2780,7 @@ _channel:
   owned: "管理中"
   following: "フォロー中"
   usersCount: "{n}人が参加中"
+  followersCount: "{n}人がフォロー中"
   notesCount: "{n}投稿があります"
   nameAndDescription: "名前と説明"
   nameOnly: "名前のみ"
