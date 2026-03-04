@@ -46,6 +46,11 @@ export const meta = {
 			code: 'CANNOT_INVITE_ADMIN',
 			id: 'e0460b5e-1a02-4c29-a8b0-001001000006',
 		},
+		userBanned: {
+			message: 'Cannot invite a banned user as moderator.',
+			code: 'USER_BANNED',
+			id: 'e0460b5e-1a02-4c29-a8b0-001001000007',
+		},
 	},
 } as const;
 
@@ -73,6 +78,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					case 'CANNOT_INVITE_ADMIN': throw new ApiError(meta.errors.cannotInviteAdmin);
 					case 'ALREADY_MODERATOR': throw new ApiError(meta.errors.alreadyModerator);
 					case 'ALREADY_INVITED': throw new ApiError(meta.errors.alreadyInvited);
+					case 'USER_BANNED': throw new ApiError(meta.errors.userBanned);
 					default: throw new ApiError(meta.errors.noSuchChannel);
 				}
 			}

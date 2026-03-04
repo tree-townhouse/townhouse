@@ -126,6 +126,12 @@ export class ChannelModerationService {
 			throw new Error('CANNOT_INVITE_ADMIN');
 		}
 
+		// Cannot invite a banned user as moderator
+		const { banned } = await this.isBanned(channelId, inviteeId);
+		if (banned) {
+			throw new Error('USER_BANNED');
+		}
+
 		// Check if already a moderator
 		const existing = await this.channelModeratorsRepository.findOneBy({
 			channelId,
@@ -182,6 +188,12 @@ export class ChannelModerationService {
 
 		if (!invitation) {
 			throw new Error('NO_INVITATION');
+		}
+
+		// Cannot accept if the user is banned from the channel
+		const { banned } = await this.isBanned(channelId, userId);
+		if (banned) {
+			throw new Error('USER_BANNED');
 		}
 
 		await this.channelModeratorsRepository.update(invitation.id, {
@@ -412,6 +424,22 @@ export class ChannelModerationService {
 
 		if (!note) {
 			throw new Error('NO_SUCH_NOTE');
+		}
+
+		// Channel moderators cannot blind notes by the channel admin
+		const isOperatorChannelAdmin = await this.isChannelAdmin(channelId, operatorId);
+		if (!isServerMod && !isOperatorChannelAdmin) {
+			// Operator is a channel moderator (not admin, not server mod)
+			if (await this.isChannelAdmin(channelId, note.userId)) {
+				throw new Error('ACCESS_DENIED');
+			}
+		}
+
+		// Channel admins cannot blind notes by server admins/moderators
+		if (!isServerMod) {
+			if (await this.roleService.isModerator({ id: note.userId })) {
+				throw new Error('ACCESS_DENIED');
+			}
 		}
 
 		if (note.isBlinded === isBlinded) {

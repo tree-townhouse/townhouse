@@ -61,15 +61,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<span style="height: 1em; width: 1px; background: var(--MI_THEME-divider);"></span>
 						<span>{{ getSeparatorInfo(paginator.items.value[i -1].createdAt, note.createdAt)?.nextText }} <i class="ti ti-chevron-down"></i></span>
 					</div>
-					<MkNote :class="$style.note" :note="note" :withHardMute="true"/>
+					<MkNote :class="$style.note" :note="note" :withHardMute="true" :pinned="pinnedNoteIds?.includes(note.id)"/>
 				</div>
 				<div v-else-if="note._shouldInsertAd_" :class="{ '_gaps': !noGap }" :data-scroll-anchor="note.id">
-					<MkNote :class="$style.note" :note="note" :withHardMute="true"/>
+					<MkNote :class="$style.note" :note="note" :withHardMute="true" :pinned="pinnedNoteIds?.includes(note.id)"/>
 					<div :class="[$style.ad, { [$style.noGap]: noGap }]">
 						<MkAd :preferForms="['horizontal', 'horizontal-big']"/>
 					</div>
 				</div>
-				<MkNote v-else :class="$style.note" :note="note" :withHardMute="true" :data-scroll-anchor="note.id"/>
+				<MkNote v-else :class="$style.note" :note="note" :withHardMute="true" :pinned="pinnedNoteIds?.includes(note.id)" :data-scroll-anchor="note.id"/>
 			</template>
 		</component>
 		<button v-show="paginator.canFetchOlder.value" key="_more_" v-appear="prefer.s.enableInfiniteScroll ? paginator.fetchOlder : null" :disabled="paginator.fetchingOlder.value" class="_button" :class="$style.more" @click="paginator.fetchOlder">
@@ -137,6 +137,7 @@ const props = withDefaults(defineProps<{
 	withSensitive?: boolean;
 	onlyFiles?: boolean;
 	onlyCats?: boolean;
+	pinnedNoteIds?: string[];
 }>(), {
 	withRenotes: true,
 	withReplies: false,

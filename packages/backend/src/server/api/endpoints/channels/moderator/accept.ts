@@ -21,6 +21,11 @@ export const meta = {
 			code: 'NO_INVITATION',
 			id: 'e0460b5e-1a02-4c29-a8b0-001003000001',
 		},
+		userBanned: {
+			message: 'Cannot accept invitation while banned from the channel.',
+			code: 'USER_BANNED',
+			id: 'e0460b5e-1a02-4c29-a8b0-001003000002',
+		},
 	},
 } as const;
 
@@ -42,6 +47,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				await this.channelModerationService.acceptModeratorInvitation(ps.channelId, me.id);
 			} catch (e: any) {
 				if (e.message === 'NO_INVITATION') throw new ApiError(meta.errors.noInvitation);
+				if (e.message === 'USER_BANNED') throw new ApiError(meta.errors.userBanned);
 				throw e;
 			}
 		});

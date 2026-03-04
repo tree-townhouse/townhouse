@@ -40,7 +40,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<!-- スマホ・タブレットの場合、キーボードが表示されると投稿が見づらくなるので、デスクトップ場合のみ自動でフォーカスを当てる -->
 			<MkPostForm v-if="$i && channel.isApproved && prefer.r.showFixedPostFormInChannel.value" :channel="channel" class="post-form _panel" fixed :autofocus="deviceKind === 'desktop'"/>
 
-			<MkStreamingNotesTimeline :key="channelId" src="channel" :channel="channelId"/>
+			<MkStreamingNotesTimeline :key="channelId" src="channel" :channel="channelId" :pinnedNoteIds="channel.pinnedNoteIds"/>
 		</div>
 		<div v-else-if="tab === 'featured'">
 			<MkNotesTimeline :paginator="featuredPaginator"/>
