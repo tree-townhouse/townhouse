@@ -78,6 +78,7 @@ export class AnnouncementService {
 			forExistingUsers: values.forExistingUsers,
 			silence: values.silence,
 			needConfirmationToRead: values.needConfirmationToRead,
+			closedOnly: values.closedOnly ?? false,
 			userId: values.userId,
 		});
 

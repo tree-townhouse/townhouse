@@ -52,6 +52,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.announcementsRepository.createQueryBuilder('announcement'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate)
 				.andWhere('announcement.isActive = :isActive', { isActive: ps.isActive })
+				.andWhere('announcement."closedOnly" = false')
 				.andWhere(new Brackets(qb => {
 					if (me) qb.orWhere('announcement.userId = :meId', { meId: me.id });
 					qb.orWhere('announcement.userId IS NULL');

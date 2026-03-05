@@ -69,6 +69,10 @@ export const meta = {
 					type: 'boolean',
 					optional: false, nullable: false,
 				},
+				closedOnly: {
+					type: 'boolean',
+					optional: false, nullable: false,
+				},
 				needConfirmationToRead: {
 					type: 'boolean',
 					optional: false, nullable: false,
@@ -153,6 +157,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				isActive: announcement.isActive,
 				forExistingUsers: announcement.forExistingUsers,
 				silence: announcement.silence,
+				closedOnly: announcement.closedOnly,
 				needConfirmationToRead: announcement.needConfirmationToRead,
 				userId: announcement.userId,
 				reads: reads.get(announcement)!,

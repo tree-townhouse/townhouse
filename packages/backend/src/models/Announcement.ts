@@ -72,6 +72,12 @@ export class MiAnnouncement {
 	})
 	public silence: boolean;
 
+	@Column('boolean', {
+		default: false,
+		comment: 'Whether this announcement should only be shown as a dialog and not listed in the announcements page.',
+	})
+	public closedOnly: boolean;
+
 	@Index()
 	@Column({
 		...id(),

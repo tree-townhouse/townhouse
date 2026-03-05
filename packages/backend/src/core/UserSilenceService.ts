@@ -61,9 +61,10 @@ export class UserSilenceService {
 			icon: 'warning',
 			display: 'dialog',
 			userId: user.id,
-			needConfirmationToRead: true,
+			needConfirmationToRead: false,
 			forExistingUsers: false,
 			silence: false,
+			closedOnly: true,
 		}, moderator);
 	}
 
