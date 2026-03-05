@@ -465,6 +465,7 @@ export type ModerationLogPayloads = {
 		userUsername: string;
 		userHost: string | null;
 		reason: string;
+		warningCount: number;
 	};
 	resetWarning: {
 		userId: string;

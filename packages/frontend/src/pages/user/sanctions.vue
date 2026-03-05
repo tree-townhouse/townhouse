@@ -14,6 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div v-for="item in items" :key="item.id" class="_panel" :class="$style.item">
 					<div :class="$style.header">
 						<span :class="$style.badge" :style="{ background: getBadgeColor(item.type) }">{{ getTypeLabel(item.type) }}</span>
+						<span v-if="item.type === 'warn' && item.warningCount" :class="$style.warningCount">{{ i18n.tsx.warningCount({ count: item.warningCount }) }}</span>
 						<span :class="$style.date"><MkTime :time="item.createdAt" mode="detail"/></span>
 					</div>
 					<div :class="$style.reason">
@@ -22,7 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 					<div v-if="item.expiresAt" :class="$style.expires">
 						<span :class="$style.reasonLabel">{{ i18n.ts.expiration }}</span>
-						<span><MkTime :time="item.expiresAt" mode="detail"/></span>
+						<span><MkTime :time="item.expiresAt" mode="detail"/> ({{ formatPeriod(item.createdAt, item.expiresAt) }})</span>
 					</div>
 				</div>
 			</div>
@@ -60,6 +61,24 @@ function getBadgeColor(type: string): string {
 		default: return 'var(--MI_THEME-accent)';
 	}
 }
+
+function formatPeriod(createdAt: string, expiresAt: string): string {
+	const start = new Date(createdAt).getTime();
+	const end = new Date(expiresAt).getTime();
+	const diff = end - start;
+
+	const minutes = Math.round(diff / (1000 * 60));
+	if (minutes < 60) return `${minutes}${i18n.ts._time.minute}`;
+
+	const hours = Math.round(diff / (1000 * 60 * 60));
+	if (hours < 24) return `${hours}${i18n.ts._time.hour}`;
+
+	const days = Math.round(diff / (1000 * 60 * 60 * 24));
+	if (days < 30) return `${days}${i18n.ts._time.day}`;
+
+	const months = Math.round(days / 30);
+	return `${months}${i18n.ts._time.month}`;
+}
 </script>
 
 <style lang="scss" module>
@@ -86,6 +105,13 @@ function getBadgeColor(type: string): string {
 .date {
 	opacity: 0.7;
 	font-size: 85%;
+	margin-left: auto;
+}
+
+.warningCount {
+	font-size: 85%;
+	opacity: 0.8;
+	font-weight: bold;
 }
 
 .reason {

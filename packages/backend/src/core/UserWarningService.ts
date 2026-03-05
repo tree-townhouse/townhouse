@@ -35,6 +35,7 @@ export class UserWarningService {
 			userUsername: user.username,
 			userHost: user.host,
 			reason: reason,
+			warningCount: newWarningCount,
 		});
 
 		// Send announcement to the warned user

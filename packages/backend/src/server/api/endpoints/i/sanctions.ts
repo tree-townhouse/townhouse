@@ -90,6 +90,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				type: log.type,
 				reason: log.info?.reason ?? null,
 				expiresAt: log.info?.expiresAt ?? null,
+				warningCount: log.info?.warningCount ?? null,
 			}));
 		});
 	}
