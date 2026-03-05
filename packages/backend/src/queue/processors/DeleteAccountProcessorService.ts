@@ -148,8 +148,8 @@ export class DeleteAccountProcessorService {
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 			if (profile.email && profile.emailVerified) {
 				this.emailService.sendEmail(profile.email, '계정 삭제 안내',
-					'Your account has been deleted.',
-					'Your account has been deleted.');
+					'계정이 삭제되었어요.',
+					'계정이 삭제되었어요.');
 			}
 		}
 

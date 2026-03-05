@@ -135,8 +135,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				const link = `${this.config.url}/verify-email/${code}`;
 
 				this.emailService.sendEmail(ps.email, '이메일 인증 메일',
-					`To verify email, please click this link:<br><a href="${link}">${link}</a>`,
-					`To verify email, please click this link: ${link}`);
+					`이메일을 인증하려면 아래 링크를 클릭해주세요.<br><a href="${link}">${link}</a>`,
+					`이메일을 인증하려면 아래 링크를 클릭해주세요: ${link}`);
 			}
 
 			return iObj;

@@ -62,8 +62,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (profile?.email) {
 				this.emailService.sendEmail(profile.email, '가입 신청 반려 안내',
-					'Your Account has been declined.. / アカウントが拒否されました… / 가입 요청한 계정이 거부되었어요..',
-					'Your Account has been declined.. / アカウントが拒否されました… / 가입 요청한 계정이 거부되었어요..');
+					'죄송합니다. 가입 요청한 계정이 거부되었어요.',
+					'죄송합니다. 가입 요청한 계정이 거부되었어요.');
 			}
 
 			await this.usedUsernamesRepository.delete({ username: user.username.toLowerCase() });

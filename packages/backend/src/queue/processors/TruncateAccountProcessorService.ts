@@ -140,8 +140,8 @@ export class TruncateAccountProcessorService {
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 			if (profile.email && profile.emailVerified) {
 				this.emailService.sendEmail(profile.email, '계정 정리 안내',
-					'Your account has been truncated.',
-					'Your account has been truncated.');
+					'계정의 노트와 드라이브가 정리되었어요.',
+					'계정의 노트와 드라이브가 정리되었어요.');
 			}
 		}
 

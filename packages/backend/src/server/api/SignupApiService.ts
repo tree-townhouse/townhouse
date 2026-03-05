@@ -224,8 +224,8 @@ export class SignupApiService {
 			const link = `${this.config.url}/signup-complete/${code}`;
 
 			this.emailService.sendEmail(emailAddress!, '이메일 인증 메일',
-				`To complete signup, please click this link:<br><a href="${link}">${link}</a>`,
-				`To complete signup, please click this link: ${link}`);
+				`가입을 완료하려면 아래 링크를 클릭해주세요.<br><a href="${link}">${link}</a>`,
+				`가입을 완료하려면 아래 링크를 클릭해주세요: ${link}`);
 
 			if (ticket) {
 				await this.registrationTicketsRepository.update(ticket.id, {
@@ -243,8 +243,8 @@ export class SignupApiService {
 
 			if (emailAddress) {
 				this.emailService.sendEmail(emailAddress, '가입 신청 안내',
-					'Congratulations! Your account is now pending approval. You will get notified when you have been accepted.',
-					'Congratulations! Your account is now pending approval. You will get notified when you have been accepted.');
+					'가입 신청이 접수되었어요! 관리자의 승인을 기다리고 있으며, 승인이 완료되면 알려드릴게요.',
+					'가입 신청이 접수되었어요! 관리자의 승인을 기다리고 있으며, 승인이 완료되면 알려드릴게요.');
 			}
 
 			if (ticket) {
@@ -265,9 +265,9 @@ export class SignupApiService {
 				const profile = await this.userProfilesRepository.findOneBy({ userId: moderator.id });
 
 				if (profile?.email) {
-					this.emailService.sendEmail(profile.email, 'New user awaiting approval',
-						`A new user called ${account.username} is awaiting approval with the following reason: "${reason}"`,
-						`A new user called ${account.username} is awaiting approval with the following reason: "${reason}"`);
+					this.emailService.sendEmail(profile.email, '새로운 가입 승인 요청',
+						`새로운 사용자 ${account.username}님이 다음 사유로 가입 승인을 요청했어요: "${reason}"`,
+						`새로운 사용자 ${account.username}님이 다음 사유로 가입 승인을 요청했어요: "${reason}"`);
 				}
 			}
 
@@ -358,8 +358,8 @@ export class SignupApiService {
 			if (this.meta.approvalRequiredForSignup) {
 				if (pendingUser.email) {
 					this.emailService.sendEmail(pendingUser.email, '가입 신청 안내',
-						'Congratulations! Your account is now pending approval. You will get notified when you have been accepted.',
-						'Congratulations! Your account is now pending approval. You will get notified when you have been accepted.');
+						'가입 신청이 접수되었어요! 관리자의 승인을 기다리고 있으며, 승인이 완료되면 알려드릴게요.',
+						'가입 신청이 접수되었어요! 관리자의 승인을 기다리고 있으며, 승인이 완료되면 알려드릴게요.');
 				}
 
 				const moderators = await this.roleService.getModerators();
@@ -368,9 +368,9 @@ export class SignupApiService {
 					const profile = await this.userProfilesRepository.findOneBy({ userId: moderator.id });
 
 					if (profile?.email) {
-						this.emailService.sendEmail(profile.email, 'New user awaiting approval',
-							`A new user called ${pendingUser.username} is awaiting approval with the following reason: "${pendingUser.reason}"`,
-							`A new user called ${pendingUser.username} is awaiting approval with the following reason: "${pendingUser.reason}"`);
+						this.emailService.sendEmail(profile.email, '새로운 가입 승인 요청',
+							`새로운 사용자 ${pendingUser.username}님이 다음 사유로 가입 승인을 요청했어요: "${pendingUser.reason}"`,
+							`새로운 사용자 ${pendingUser.username}님이 다음 사유로 가입 승인을 요청했어요: "${pendingUser.reason}"`);
 					}
 				}
 
