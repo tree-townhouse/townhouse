@@ -65,58 +65,93 @@ export class EmailService {
 		<title>${ subject }</title>
 		<style>
 			html {
-				background: #eee;
+				background: #1A1412;
 			}
 
 			body {
-				padding: 16px;
+				padding: 32px 16px;
 				margin: 0;
-				font-family: sans-serif;
-				font-size: 14px;
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+				font-size: 15px;
+				line-height: 1.6;
+				color: #EDE0D4;
 			}
 
 			a {
 				text-decoration: none;
-				color: #ffbcdc;
+				color: #F39C12;
 			}
 			a:hover {
 				text-decoration: underline;
+				color: #E67E22;
 			}
 
 			main {
-				max-width: 500px;
+				max-width: 520px;
 				margin: 0 auto;
-				background: #fff;
-				color: #555;
+				background: #261D1A;
+				border-radius: 16px;
+				overflow: hidden;
+				box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
 			}
 				main > header {
-					padding: 32px;
-					background: #ffbcdc;
+					padding: 28px 32px;
+					background: #1A1412;
+					border-bottom: 2px solid rgba(230, 126, 34, 0.3);
+					display: flex;
+					align-items: center;
 				}
 					main > header > img {
-						max-width: 128px;
-						max-height: 28px;
-						vertical-align: bottom;
+						max-width: 42px;
+						max-height: 42px;
+						vertical-align: middle;
+						border-radius: 8px;
+					}
+					main > header > .header-title {
+						margin-left: 14px;
+						font-size: 18px;
+						font-weight: 700;
+						color: #E67E22;
+						letter-spacing: 0.5px;
 					}
 				main > article {
-					padding: 32px;
+					padding: 36px 32px;
 				}
 					main > article > h1 {
-						margin: 0 0 1em 0;
+						margin: 0 0 20px 0;
+						font-size: 20px;
+						font-weight: 700;
+						color: #EDE0D4;
+						line-height: 1.4;
+					}
+					main > article > div {
+						color: #B08968;
+						line-height: 1.7;
 					}
 				main > footer {
-					padding: 32px;
-					border-top: solid 1px #eee;
+					padding: 20px 32px;
+					border-top: solid 1px #3D2B24;
+					text-align: center;
 				}
+					main > footer > a {
+						display: inline-block;
+						padding: 8px 24px;
+						color: #E67E22;
+						font-size: 13px;
+						border: 1px solid #3D2B24;
+						border-radius: 8px;
+					}
 
 			nav {
 				box-sizing: border-box;
-				max-width: 500px;
-				margin: 16px auto 0 auto;
+				max-width: 520px;
+				margin: 20px auto 0 auto;
 				padding: 0 32px;
+				text-align: center;
 			}
 				nav > a {
-					color: #888;
+					color: #B08968;
+					font-size: 13px;
 				}
 		</style>
 	</head>
@@ -124,13 +159,14 @@ export class EmailService {
 		<main>
 			<header>
 				<img src="${ this.meta.logoImageUrl ?? this.meta.iconUrl ?? iconUrl }"/>
+				<span class="header-title">${ this.meta.name ?? this.config.host }</span>
 			</header>
 			<article>
 				<h1>${ subject }</h1>
 				<div>${ html }</div>
 			</article>
 			<footer>
-				<a href="${ emailSettingUrl }">${ 'Email setting' }</a>
+				<a href="${ emailSettingUrl }">Email setting</a>
 			</footer>
 		</main>
 		<nav>
