@@ -78,15 +78,17 @@ async function approveAccount() {
 }
 
 async function deleteAccount() {
-	const confirm = await os.confirm({
-		type: 'warning',
+	const { canceled, result: reason } = await os.inputText({
+		title: i18n.ts.denyAccount,
 		text: i18n.ts.deleteThisAccountConfirm,
+		placeholder: '거부 사유를 입력해주세요 (선택)',
 	});
 
-	if (confirm.canceled) return;
+	if (canceled) return;
 
 	await os.apiWithDialog('admin/decline-user', {
 		userId: props.user.id,
+		reason: reason ?? undefined,
 	});
 
 	emits('deleted', props.user.id);

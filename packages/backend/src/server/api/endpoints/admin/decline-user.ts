@@ -23,6 +23,7 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		userId: { type: 'string', format: 'misskey:id' },
+		reason: { type: 'string' },
 	},
 	required: ['userId'],
 } as const;
@@ -61,9 +62,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const profile = await this.userProfilesRepository.findOneBy({ userId: ps.userId });
 
 			if (profile?.email) {
+				const reasonText = ps.reason
+					? `<br><br><b>사유:</b> ${ps.reason}`
+					: '';
+				const reasonPlain = ps.reason
+					? `\n\n사유: ${ps.reason}`
+					: '';
 				this.emailService.sendEmail(profile.email, '가입 신청 반려 안내',
-					'죄송합니다. 가입 요청한 계정이 거부되었어요.',
-					'죄송합니다. 가입 요청한 계정이 거부되었어요.');
+					`죄송합니다. 가입 요청한 계정이 거부되었어요. 사유: ${reasonText}`,
+					`죄송합니다. 가입 요청한 계정이 거부되었어요. 사유: ${reasonPlain}`);
 			}
 
 			await this.usedUsernamesRepository.delete({ username: user.username.toLowerCase() });
