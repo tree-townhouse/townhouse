@@ -73,10 +73,29 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<!-- メール送信タブ -->
 	<div v-else-if="tab === 'send'" class="_spacer" style="--MI_SPACER-w: 700px; --MI_SPACER-min: 16px; --MI_SPACER-max: 32px;">
 		<div class="_gaps_m">
-			<MkInput v-model="sendTo" type="email">
+			<MkRadios v-model="recipientMode">
 				<template #label>{{ i18n.ts.emailRecipient }}</template>
+				<option value="direct"><i class="ti ti-keyboard"></i> {{ i18n.ts.emailRecipientDirect }}</option>
+				<option value="user"><i class="ti ti-user"></i> {{ i18n.ts.emailRecipientSelectUser }}</option>
+			</MkRadios>
+
+			<MkInput v-if="recipientMode === 'direct'" v-model="sendTo" type="email">
+				<template #label>{{ i18n.ts.emailAddress }}</template>
 				<template #prefix><i class="ti ti-mail"></i></template>
 			</MkInput>
+
+			<div v-else-if="recipientMode === 'user'" class="_gaps_s">
+				<MkButton rounded @click="pickUser"><i class="ti ti-user-search"></i> {{ i18n.ts.emailSelectUser }}</MkButton>
+				<div v-if="selectedUser" :class="$style.selectedUser">
+					<MkAvatar :user="selectedUser" :class="$style.selectedUserAvatar"/>
+					<div :class="$style.selectedUserInfo">
+						<MkUserName :user="selectedUser" :class="$style.selectedUserName"/>
+						<MkAcct :user="selectedUser" :class="$style.selectedUserAcct"/>
+						<div v-if="selectedUserEmail" :class="$style.selectedUserEmail"><i class="ti ti-mail"></i> {{ selectedUserEmail }}</div>
+						<div v-else :class="$style.noEmail"><i class="ti ti-alert-triangle"></i> {{ i18n.ts.emailNoEmailWarning }}</div>
+					</div>
+				</div>
+			</div>
 
 			<MkInput v-model="sendSubject">
 				<template #label>{{ i18n.ts.emailSubject }}</template>
@@ -107,9 +126,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
+import * as Misskey from 'cherrypick-js';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
+import MkRadios from '@/components/MkRadios.vue';
 import FormInfo from '@/components/MkInfo.vue';
 import FormSplit from '@/components/form/split.vue';
 import FormSection from '@/components/form/section.vue';
@@ -134,13 +155,32 @@ const smtpUser = ref(meta.smtpUser);
 const smtpPass = ref(meta.smtpPass);
 
 // Send tab
+const recipientMode = ref<'direct' | 'user'>('direct');
 const sendTo = ref('');
 const sendSubject = ref('');
 const sendBody = ref('');
+const selectedUser = ref<Misskey.entities.UserDetailed | null>(null);
+const selectedUserEmail = ref<string | null>(null);
 
 const canSend = computed(() => {
-	return sendTo.value.trim() !== '' && sendSubject.value.trim() !== '' && sendBody.value.trim() !== '';
+	const hasRecipient = recipientMode.value === 'direct'
+		? sendTo.value.trim() !== ''
+		: selectedUser.value != null && selectedUserEmail.value != null;
+	return hasRecipient && sendSubject.value.trim() !== '' && sendBody.value.trim() !== '';
 });
+
+async function pickUser() {
+	const user = await os.selectUser({ localOnly: true, includeSelf: true });
+	selectedUser.value = user;
+
+	// Fetch user email from admin API
+	try {
+		const userDetail = await misskeyApi('admin/show-user', { userId: user.id });
+		selectedUserEmail.value = (userDetail as any).email ?? null;
+	} catch {
+		selectedUserEmail.value = null;
+	}
+}
 
 async function testEmail() {
 	const { canceled, result: destination } = await os.inputText({
@@ -159,6 +199,9 @@ async function testEmail() {
 }
 
 async function sendEmail() {
+	const recipient = recipientMode.value === 'direct' ? sendTo.value : selectedUserEmail.value;
+	if (!recipient) return;
+
 	const { canceled } = await os.confirm({
 		type: 'info',
 		text: i18n.ts.emailSendConfirm,
@@ -166,7 +209,7 @@ async function sendEmail() {
 	if (canceled) return;
 
 	await os.apiWithDialog('admin/send-email', {
-		to: sendTo.value,
+		to: recipient,
 		subject: sendSubject.value,
 		text: sendBody.value,
 	});
@@ -175,6 +218,8 @@ async function sendEmail() {
 	sendTo.value = '';
 	sendSubject.value = '';
 	sendBody.value = '';
+	selectedUser.value = null;
+	selectedUserEmail.value = null;
 }
 
 function save() {
@@ -211,5 +256,48 @@ definePage(() => ({
 .footer {
 	-webkit-backdrop-filter: var(--MI-blur, blur(15px));
 	backdrop-filter: var(--MI-blur, blur(15px));
+}
+
+.selectedUser {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 16px;
+	border-radius: 8px;
+	background: var(--MI_THEME-panel);
+}
+
+.selectedUserAvatar {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+}
+
+.selectedUserInfo {
+	flex: 1;
+	min-width: 0;
+}
+
+.selectedUserName {
+	font-weight: bold;
+	display: block;
+}
+
+.selectedUserAcct {
+	opacity: 0.7;
+	font-size: 0.9em;
+	display: block;
+}
+
+.selectedUserEmail {
+	margin-top: 4px;
+	font-size: 0.9em;
+	color: var(--MI_THEME-accent);
+}
+
+.noEmail {
+	margin-top: 4px;
+	font-size: 0.9em;
+	color: var(--MI_THEME-warn);
 }
 </style>
