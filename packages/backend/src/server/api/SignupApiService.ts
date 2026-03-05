@@ -223,7 +223,7 @@ export class SignupApiService {
 
 			const link = `${this.config.url}/signup-complete/${code}`;
 
-			this.emailService.sendEmail(emailAddress!, 'Signup',
+			this.emailService.sendEmail(emailAddress!, '이메일 인증 메일',
 				`To complete signup, please click this link:<br><a href="${link}">${link}</a>`,
 				`To complete signup, please click this link: ${link}`);
 
@@ -242,7 +242,7 @@ export class SignupApiService {
 			});
 
 			if (emailAddress) {
-				this.emailService.sendEmail(emailAddress, 'Approval pending',
+				this.emailService.sendEmail(emailAddress, '가입 신청 안내',
 					'Congratulations! Your account is now pending approval. You will get notified when you have been accepted.',
 					'Congratulations! Your account is now pending approval. You will get notified when you have been accepted.');
 			}
@@ -357,7 +357,7 @@ export class SignupApiService {
 
 			if (this.meta.approvalRequiredForSignup) {
 				if (pendingUser.email) {
-					this.emailService.sendEmail(pendingUser.email, 'Approval pending',
+					this.emailService.sendEmail(pendingUser.email, '가입 신청 안내',
 						'Congratulations! Your account is now pending approval. You will get notified when you have been accepted.',
 						'Congratulations! Your account is now pending approval. You will get notified when you have been accepted.');
 				}

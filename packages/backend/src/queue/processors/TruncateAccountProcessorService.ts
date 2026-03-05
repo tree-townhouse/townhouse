@@ -139,7 +139,7 @@ export class TruncateAccountProcessorService {
 		{ // Send email notification
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 			if (profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, 'Account truncated',
+				this.emailService.sendEmail(profile.email, '계정 정리 안내',
 					'Your account has been truncated.',
 					'Your account has been truncated.');
 			}

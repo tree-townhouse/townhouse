@@ -54,7 +54,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			if (profile?.email) {
-				this.emailService.sendEmail(profile.email, 'Account Approved / アカウント承認済み / 계정 승인됨',
+				this.emailService.sendEmail(profile.email, '가입 신청 승인 안내',
 					'Your Account has been approved have fun socializing! / アカウントの承認が完了しました。交流をお楽しみください！ / 가입 요청한 계정이 승인되었어요! 즐거운 교류 되세요!',
 					'Your Account has been approved have fun socializing! / アカウントの承認が完了しました。交流をお楽しみください！ / 가입 요청한 계정이 승인되었어요! 즐거운 교류 되세요!');
 			}

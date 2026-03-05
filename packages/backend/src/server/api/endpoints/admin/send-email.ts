@@ -21,6 +21,7 @@ export const paramDef = {
 		to: { type: 'string' },
 		subject: { type: 'string' },
 		text: { type: 'string' },
+		displayTitle: { type: 'string' },
 	},
 	required: ['to', 'subject', 'text'],
 } as const;
@@ -36,7 +37,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.replace(/</g, '&lt;')
 				.replace(/>/g, '&gt;')
 				.replace(/\n/g, '<br>');
-			await this.emailService.sendEmail(ps.to, ps.subject, html, ps.text);
+			await this.emailService.sendEmail(ps.to, ps.subject, html, ps.text, {
+				addPrefix: false,
+				displayTitle: ps.displayTitle ?? undefined,
+			});
 		});
 	}
 }

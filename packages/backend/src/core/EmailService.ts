@@ -38,9 +38,12 @@ export class EmailService {
 	}
 
 	@bindThis
-	public async sendEmail(to: string, subject: string, html: string, text: string) {
+	public async sendEmail(to: string, subject: string, html: string, text: string, opts?: { addPrefix?: boolean; displayTitle?: string }) {
 		if (!this.meta.enableEmail) return;
 
+		const serverName = this.meta.name ?? this.config.host;
+		const prefixedSubject = (opts?.addPrefix !== false) ? `[${serverName}] ${subject}` : subject;
+		const bodyTitle = opts?.displayTitle ?? subject;
 		const iconUrl = `${this.config.url}/static-assets/mi-white.png`;
 		const emailSettingUrl = `${this.config.url}/settings/email`;
 
@@ -62,7 +65,7 @@ export class EmailService {
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>${ subject }</title>
+		<title>${ prefixedSubject }</title>
 		<style>
 			html {
 				background: #1A1412;
@@ -164,7 +167,7 @@ export class EmailService {
 				<span class="logo-text">${ this.meta.name ?? this.config.host }</span>
 			</div>
 			<article>
-				<h1>${ subject }</h1>
+				<h1>${ bodyTitle }</h1>
 				<div>${ html }</div>
 			</article>
 			<footer>
@@ -188,7 +191,7 @@ export class EmailService {
 					address: this.meta.email!,
 				} : this.meta.email!,
 				to: to,
-				subject: subject,
+				subject: prefixedSubject,
 				text: text,
 				html: inlinedHtml,
 			});

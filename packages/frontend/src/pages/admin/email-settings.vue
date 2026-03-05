@@ -102,6 +102,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #prefix><i class="ti ti-text-caption"></i></template>
 			</MkInput>
 
+			<MkInput v-model="sendDisplayTitle">
+				<template #label>{{ i18n.ts.emailDisplayTitle }}</template>
+				<template #caption>{{ i18n.ts.emailDisplayTitleCaption }}</template>
+				<template #prefix><i class="ti ti-heading"></i></template>
+			</MkInput>
+
 			<MkTextarea v-model="sendBody" :rows="10">
 				<template #label>{{ i18n.ts.emailBody }}</template>
 			</MkTextarea>
@@ -158,6 +164,7 @@ const smtpPass = ref(meta.smtpPass);
 const recipientMode = ref<'direct' | 'user'>('direct');
 const sendTo = ref('');
 const sendSubject = ref('');
+const sendDisplayTitle = ref('');
 const sendBody = ref('');
 const selectedUser = ref<Misskey.entities.UserDetailed | null>(null);
 const selectedUserEmail = ref<string | null>(null);
@@ -212,11 +219,13 @@ async function sendEmail() {
 		to: recipient,
 		subject: sendSubject.value,
 		text: sendBody.value,
+		...(sendDisplayTitle.value.trim() !== '' ? { displayTitle: sendDisplayTitle.value } : {}),
 	});
 
 	// Clear form after successful send
 	sendTo.value = '';
 	sendSubject.value = '';
+	sendDisplayTitle.value = '';
 	sendBody.value = '';
 	selectedUser.value = null;
 	selectedUserEmail.value = null;

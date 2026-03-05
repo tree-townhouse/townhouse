@@ -52,7 +52,7 @@ export class SigninService {
 
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 			if (profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, 'New login / ログインがありました / 로그인 알림',
+				this.emailService.sendEmail(profile.email, '신규 로그인 알림',
 					'There is a new login. If you do not recognize this login, update the security status of your account, including changing your password. / 新しいログインがありました。このログインに心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を更新してください。/ 새 기기에서 로그인을 시도했어요. 이 로그인이 신뢰할 수 있는 기기에서 한 것이 아니라면, 즉시 비밀번호를 변경하는 등의 조치를 통해 계정의 보안 상태를 업데이트해야 해요.',
 					'There is a new login. If you do not recognize this login, update the security status of your account, including changing your password. / 新しいログインがありました。このログインに心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を更新してください。/ 새 기기에서 로그인을 시도했어요. 이 로그인이 신뢰할 수 있는 기기에서 한 것이 아니라면, 즉시 비밀번호를 변경하는 등의 조치를 통해 계정의 보안 상태를 업데이트해야 해요.');
 			}

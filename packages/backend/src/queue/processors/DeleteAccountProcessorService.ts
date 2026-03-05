@@ -147,7 +147,7 @@ export class DeleteAccountProcessorService {
 		{ // Send email notification
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 			if (profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, 'Account deleted',
+				this.emailService.sendEmail(profile.email, '계정 삭제 안내',
 					'Your account has been deleted.',
 					'Your account has been deleted.');
 			}
