@@ -90,8 +90,11 @@ export class EmailService {
 
 			main {
 				max-width: 600px;
-				margin: 0 auto;
+				margin: 32px auto 0 auto;
 				background: #fff;
+				border-radius: 12px;
+				box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+				overflow: hidden;
 			}
 				main > header {
 					padding: 20px 32px;
@@ -101,6 +104,9 @@ export class EmailService {
 						max-width: 32px;
 						max-height: 32px;
 						vertical-align: middle;
+						background: #fff;
+						border-radius: 50%;
+						padding: 3px;
 					}
 					main > header > .header-text {
 						margin-left: 10px;
@@ -110,7 +116,7 @@ export class EmailService {
 						vertical-align: middle;
 					}
 				main > article {
-					padding: 32px;
+					padding: 36px 32px;
 				}
 					main > article > h1 {
 						margin: 0 0 24px 0;
@@ -126,18 +132,24 @@ export class EmailService {
 						font-size: 14px;
 					}
 				main > footer {
-					padding: 24px 32px;
-					border-top: solid 1px #eee;
+					padding: 20px 32px;
+					border-top: solid 1px #f0f0f0;
+					text-align: center;
 				}
 					main > footer > a {
+						display: inline-block;
 						color: #E67E22;
 						font-size: 13px;
+						padding: 6px 16px;
+						border: 1px solid #E67E22;
+						border-radius: 20px;
+						transition: background 0.2s;
 					}
 
 			nav {
 				box-sizing: border-box;
 				max-width: 600px;
-				margin: 16px auto 32px auto;
+				margin: 20px auto 40px auto;
 				padding: 0 32px;
 				text-align: center;
 			}
