@@ -68,7 +68,7 @@ export class EmailService {
 		<title>${ prefixedSubject }</title>
 		<style>
 			html {
-				background: #1A1412;
+				background: #f5f5f5;
 			}
 
 			body {
@@ -77,12 +77,12 @@ export class EmailService {
 				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 				font-size: 14px;
 				line-height: 1.7;
-				color: #EDE0D4;
+				color: #333;
 			}
 
 			a {
 				text-decoration: none;
-				color: #F39C12;
+				color: #E67E22;
 			}
 			a:hover {
 				text-decoration: underline;
@@ -91,52 +91,46 @@ export class EmailService {
 			main {
 				max-width: 600px;
 				margin: 0 auto;
-				background: #261D1A;
+				background: #fff;
 			}
 				main > header {
-					padding: 0;
+					padding: 20px 32px;
 					background: #E67E22;
-					height: 6px;
 				}
-				main > .logo-area {
-					padding: 24px 32px 16px 32px;
-				}
-					main > .logo-area > img {
-						max-width: 36px;
-						max-height: 36px;
+					main > header > img {
+						max-width: 32px;
+						max-height: 32px;
 						vertical-align: middle;
 					}
-					main > .logo-area > .logo-text {
+					main > header > .header-text {
 						margin-left: 10px;
 						font-size: 15px;
 						font-weight: 700;
-						color: #EDE0D4;
+						color: #fff;
 						vertical-align: middle;
 					}
 				main > article {
-					padding: 8px 32px 32px 32px;
+					padding: 32px;
 				}
 					main > article > h1 {
 						margin: 0 0 24px 0;
-						padding-bottom: 16px;
 						font-size: 18px;
 						font-weight: 700;
 						color: #E67E22;
 						line-height: 1.5;
-						border-bottom: 1px solid #3D2B24;
+						text-align: center;
 					}
 					main > article > div {
-						color: #B08968;
+						color: #555;
 						line-height: 1.8;
 						font-size: 14px;
 					}
 				main > footer {
 					padding: 24px 32px;
-					border-top: solid 1px #3D2B24;
-					text-align: center;
+					border-top: solid 1px #eee;
 				}
 					main > footer > a {
-						color: #F39C12;
+						color: #E67E22;
 						font-size: 13px;
 					}
 
@@ -148,24 +142,23 @@ export class EmailService {
 				text-align: center;
 			}
 				nav > .copyright {
-					color: #B08968;
+					color: #999;
 					font-size: 12px;
 				}
 				nav > .host-link {
 					display: block;
 					margin-top: 4px;
-					color: #B08968;
+					color: #999;
 					font-size: 12px;
 				}
 		</style>
 	</head>
 	<body>
 		<main>
-			<header></header>
-			<div class="logo-area">
+			<header>
 				<img src="${ this.meta.logoImageUrl ?? this.meta.iconUrl ?? iconUrl }"/>
-				<span class="logo-text">${ this.meta.name ?? this.config.host }</span>
-			</div>
+				<span class="header-text">${ this.meta.name ?? this.config.host }</span>
+			</header>
 			<article>
 				<h1>${ bodyTitle }</h1>
 				<div>${ html }</div>
