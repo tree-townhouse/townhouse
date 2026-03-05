@@ -85,15 +85,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkInput>
 
 			<div v-else-if="recipientMode === 'user'" class="_gaps_s">
-				<MkButton rounded @click="pickUser"><i class="ti ti-user-search"></i> {{ i18n.ts.emailSelectUser }}</MkButton>
-				<div v-if="selectedUser" :class="$style.selectedUser">
-					<MkAvatar :user="selectedUser" :class="$style.selectedUserAvatar"/>
+				<MkButton rounded @click="pickUser"><i class="ti ti-user-plus"></i> {{ i18n.ts.emailSelectUser }}</MkButton>
+				<div v-for="item in selectedUsers" :key="item.user.id" :class="$style.selectedUser">
+					<MkAvatar :user="item.user" :class="$style.selectedUserAvatar"/>
 					<div :class="$style.selectedUserInfo">
-						<MkUserName :user="selectedUser" :class="$style.selectedUserName"/>
-						<MkAcct :user="selectedUser" :class="$style.selectedUserAcct"/>
-						<div v-if="selectedUserEmail" :class="$style.selectedUserEmail"><i class="ti ti-mail"></i> {{ selectedUserEmail }}</div>
+						<MkUserName :user="item.user" :class="$style.selectedUserName"/>
+						<MkAcct :user="item.user" :class="$style.selectedUserAcct"/>
+						<div v-if="item.email" :class="$style.selectedUserEmail"><i class="ti ti-mail"></i> {{ item.email }}</div>
 						<div v-else :class="$style.noEmail"><i class="ti ti-alert-triangle"></i> {{ i18n.ts.emailNoEmailWarning }}</div>
 					</div>
+					<button :class="$style.removeUserBtn" @click="removeUser(item.user.id)"><i class="ti ti-x"></i></button>
 				</div>
 			</div>
 
@@ -166,27 +167,35 @@ const sendTo = ref('');
 const sendSubject = ref('');
 const sendDisplayTitle = ref('');
 const sendBody = ref('');
-const selectedUser = ref<Misskey.entities.UserDetailed | null>(null);
-const selectedUserEmail = ref<string | null>(null);
+const selectedUsers = ref<{ user: Misskey.entities.UserDetailed; email: string | null }[]>([]);
 
 const canSend = computed(() => {
 	const hasRecipient = recipientMode.value === 'direct'
 		? sendTo.value.trim() !== ''
-		: selectedUser.value != null && selectedUserEmail.value != null;
+		: selectedUsers.value.length > 0 && selectedUsers.value.some(u => u.email != null);
 	return hasRecipient && sendSubject.value.trim() !== '' && sendBody.value.trim() !== '';
 });
 
 async function pickUser() {
 	const user = await os.selectUser({ localOnly: true, includeSelf: true });
-	selectedUser.value = user;
+
+	// Check duplicate
+	if (selectedUsers.value.some(u => u.user.id === user.id)) return;
 
 	// Fetch user email from admin API
+	let email: string | null = null;
 	try {
 		const userDetail = await misskeyApi('admin/show-user', { userId: user.id });
-		selectedUserEmail.value = (userDetail as any).email ?? null;
+		email = (userDetail as any).email ?? null;
 	} catch {
-		selectedUserEmail.value = null;
+		email = null;
 	}
+
+	selectedUsers.value = [...selectedUsers.value, { user, email }];
+}
+
+function removeUser(userId: string) {
+	selectedUsers.value = selectedUsers.value.filter(u => u.user.id !== userId);
 }
 
 async function testEmail() {
@@ -206,8 +215,15 @@ async function testEmail() {
 }
 
 async function sendEmail() {
-	const recipient = recipientMode.value === 'direct' ? sendTo.value : selectedUserEmail.value;
-	if (!recipient) return;
+	const recipients: string[] = [];
+	if (recipientMode.value === 'direct') {
+		if (sendTo.value.trim()) recipients.push(sendTo.value.trim());
+	} else {
+		for (const item of selectedUsers.value) {
+			if (item.email) recipients.push(item.email);
+		}
+	}
+	if (recipients.length === 0) return;
 
 	const { canceled } = await os.confirm({
 		type: 'info',
@@ -215,20 +231,23 @@ async function sendEmail() {
 	});
 	if (canceled) return;
 
-	await os.apiWithDialog('admin/send-email', {
-		to: recipient,
-		subject: sendSubject.value,
-		text: sendBody.value,
-		...(sendDisplayTitle.value.trim() !== '' ? { displayTitle: sendDisplayTitle.value } : {}),
-	});
+	for (const to of recipients) {
+		await misskeyApi('admin/send-email', {
+			to,
+			subject: sendSubject.value,
+			text: sendBody.value,
+			...(sendDisplayTitle.value.trim() !== '' ? { displayTitle: sendDisplayTitle.value } : {}),
+		});
+	}
+
+	os.toast(i18n.ts.emailSent);
 
 	// Clear form after successful send
 	sendTo.value = '';
 	sendSubject.value = '';
 	sendDisplayTitle.value = '';
 	sendBody.value = '';
-	selectedUser.value = null;
-	selectedUserEmail.value = null;
+	selectedUsers.value = [];
 }
 
 function save() {
@@ -308,5 +327,25 @@ definePage(() => ({
 	margin-top: 4px;
 	font-size: 0.9em;
 	color: var(--MI_THEME-warn);
+}
+
+.removeUserBtn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border: none;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--MI_THEME-fg);
+	opacity: 0.5;
+	cursor: pointer;
+	flex-shrink: 0;
+
+	&:hover {
+		opacity: 1;
+		background: var(--MI_THEME-bg);
+	}
 }
 </style>

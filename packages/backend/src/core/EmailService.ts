@@ -118,7 +118,7 @@ export class EmailService {
 						font-weight: 700;
 						color: #E67E22;
 						line-height: 1.5;
-						text-align: center;
+						text-align: left;
 					}
 					main > article > div {
 						color: #555;
