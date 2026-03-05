@@ -23,7 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 					<div v-if="item.expiresAt" :class="$style.expires">
 						<span :class="$style.reasonLabel">{{ i18n.ts.expiration }}</span>
-						<span><MkTime :time="item.expiresAt" mode="detail"/> ({{ formatPeriod(item.createdAt, item.expiresAt) }})</span>
+						<span><MkTime :time="item.expiresAt" mode="absolute"/> ({{ formatPeriod(item.createdAt, item.expiresAt) }})</span>
 					</div>
 				</div>
 			</div>
@@ -89,6 +89,7 @@ function formatPeriod(createdAt: string, expiresAt: string): string {
 .header {
 	display: flex;
 	align-items: center;
+	gap: 8px;
 	justify-content: space-between;
 	margin-bottom: 12px;
 }
