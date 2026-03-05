@@ -18,6 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<XPages v-else-if="tab === 'pages'" :user="user"/>
 		<XFlashs v-else-if="tab === 'flashs'" :user="user"/>
 		<XGallery v-else-if="tab === 'gallery'" :user="user"/>
+		<XSanctions v-else-if="tab === 'sanctions'" :user="user"/>
 		<XRaw v-else-if="tab === 'raw'" :user="user"/>
 	</div>
 	<MkError v-else-if="error" @retry="fetchUser()"/>
@@ -60,6 +61,7 @@ const XLists = defineAsyncComponent(() => import('./lists.vue'));
 const XPages = defineAsyncComponent(() => import('./pages.vue'));
 const XFlashs = defineAsyncComponent(() => import('./flashs.vue'));
 const XGallery = defineAsyncComponent(() => import('./gallery.vue'));
+const XSanctions = defineAsyncComponent(() => import('./sanctions.vue'));
 const XRaw = defineAsyncComponent(() => import('./raw.vue'));
 
 // contextは非ログイン状態の情報しかないためログイン時は利用できない
@@ -156,6 +158,10 @@ const headerTabs = computed(() => user.value ? [{
 	key: 'gallery',
 	title: i18n.ts.gallery,
 	icon: 'ti ti-icons',
+}] : []), ...(user.value.id === $i?.id ? [{
+	key: 'sanctions',
+	title: i18n.ts.sanctionHistory,
+	icon: 'ti ti-gavel',
 }] : []), {
 	key: 'raw',
 	title: 'Raw',
