@@ -31,7 +31,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private emailService: EmailService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			await this.emailService.sendEmail(ps.to, ps.subject, ps.text, ps.text);
+			const html = ps.text
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/\n/g, '<br>');
+			await this.emailService.sendEmail(ps.to, ps.subject, html, ps.text);
 		});
 	}
 }
