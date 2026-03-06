@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import type { UsersRepository } from '@/models/_.js';
+import type { AnnouncementsRepository, UsersRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
@@ -17,6 +17,9 @@ export class UserRestrictionService {
 	constructor(
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
+
+		@Inject(DI.announcementsRepository)
+		private announcementsRepository: AnnouncementsRepository,
 
 		private moderationLogService: ModerationLogService,
 		private announcementService: AnnouncementService,
@@ -74,6 +77,19 @@ export class UserRestrictionService {
 			isRestricted: false,
 			restrictedUntil: null,
 		});
+
+		// Remove moderation announcements for this user
+		const announcements = await this.announcementsRepository.find({
+			where: {
+				userId: user.id,
+				closedOnly: true,
+				icon: 'warning',
+				display: 'dialog',
+			},
+		});
+		for (const announcement of announcements) {
+			await this.announcementsRepository.delete(announcement.id);
+		}
 
 		this.moderationLogService.log(moderator, 'unrestrict', {
 			userId: user.id,
