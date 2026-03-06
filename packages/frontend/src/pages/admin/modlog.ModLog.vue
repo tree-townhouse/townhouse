@@ -204,7 +204,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template v-else-if="log.type === 'silence'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
 			<div>{{ i18n.ts.reason }}: {{ log.info.reason }}</div>
-			<div v-if="log.info.expiresAt">{{ i18n.ts.period }}: {{ new Date(log.info.expiresAt).toLocaleString() }}</div>
+			<div v-if="log.info.expiresAt">{{ i18n.ts.period }}: {{ new Date(log.info.expiresAt).toLocaleString() }} ({{ formatDuration(log.createdAt, log.info.expiresAt) }})</div>
 		</template>
 		<template v-else-if="log.type === 'unsilence'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
@@ -212,7 +212,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template v-else-if="log.type === 'restrict'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
 			<div>{{ i18n.ts.reason }}: {{ log.info.reason }}</div>
-			<div v-if="log.info.expiresAt">{{ i18n.ts.period }}: {{ new Date(log.info.expiresAt).toLocaleString() }}</div>
+			<div v-if="log.info.expiresAt">{{ i18n.ts.period }}: {{ new Date(log.info.expiresAt).toLocaleString() }} ({{ formatDuration(log.createdAt, log.info.expiresAt) }})</div>
 		</template>
 		<template v-else-if="log.type === 'unrestrict'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
@@ -337,6 +337,16 @@ import MkFolder from '@/components/MkFolder.vue';
 const props = defineProps<{
 	log: Misskey.entities.ModerationLog;
 }>();
+
+function formatDuration(createdAt: string, expiresAt: string): string {
+	const diff = new Date(expiresAt).getTime() - new Date(createdAt).getTime();
+	const days = Math.round(diff / (1000 * 60 * 60 * 24));
+	if (days >= 1) return `${days}${i18n.ts._time.day}`;
+	const hours = Math.round(diff / (1000 * 60 * 60));
+	if (hours >= 1) return `${hours}${i18n.ts._time.hour}`;
+	const minutes = Math.round(diff / (1000 * 60));
+	return `${minutes}${i18n.ts._time.minute}`;
+}
 </script>
 
 <style lang="scss" module>

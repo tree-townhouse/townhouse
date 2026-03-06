@@ -24,7 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<b>{{ ch.name }}</b>
 					<span v-if="ch.description" :class="$style.channelDescription">{{ ch.description }}</span>
 				</div>
-				<div :class="$style.channelActions">
+				<div v-if="iAmAdmin" :class="$style.channelActions">
 					<MkButton primary small @click="approveChannel(ch)"><i class="ti ti-check"></i> {{ i18n.ts.approve }}</MkButton>
 					<MkButton danger small @click="deleteChannel(ch)"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 				</div>
@@ -49,7 +49,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<i class="ti ti-pencil" style="margin-left: 8px;"></i> {{ ch.notesCount }}
 					</span>
 				</div>
-				<div :class="$style.channelActions">
+				<div v-if="iAmAdmin" :class="$style.channelActions">
 					<MkButton small @click="editChannel(ch)"><i class="ti ti-settings"></i> {{ i18n.ts.settings }}</MkButton>
 					<MkButton small @click="transferOwnership(ch)"><i class="ti ti-transfer"></i> {{ i18n.ts.transferOwnership }}</MkButton>
 					<MkButton danger small @click="deleteChannel(ch)"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
@@ -71,8 +71,9 @@ import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import { useRouter } from '@/router.js';
+import { iAmAdmin } from '@/i.js';
 
-const tab = ref('settings');
+const tab = ref(iAmAdmin ? 'settings' : 'pending');
 const router = useRouter();
 const requireChannelApproval = ref(false);
 const pendingChannels = ref<any[]>([]);
@@ -80,10 +81,12 @@ const allChannels = ref<any[]>([]);
 const hasMoreChannels = ref(false);
 const searchQuery = ref('');
 
-// Fetch initial settings
-misskeyApi('admin/meta').then(meta => {
-	requireChannelApproval.value = meta.requireChannelApproval ?? false;
-});
+// Fetch initial settings (admin only)
+if (iAmAdmin) {
+	misskeyApi('admin/meta').then(meta => {
+		requireChannelApproval.value = meta.requireChannelApproval ?? false;
+	});
+}
 
 async function saveSettings() {
 	await misskeyApi('admin/update-meta', {
@@ -197,19 +200,22 @@ watch(tab, (newTab) => {
 
 const headerActions = computed(() => []);
 
-const headerTabs = computed(() => [{
-	key: 'settings',
-	title: i18n.ts.settings,
-	icon: 'ti ti-settings',
-}, {
-	key: 'pending',
-	title: i18n.ts.pendingChannels,
-	icon: 'ti ti-clock',
-}, {
-	key: 'all',
-	title: i18n.ts.allChannels,
-	icon: 'ti ti-list',
-}]);
+const headerTabs = computed(() => [
+	...(iAmAdmin ? [{
+		key: 'settings',
+		title: i18n.ts.settings,
+		icon: 'ti ti-settings',
+	}] : []),
+	{
+		key: 'pending',
+		title: i18n.ts.pendingChannels,
+		icon: 'ti ti-clock',
+	}, {
+		key: 'all',
+		title: i18n.ts.allChannels,
+		icon: 'ti ti-list',
+	},
+]);
 
 definePage(() => ({
 	title: i18n.ts.channelManagement,
