@@ -36,11 +36,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkUserCardMini :user="file.user"/>
 			</MkA>
 
-			<div>
+			<div v-if="!info.ownerIsAdminOrModerator">
 				<MkSwitch :modelValue="isSensitive" @update:modelValue="toggleSensitive">{{ i18n.ts.sensitive }}</MkSwitch>
 			</div>
 
-			<div>
+			<div v-if="!info.ownerIsAdminOrModerator">
 				<MkButton danger @click="del"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 			</div>
 		</div>

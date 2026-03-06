@@ -48,6 +48,7 @@ import { definePage, provideMetadataReceiver, provideReactiveMetadata } from '@/
 import { useRouter } from '@/router.js';
 import { genSearchIndexes } from '@/utility/inapp-search.js';
 import { fetchCherrypickReleases } from '@/utility/fetch-releases.js';
+import { iAmAdmin } from '@/i.js';
 
 const searchIndex = await import('search-index:admin').then(({ searchIndexes }) => genSearchIndexes(searchIndexes));
 
@@ -178,12 +179,12 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 		text: i18n.ts.jobQueue,
 		to: '/admin/job-queue',
 		active: currentPage.value?.route.name === 'jobQueue',
-	}, {
+	}, ...(iAmAdmin ? [{
 		icon: 'ti ti-cloud',
 		text: i18n.ts.files,
 		to: '/admin/files',
 		active: currentPage.value?.route.name === 'files',
-	}, {
+	}] : []), {
 		icon: 'ti ti-speakerphone',
 		text: i18n.ts.announcements,
 		to: '/admin/announcements',

@@ -15,7 +15,7 @@ export const meta = {
 	tags: ['admin'],
 
 	requireCredential: true,
-	requireModerator: true,
+	requireAdmin: true,
 	kind: 'read:admin:drive',
 
 	errors: {
@@ -173,6 +173,10 @@ export const meta = {
 				type: 'object',
 				optional: false, nullable: true,
 			},
+			ownerIsAdminOrModerator: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 		},
 	},
 } as const;
@@ -255,6 +259,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				createdAt: this.idService.parse(file.id).date.toISOString(),
 				requestIp: iAmModerator ? file.requestIp : null,
 				requestHeaders: iAmModerator && !ownerIsModerator ? file.requestHeaders : null,
+				ownerIsAdminOrModerator: ownerIsModerator,
 			};
 		});
 	}
