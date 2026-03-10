@@ -24,6 +24,7 @@ async function respondToNavigation(request: Request): Promise<Response> {
 
 		if (response?.status && response.status < 500) return response;
 		if (response?.type === 'opaqueredirect') return response;
+		if (response?.status === 503) return response;
 	} catch (error) {
 		if (_DEV_) {
 			console.warn('navigation fetch failed; showing offline page', error);
