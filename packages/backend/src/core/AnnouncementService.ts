@@ -67,6 +67,8 @@ export class AnnouncementService {
 
 	@bindThis
 	public async create(values: Partial<MiAnnouncement>, moderator?: MiUser): Promise<{ raw: MiAnnouncement; packed: Packed<'Announcement'> }> {
+		const isScheduled = values.publishAt != null && values.publishAt.getTime() > Date.now();
+
 		const announcement = await this.announcementsRepository.insertOne({
 			id: this.idService.gen(),
 			updatedAt: null,
@@ -80,6 +82,9 @@ export class AnnouncementService {
 			needConfirmationToRead: values.needConfirmationToRead,
 			closedOnly: values.closedOnly ?? false,
 			userId: values.userId,
+			publishAt: values.publishAt ?? null,
+			closesAt: values.closesAt ?? null,
+			isActive: isScheduled ? false : true,
 		});
 
 		const packed = await this.announcementEntityService.pack(announcement);
@@ -134,6 +139,8 @@ export class AnnouncementService {
 			silence: values.silence,
 			needConfirmationToRead: values.needConfirmationToRead,
 			isActive: values.isActive,
+			...(values.publishAt !== undefined ? { publishAt: values.publishAt } : {}),
+			...(values.closesAt !== undefined ? { closesAt: values.closesAt } : {}),
 		});
 
 		const after = await this.announcementsRepository.findOneByOrFail({ id: announcement.id });

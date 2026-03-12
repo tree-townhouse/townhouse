@@ -89,6 +89,16 @@ export const meta = {
 					type: 'number',
 					optional: false, nullable: false,
 				},
+				publishAt: {
+					type: 'string',
+					optional: false, nullable: true,
+					format: 'date-time',
+				},
+				closesAt: {
+					type: 'string',
+					optional: false, nullable: true,
+					format: 'date-time',
+				},
 			},
 		},
 	},
@@ -103,7 +113,7 @@ export const paramDef = {
 		sinceDate: { type: 'integer' },
 		untilDate: { type: 'integer' },
 		userId: { type: 'string', format: 'misskey:id', nullable: true },
-		status: { type: 'string', enum: ['all', 'active', 'archived'], default: 'active' },
+		status: { type: 'string', enum: ['all', 'active', 'archived', 'scheduled'], default: 'active' },
 	},
 	required: [],
 } as const;
@@ -125,8 +135,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.status === 'archived') {
 				query.andWhere('announcement.isActive = false');
+				query.andWhere('announcement."publishAt" IS NULL');
 			} else if (ps.status === 'active') {
 				query.andWhere('announcement.isActive = true');
+			} else if (ps.status === 'scheduled') {
+				query.andWhere('announcement.isActive = false');
+				query.andWhere('announcement."publishAt" IS NOT NULL');
 			}
 
 			if (ps.userId) {
@@ -161,6 +175,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				needConfirmationToRead: announcement.needConfirmationToRead,
 				userId: announcement.userId,
 				reads: reads.get(announcement)!,
+				publishAt: announcement.publishAt?.toISOString() ?? null,
+				closesAt: announcement.closesAt?.toISOString() ?? null,
 			}));
 		});
 	}

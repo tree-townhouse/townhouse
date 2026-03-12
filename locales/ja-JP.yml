@@ -1951,6 +1951,11 @@ _announcement:
   dialogAnnouncementUxWarn: "ダイアログ形式のお知らせが同時に2つ以上ある場合、UXに悪影響を及ぼす可能性が非常に高いため、使用は慎重に行うことを推奨します。"
   silence: "非通知"
   silenceDescription: "オンにすると、このお知らせは通知されず、既読にする必要もなくなります。"
+  scheduledPublish: "予約投稿"
+  scheduledPublishDescription: "指定した日時に自動的にお知らせが公開されます。"
+  scheduledArchive: "予約アーカイブ"
+  scheduledArchiveDescription: "指定した日時に自動的にお知らせがアーカイブされます。"
+  scheduled: "予約済み"
 
 
 _cherrypick:

@@ -68,6 +68,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkSwitch v-model="announcement.needConfirmationToRead" :helpText="i18n.ts._announcement.needConfirmationToReadDescription">
 							{{ i18n.ts._announcement.needConfirmationToRead }}
 						</MkSwitch>
+						<MkInput v-model="announcement.publishAt" type="datetime-local">
+							<template #label>{{ i18n.ts._announcement.scheduledPublish }}</template>
+							<template #caption>{{ i18n.ts._announcement.scheduledPublishDescription }}</template>
+						</MkInput>
+						<MkInput v-model="announcement.closesAt" type="datetime-local">
+							<template #label>{{ i18n.ts._announcement.scheduledArchive }}</template>
+							<template #caption>{{ i18n.ts._announcement.scheduledArchiveDescription }}</template>
+						</MkInput>
 						<p v-if="announcement.reads">{{ i18n.tsx.nUsersRead({ n: announcement.reads }) }}</p>
 					</div>
 				</MkFolder>
@@ -104,6 +112,7 @@ const {
 } = useMkSelect({
 	items: [
 		{ label: i18n.ts.active, value: 'active' },
+		{ label: i18n.ts._announcement.scheduled, value: 'scheduled' },
 		{ label: i18n.ts.archived, value: 'archived' },
 	],
 	initialValue: 'active',
@@ -114,12 +123,27 @@ const loadingMore = ref(false);
 
 const announcements = ref<any[]>([]);
 
+function isoToDatetimeLocal(iso: string | null): string | null {
+	if (!iso) return null;
+	const d = new Date(iso);
+	const pad = (n: number) => String(n).padStart(2, '0');
+	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function mapAnnouncementDates(a: any): any {
+	return {
+		...a,
+		publishAt: isoToDatetimeLocal(a.publishAt),
+		closesAt: isoToDatetimeLocal(a.closesAt),
+	};
+}
+
 watch(announcementsStatus, (to) => {
 	loading.value = true;
 	misskeyApi('admin/announcements/list', {
 		status: to,
 	}).then(announcementResponse => {
-		announcements.value = announcementResponse;
+		announcements.value = announcementResponse.map(mapAnnouncementDates);
 		loading.value = false;
 	});
 }, { immediate: true });
@@ -136,6 +160,8 @@ function add() {
 		forExistingUsers: false,
 		silence: false,
 		needConfirmationToRead: false,
+		publishAt: null,
+		closesAt: null,
 	});
 }
 
@@ -152,7 +178,7 @@ function del(announcement) {
 
 async function archive(announcement) {
 	await os.apiWithDialog('admin/announcements/update', {
-		...announcement,
+		id: announcement.id,
 		isActive: false,
 	});
 	refresh();
@@ -160,18 +186,24 @@ async function archive(announcement) {
 
 async function unarchive(announcement) {
 	await os.apiWithDialog('admin/announcements/update', {
-		...announcement,
+		id: announcement.id,
 		isActive: true,
 	});
 	refresh();
 }
 
 async function save(announcement) {
+	const payload = {
+		...announcement,
+		publishAt: announcement.publishAt ? new Date(announcement.publishAt).getTime() : null,
+		closesAt: announcement.closesAt ? new Date(announcement.closesAt).getTime() : null,
+	};
+
 	if (announcement.id == null) {
-		await os.apiWithDialog('admin/announcements/create', announcement);
+		await os.apiWithDialog('admin/announcements/create', payload);
 		refresh();
 	} else {
-		os.apiWithDialog('admin/announcements/update', announcement);
+		os.apiWithDialog('admin/announcements/update', payload);
 	}
 }
 
@@ -181,7 +213,7 @@ function more() {
 		status: announcementsStatus.value,
 		untilId: announcements.value.reduce((acc, announcement) => announcement.id != null ? announcement : acc).id,
 	}).then(announcementResponse => {
-		announcements.value = announcements.value.concat(announcementResponse);
+		announcements.value = announcements.value.concat(announcementResponse.map(mapAnnouncementDates));
 		loadingMore.value = false;
 	});
 }
@@ -191,7 +223,7 @@ function refresh() {
 	misskeyApi('admin/announcements/list', {
 		status: announcementsStatus.value,
 	}).then(announcementResponse => {
-		announcements.value = announcementResponse;
+		announcements.value = announcementResponse.map(mapAnnouncementDates);
 		loading.value = false;
 	});
 }

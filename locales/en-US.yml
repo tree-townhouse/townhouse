@@ -1955,6 +1955,11 @@ _announcement:
   dialogAnnouncementUxWarn: "Having two or more dialog-style notifications simultaneously can significantly impact the user experience, so please use them carefully."
   silence: "No notification"
   silenceDescription: "Turning this on will skip the notification of this announcement and the user won't need to read it."
+  scheduledPublish: "Scheduled publish"
+  scheduledPublishDescription: "The announcement will be automatically published at the specified date and time."
+  scheduledArchive: "Scheduled archive"
+  scheduledArchiveDescription: "The announcement will be automatically archived at the specified date and time."
+  scheduled: "Scheduled"
 _cherrypick:
   function: "Proprietary Functions"
   functionDescription: "Enables or disables proprietary features that CherryPick adds."

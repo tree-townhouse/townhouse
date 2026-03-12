@@ -60,5 +60,15 @@ export const packedAnnouncementSchema = {
 			type: 'boolean',
 			optional: true, nullable: false,
 		},
+		publishAt: {
+			type: 'string',
+			optional: false, nullable: true,
+			format: 'date-time',
+		},
+		closesAt: {
+			type: 'string',
+			optional: false, nullable: true,
+			format: 'date-time',
+		},
 	},
 } as const;

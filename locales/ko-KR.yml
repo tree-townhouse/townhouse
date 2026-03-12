@@ -1958,6 +1958,11 @@ _announcement:
   dialogAnnouncementUxWarn: "다이얼로그 형태의 알림이 동시에 2개 이상 존재하는 경우, 사용자 경험에 악영향을 끼칠 수 있으므로 신중히 결정하는 것을 권장드려요."
   silence: "조용히 알림"
   silenceDescription: "활성화하면 공지사항에 대한 알림이 가지 않게 되며, 확인 버튼을 누르지 않아도 공지사항이 읽음으로 표시돼요."
+  scheduledPublish: "예약 게시"
+  scheduledPublishDescription: "지정한 날짜와 시간에 공지사항이 자동으로 게시돼요."
+  scheduledArchive: "예약 보관"
+  scheduledArchiveDescription: "지정한 날짜와 시간에 공지사항이 자동으로 보관돼요."
+  scheduled: "예약됨"
 _cherrypick:
   function: "고유 기능"
   functionDescription: "CherryPick이 추가하는 고유 기능을 활성화 또는 비활성화할 수 있어요."

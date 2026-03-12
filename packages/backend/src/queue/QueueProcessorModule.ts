@@ -47,6 +47,7 @@ import { AggregateRetentionProcessorService } from './processors/AggregateRetent
 import { ExportFavoritesProcessorService } from './processors/ExportFavoritesProcessorService.js';
 import { RelationshipProcessorService } from './processors/RelationshipProcessorService.js';
 import { ScheduledNoteDeleteProcessorService } from './processors/ScheduledNoteDeleteProcessorService.js';
+import { CheckScheduledAnnouncementsProcessorService } from './processors/CheckScheduledAnnouncementsProcessorService.js';
 
 @Module({
 	imports: [
@@ -94,6 +95,7 @@ import { ScheduledNoteDeleteProcessorService } from './processors/ScheduledNoteD
 		CheckModeratorsActivityProcessorService,
 		CleanRemoteNotesProcessorService,
 		AutoDeleteNotesProcessorService,
+		CheckScheduledAnnouncementsProcessorService,
 		QueueProcessorService,
 		ScheduledNoteDeleteProcessorService,
 	],

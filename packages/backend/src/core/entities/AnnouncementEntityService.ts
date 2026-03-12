@@ -56,6 +56,8 @@ export class AnnouncementEntityService {
 			needConfirmationToRead: announcement.needConfirmationToRead,
 			silence: announcement.silence,
 			isRead: announcement.isRead !== null ? announcement.isRead : undefined,
+			publishAt: announcement.publishAt?.toISOString() ?? null,
+			closesAt: announcement.closesAt?.toISOString() ?? null,
 		};
 	}
 

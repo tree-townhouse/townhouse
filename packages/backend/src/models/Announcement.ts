@@ -78,6 +78,18 @@ export class MiAnnouncement {
 	})
 	public closedOnly: boolean;
 
+	@Column('timestamp with time zone', {
+		comment: 'The scheduled publish date of the Announcement.',
+		nullable: true,
+	})
+	public publishAt: Date | null;
+
+	@Column('timestamp with time zone', {
+		comment: 'The scheduled archive date of the Announcement.',
+		nullable: true,
+	})
+	public closesAt: Date | null;
+
 	@Index()
 	@Column({
 		...id(),

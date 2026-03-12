@@ -39,6 +39,8 @@ export const paramDef = {
 		silence: { type: 'boolean' },
 		needConfirmationToRead: { type: 'boolean' },
 		isActive: { type: 'boolean' },
+		publishAt: { type: 'integer', nullable: true },
+		closesAt: { type: 'integer', nullable: true },
 	},
 	required: ['id'],
 } as const;
@@ -68,6 +70,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				silence: ps.silence,
 				needConfirmationToRead: ps.needConfirmationToRead,
 				isActive: ps.isActive,
+				publishAt: ps.publishAt !== undefined ? (ps.publishAt ? new Date(ps.publishAt) : null) : undefined,
+				closesAt: ps.closesAt !== undefined ? (ps.closesAt ? new Date(ps.closesAt) : null) : undefined,
 			}, me);
 		});
 	}

@@ -90,6 +90,9 @@ const REPEATABLE_SYSTEM_JOB_DEF = [{
 	name: 'autoDeleteNotes',
 	// 매일 오전 3시에 실행
 	pattern: '0 3 * * *',
+}, {
+	name: 'checkScheduledAnnouncements',
+	pattern: '*/1 * * * *',
 }];
 
 @Injectable()

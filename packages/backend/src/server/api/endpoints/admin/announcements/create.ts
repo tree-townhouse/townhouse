@@ -62,6 +62,8 @@ export const paramDef = {
 		silence: { type: 'boolean', default: false },
 		needConfirmationToRead: { type: 'boolean', default: false },
 		userId: { type: 'string', format: 'misskey:id', nullable: true, default: null },
+		publishAt: { type: 'integer', nullable: true, default: null },
+		closesAt: { type: 'integer', nullable: true, default: null },
 	},
 	required: ['title', 'text', 'imageUrl'],
 } as const;
@@ -84,6 +86,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				silence: ps.silence,
 				needConfirmationToRead: ps.needConfirmationToRead,
 				userId: ps.userId,
+				publishAt: ps.publishAt ? new Date(ps.publishAt) : null,
+				closesAt: ps.closesAt ? new Date(ps.closesAt) : null,
 			}, me);
 
 			return packed;
