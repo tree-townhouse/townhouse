@@ -45,7 +45,7 @@ export class AnnouncementEntityService {
 
 		return {
 			id: announcement.id,
-			createdAt: this.idService.parse(announcement.id).date.toISOString(),
+			createdAt: (announcement.publishAt ?? this.idService.parse(announcement.id).date).toISOString(),
 			updatedAt: announcement.updatedAt?.toISOString() ?? null,
 			title: announcement.title,
 			text: announcement.text,
