@@ -45,7 +45,12 @@ export class CheckScheduledAnnouncementsProcessorService {
 				publishAt: null,
 			});
 
-			const packed = await this.announcementEntityService.pack({ ...announcement, isRead: false });
+			const packed = await this.announcementEntityService.pack({
+				...announcement,
+				isActive: true,
+				publishAt: null,
+				isRead: false,
+			});
 
 			if (announcement.userId) {
 				this.globalEventService.publishMainStream(announcement.userId, 'announcementCreated', {

@@ -194,6 +194,11 @@ export class AnnouncementService {
 	@bindThis
 	public async getAnnouncement(announcementId: MiAnnouncement['id'], me: MiUser | null): Promise<Packed<'Announcement'>> {
 		const announcement = await this.announcementsRepository.findOneByOrFail({ id: announcementId });
+
+		if (!announcement.isActive || announcement.closedOnly) {
+			throw new EntityNotFoundError(this.announcementsRepository.metadata.target, { id: announcementId });
+		}
+
 		if (me) {
 			if (announcement.userId && announcement.userId !== me.id) {
 				throw new EntityNotFoundError(this.announcementsRepository.metadata.target, { id: announcementId });
