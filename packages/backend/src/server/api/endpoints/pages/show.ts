@@ -5,7 +5,7 @@
 
 import { IsNull } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
-import type { UsersRepository, PagesRepository } from '@/models/_.js';
+import type { UsersRepository, PagesRepository, FollowingsRepository } from '@/models/_.js';
 import type { MiPage } from '@/models/Page.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { PageEntityService } from '@/core/entities/PageEntityService.js';
@@ -61,6 +61,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.pagesRepository)
 		private pagesRepository: PagesRepository,
 
+		@Inject(DI.followingsRepository)
+		private followingsRepository: FollowingsRepository,
+
 		private pageEntityService: PageEntityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
@@ -83,6 +86,32 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (page == null) {
 				throw new ApiError(meta.errors.noSuchPage);
+			}
+
+			if (page.visibility !== 'public') {
+				if (me == null) {
+					throw new ApiError(meta.errors.noSuchPage);
+				}
+
+				const isOwner = page.userId === me.id;
+				if (!isOwner) {
+					if (page.visibility === 'specified') {
+						if (!page.visibleUserIds.includes(me.id)) {
+							throw new ApiError(meta.errors.noSuchPage);
+						}
+					} else {
+						const isFollower = await this.followingsRepository.exists({
+							where: {
+								followerId: me.id,
+								followeeId: page.userId,
+							},
+						});
+
+						if (!isFollower) {
+							throw new ApiError(meta.errors.noSuchPage);
+						}
+					}
+				}
 			}
 
 			return await this.pageEntityService.pack(page, me);
