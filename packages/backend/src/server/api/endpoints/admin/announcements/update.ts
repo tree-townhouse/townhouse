@@ -59,7 +59,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (announcement == null) throw new ApiError(meta.errors.noSuchAnnouncement);
 
 			await this.announcementService.update(announcement, {
-				updatedAt: new Date(),
 				title: ps.title,
 				text: ps.text,
 				/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- 空の文字列の場合、nullを渡すようにするため */

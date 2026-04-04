@@ -127,8 +127,10 @@ export class AnnouncementService {
 
 	@bindThis
 	public async update(announcement: MiAnnouncement, values: Partial<MiAnnouncement>, moderator?: MiUser): Promise<void> {
+		const isScheduledBeforePublish = announcement.publishAt !== null && !announcement.isActive;
+
 		await this.announcementsRepository.update(announcement.id, {
-			updatedAt: new Date(),
+			...(isScheduledBeforePublish ? {} : { updatedAt: new Date() }),
 			title: values.title,
 			text: values.text,
 			/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- 空の文字列の場合、nullを渡すようにするため */
