@@ -83,10 +83,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					break;
 				}
 				case 'pending':
-					// A sign-up reason is recorded only for accounts created through the approval flow.
-					// This also excludes system and pre-migration accounts without a fragile manual join.
-					query.where('user.approved = FALSE');
-					query.andWhere('user.signupReason IS NOT NULL');
+					query.leftJoin('system_account', 'system_account', 'system_account.userId = user.id');
+					query.andWhere('user.approved = FALSE');
+					query.andWhere('system_account.id IS NULL');
 					break;
 			}
 

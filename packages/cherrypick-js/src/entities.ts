@@ -290,6 +290,11 @@ export type SignupPendingRequest = {
 export type SignupPendingResponse = {
 	id: User['id'],
 	i: string,
+	pendingApproval?: false,
+} | {
+	id?: never,
+	i?: never,
+	pendingApproval: true,
 };
 
 export type SigninFlowRequest = {

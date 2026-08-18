@@ -30,6 +30,7 @@ import { i18n } from '@/i18n.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { login } from '@/accounts.js';
+import { mainRouter } from '@/router.js';
 
 const submitting = ref(false);
 
@@ -43,7 +44,17 @@ function submit() {
 
 	misskeyApi('signup-pending', {
 		code: props.code,
-	}).then(res => {
+	}).then(async res => {
+		if (res.pendingApproval) {
+			await os.alert({
+				type: 'success',
+				title: i18n.ts._signup.almostThere,
+				text: i18n.ts._signup.approvalPending,
+			});
+			mainRouter.push('/');
+			return;
+		}
+
 		return login(res.i, '/');
 	}).catch(() => {
 		submitting.value = false;
