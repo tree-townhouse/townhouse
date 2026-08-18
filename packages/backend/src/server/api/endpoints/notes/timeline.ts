@@ -233,7 +233,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						.where('note.visibility IN (\'home\', \'followers\')')
 						.andWhere(new Brackets((qb3: any) => {
 							qb3
-								.where(`note.userId IN (SELECT followeeId FROM following WHERE followerId = :meId)`);
+								.where(`note.userId IN (SELECT "followeeId" FROM following WHERE "followerId" = :meId)`);
 						}));
 				}));
 		}));
@@ -248,7 +248,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						.where('reply.visibility = \'followers\'')
 						.andWhere(new Brackets((qb3: any) => {
 							qb3
-								.where(`reply.userId IN (SELECT followeeId FROM following WHERE followerId = :meId)`);
+								.where(`reply.userId IN (SELECT "followeeId" FROM following WHERE "followerId" = :meId)`);
 						}));
 				}));
 		}));
@@ -263,7 +263,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						.where('renote.visibility = \'followers\'')
 						.andWhere(new Brackets((qb3: any) => {
 							qb3
-								.where(`renote.userId IN (SELECT followeeId FROM following WHERE followerId = :meId)`);
+								.where(`renote.userId IN (SELECT "followeeId" FROM following WHERE "followerId" = :meId)`);
 						}));
 				}));
 		}));
