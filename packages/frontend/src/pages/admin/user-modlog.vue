@@ -62,6 +62,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<template v-else-if="log.type === 'resetWarning'">
 							<div>{{ i18n.tsx.warningCount({ count: log.info.previousCount }) }}</div>
 						</template>
+
+						<div v-if="log.info.message">{{ i18n.ts.adminMessage }}: {{ log.info.message }}</div>
 					</div>
 
 					<div v-if="iAmModerator && (iAmAdmin || (!isCancelled(log) && isCancellableType(log.type)))" :class="$style.logActions">

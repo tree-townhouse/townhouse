@@ -44,6 +44,10 @@ export const meta = {
 					type: 'string',
 					optional: false, nullable: true,
 				},
+				message: {
+					type: 'string',
+					optional: false, nullable: true,
+				},
 				status: {
 					type: 'string',
 					optional: false, nullable: false,
@@ -126,6 +130,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					createdAt: this.idService.parse(log.id).date.toISOString(),
 					type: log.type,
 					reason: log.info?.reason ?? null,
+					message: log.info?.message ?? null,
 					status,
 					modifiedAt: history?.modifiedAt ?? null,
 					cancelledAt: history?.cancelledAt ?? null,

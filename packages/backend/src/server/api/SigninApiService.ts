@@ -138,12 +138,15 @@ export class SigninApiService {
 
 		if (user.isSuspended) {
 			const reason = user.suspendReason ?? '';
+			const message = user.suspendMessage ?? '';
 			const dateText = user.updatedAt ? user.updatedAt.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '';
 			const title = (this.meta.suspendAnnouncementTitle ?? '')
 				.replace('{reason}', reason)
+				.replaceAll('{message}', message)
 				.replace('{date}', dateText);
 			const text = (this.meta.suspendAnnouncementText ?? '')
 				.replace('{reason}', reason)
+				.replaceAll('{message}', message)
 				.replace('{date}', dateText);
 			return error(403, {
 				id: 'e03a5f46-d309-4865-9b69-56282d94e1eb',

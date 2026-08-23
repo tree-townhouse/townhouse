@@ -25,7 +25,7 @@ export class UserWarningService {
 	}
 
 	@bindThis
-	public async warn(user: MiUser, moderator: MiUser, reason: string): Promise<void> {
+	public async warn(user: MiUser, moderator: MiUser, reason: string, message: string): Promise<void> {
 		await this.usersRepository.increment({ id: user.id }, 'warningCount', 1);
 
 		const newWarningCount = (user.warningCount ?? 0) + 1;
@@ -35,6 +35,7 @@ export class UserWarningService {
 			userUsername: user.username,
 			userHost: user.host,
 			reason: reason,
+			message: message,
 			warningCount: newWarningCount,
 		});
 
@@ -43,10 +44,12 @@ export class UserWarningService {
 		const dateText = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 		const title = (meta.warningAnnouncementTitle ?? '{reason}')
 			.replace('{reason}', reason)
+			.replaceAll('{message}', message)
 			.replace('{date}', dateText)
 			.replace('{count}', String(newWarningCount));
 		const text = (meta.warningAnnouncementText ?? '{reason}')
 			.replace('{reason}', reason)
+			.replaceAll('{message}', message)
 			.replace('{date}', dateText)
 			.replace('{count}', String(newWarningCount));
 

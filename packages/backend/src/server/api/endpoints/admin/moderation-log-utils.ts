@@ -56,6 +56,7 @@ export async function revertModerationAction(usersRepository: UsersRepository, l
 				await usersRepository.update(targetUserId, {
 					isSuspended: false,
 					suspendReason: null,
+					suspendMessage: null,
 				});
 			}
 			break;
@@ -94,6 +95,7 @@ export async function applyModerationAction(usersRepository: UsersRepository, lo
 			await usersRepository.update(targetUserId, {
 				isSuspended: true,
 				suspendReason: log.info.reason ?? null,
+				suspendMessage: log.info.message ?? null,
 			});
 			break;
 

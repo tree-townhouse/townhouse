@@ -37,10 +37,11 @@ export class UserSuspendService {
 	}
 
 	@bindThis
-	public async suspend(user: MiUser, moderator: MiUser, reason: string): Promise<void> {
+	public async suspend(user: MiUser, moderator: MiUser, reason: string, message: string): Promise<void> {
 		await this.usersRepository.update(user.id, {
 			isSuspended: true,
 			suspendReason: reason,
+			suspendMessage: message,
 		});
 
 		this.moderationLogService.log(moderator, 'suspend', {
@@ -48,6 +49,7 @@ export class UserSuspendService {
 			userUsername: user.username,
 			userHost: user.host,
 			reason: reason,
+			message: message,
 		});
 
 		(async () => {
@@ -61,6 +63,7 @@ export class UserSuspendService {
 		await this.usersRepository.update(user.id, {
 			isSuspended: false,
 			suspendReason: null,
+			suspendMessage: null,
 		});
 
 		this.moderationLogService.log(moderator, 'unsuspend', {

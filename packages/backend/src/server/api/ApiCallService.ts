@@ -373,12 +373,15 @@ export class ApiCallService implements OnApplicationShutdown {
 				});
 			} else if (user!.isSuspended) {
 				const reason = user!.suspendReason ?? '';
+				const message = user!.suspendMessage ?? '';
 				const dateText = user!.updatedAt ? user!.updatedAt.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '';
 				const suspendTitle = (this.meta.suspendAnnouncementTitle ?? '')
 					.replace('{reason}', reason)
+					.replaceAll('{message}', message)
 					.replace('{date}', dateText);
 				const suspendText = (this.meta.suspendAnnouncementText ?? '')
 					.replace('{reason}', reason)
+					.replaceAll('{message}', message)
 					.replace('{date}', dateText);
 				throw new ApiError({
 					message: 'Your account has been suspended.',

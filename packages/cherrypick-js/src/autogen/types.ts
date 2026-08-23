@@ -13004,6 +13004,8 @@ export interface operations {
                 'application/json': {
                     /** Format: misskey:id */
                     userId: string;
+                    reason: string;
+                    message?: string;
                 };
             };
         };

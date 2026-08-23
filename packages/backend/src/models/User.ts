@@ -178,6 +178,12 @@ export class MiUser {
 	})
 	public suspendReason: string | null;
 
+	@Column('varchar', {
+		length: 2048, nullable: true,
+		comment: 'The administrator message for the suspension.',
+	})
+	public suspendMessage: string | null;
+
 	@Column('boolean', {
 		default: false,
 		comment: 'Whether the User is silenced.',

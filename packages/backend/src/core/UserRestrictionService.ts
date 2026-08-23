@@ -28,7 +28,7 @@ export class UserRestrictionService {
 	}
 
 	@bindThis
-	public async restrict(user: MiUser, moderator: MiUser, reason: string, expiresAt: Date | null): Promise<void> {
+	public async restrict(user: MiUser, moderator: MiUser, reason: string, message: string, expiresAt: Date | null): Promise<void> {
 		await this.usersRepository.update(user.id, {
 			isRestricted: true,
 			restrictedUntil: expiresAt,
@@ -39,6 +39,7 @@ export class UserRestrictionService {
 			userUsername: user.username,
 			userHost: user.host,
 			reason: reason,
+			message: message,
 			expiresAt: expiresAt ? expiresAt.toISOString() : null,
 		});
 
@@ -49,11 +50,13 @@ export class UserRestrictionService {
 		const endDateText = expiresAt ? expiresAt.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '무기한';
 		const title = (meta.restrictAnnouncementTitle ?? '{reason}')
 			.replace('{reason}', reason)
+			.replaceAll('{message}', message)
 			.replace('{period}', periodText)
 			.replace('{date}', dateText)
 			.replace('{enddate}', endDateText);
 		const text = (meta.restrictAnnouncementText ?? '{reason}\n\n{period}')
 			.replace('{reason}', reason)
+			.replaceAll('{message}', message)
 			.replace('{period}', periodText)
 			.replace('{date}', dateText)
 			.replace('{enddate}', endDateText);

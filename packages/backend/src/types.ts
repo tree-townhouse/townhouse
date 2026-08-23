@@ -163,6 +163,7 @@ export type ModerationLogPayloads = {
 		userUsername: string;
 		userHost: string | null;
 		reason: string;
+		message: string;
 	};
 	unsuspend: {
 		userId: string;
@@ -443,6 +444,7 @@ export type ModerationLogPayloads = {
 		userUsername: string;
 		userHost: string | null;
 		reason: string;
+		message: string;
 		expiresAt: string | null;
 	};
 	unsilence: {
@@ -455,6 +457,7 @@ export type ModerationLogPayloads = {
 		userUsername: string;
 		userHost: string | null;
 		reason: string;
+		message: string;
 		expiresAt: string | null;
 	};
 	unrestrict: {
@@ -467,6 +470,7 @@ export type ModerationLogPayloads = {
 		userUsername: string;
 		userHost: string | null;
 		reason: string;
+		message: string;
 		warningCount: number;
 	};
 	resetWarning: {

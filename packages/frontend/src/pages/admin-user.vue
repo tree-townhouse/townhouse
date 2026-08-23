@@ -424,6 +424,19 @@ function extractReasonFromResult(result: any, hasPresets: boolean): string {
 	return result.reason ?? '';
 }
 
+function buildAdminMessageFormField(): Record<string, FormItem> {
+	return {
+		message: {
+			type: 'string' as const,
+			label: i18n.ts.adminMessage,
+			description: i18n.ts.adminMessageDescription,
+			required: false as const,
+			multiline: true,
+			default: '',
+		},
+	};
+}
+
 const periodItems = [{
 	value: 'oneDay', label: i18n.ts.oneDay,
 }, {
@@ -461,6 +474,7 @@ async function toggleSuspend(v) {
 
 		const { canceled, result } = await os.form(i18n.ts.suspend, {
 			...reasonFields,
+			...buildAdminMessageFormField(),
 		});
 		if (canceled) {
 			suspended.value = false;
@@ -469,7 +483,11 @@ async function toggleSuspend(v) {
 
 		const reason = extractReasonFromResult(result, hasPresets);
 
-		await misskeyApi('admin/suspend-user', { userId: user.value.id, reason });
+		await misskeyApi('admin/suspend-user', {
+			userId: user.value.id,
+			reason,
+			message: result.message ?? '',
+		});
 		await refreshUser();
 	} else {
 		const confirm = await os.confirm({
@@ -499,6 +517,7 @@ async function silenceUser() {
 			default: 'indefinitely',
 		},
 		...reasonFields,
+		...buildAdminMessageFormField(),
 	});
 	if (canceled) return;
 
@@ -508,6 +527,7 @@ async function silenceUser() {
 	await os.apiWithDialog('admin/silence-user', {
 		userId: user.value.id,
 		reason,
+		message: result.message ?? '',
 		expiresAt,
 	});
 	await refreshUser();
@@ -538,6 +558,7 @@ async function restrictUser() {
 			default: 'indefinitely',
 		},
 		...reasonFields,
+		...buildAdminMessageFormField(),
 	});
 	if (canceled) return;
 
@@ -547,6 +568,7 @@ async function restrictUser() {
 	await os.apiWithDialog('admin/restrict-user', {
 		userId: user.value.id,
 		reason,
+		message: result.message ?? '',
 		expiresAt,
 	});
 	await refreshUser();
@@ -571,6 +593,7 @@ async function warnUser() {
 
 	const { canceled, result } = await os.form(i18n.ts.warn, {
 		...reasonFields,
+		...buildAdminMessageFormField(),
 	});
 	if (canceled) return;
 
@@ -579,6 +602,7 @@ async function warnUser() {
 	await os.apiWithDialog('admin/warn-user', {
 		userId: user.value.id,
 		reason,
+		message: result.message ?? '',
 	});
 	await refreshUser();
 }

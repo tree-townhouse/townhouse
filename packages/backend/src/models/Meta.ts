@@ -934,7 +934,7 @@ export class MiMeta {
 
 	@Column('varchar', {
 		length: 2048, nullable: true,
-		comment: 'Custom text for the silence announcement sent to users. Supports {reason} and {period} placeholders.',
+		comment: 'Custom text for the silence announcement sent to users. Supports {reason}, {message}, {period}, {date}, and {enddate} placeholders.',
 	})
 	public silenceAnnouncementText: string | null;
 
@@ -946,7 +946,7 @@ export class MiMeta {
 
 	@Column('varchar', {
 		length: 2048, nullable: true,
-		comment: 'Custom text for the warning announcement sent to users. Supports {reason} placeholder.',
+		comment: 'Custom text for the warning announcement sent to users. Supports {reason}, {message}, {date}, and {count} placeholders.',
 	})
 	public warningAnnouncementText: string | null;
 
@@ -958,7 +958,7 @@ export class MiMeta {
 
 	@Column('varchar', {
 		length: 2048, nullable: true,
-		comment: 'Custom text for the suspend announcement sent to users. Supports {reason} and {date} placeholders.',
+		comment: 'Custom text for the suspend announcement sent to users. Supports {reason}, {message}, and {date} placeholders.',
 	})
 	public suspendAnnouncementText: string | null;
 
@@ -970,7 +970,7 @@ export class MiMeta {
 
 	@Column('varchar', {
 		length: 2048, nullable: true,
-		comment: 'Custom text for the restrict announcement sent to users. Supports {reason}, {period}, {date}, and {enddate} placeholders.',
+		comment: 'Custom text for the restrict announcement sent to users. Supports {reason}, {message}, {period}, {date}, and {enddate} placeholders.',
 	})
 	public restrictAnnouncementText: string | null;
 

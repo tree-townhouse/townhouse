@@ -28,7 +28,7 @@ export class UserSilenceService {
 	}
 
 	@bindThis
-	public async silence(user: MiUser, moderator: MiUser, reason: string, expiresAt: Date | null): Promise<void> {
+	public async silence(user: MiUser, moderator: MiUser, reason: string, message: string, expiresAt: Date | null): Promise<void> {
 		await this.usersRepository.update(user.id, {
 			isSilenced: true,
 			silencedUntil: expiresAt,
@@ -39,6 +39,7 @@ export class UserSilenceService {
 			userUsername: user.username,
 			userHost: user.host,
 			reason: reason,
+			message: message,
 			expiresAt: expiresAt ? expiresAt.toISOString() : null,
 		});
 
@@ -49,11 +50,13 @@ export class UserSilenceService {
 		const endDateText = expiresAt ? expiresAt.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '무기한';
 		const title = (meta.silenceAnnouncementTitle ?? '{reason}')
 			.replace('{reason}', reason)
+			.replaceAll('{message}', message)
 			.replace('{period}', periodText)
 			.replace('{date}', dateText)
 			.replace('{enddate}', endDateText);
 		const text = (meta.silenceAnnouncementText ?? '{reason}\n\n{period}')
 			.replace('{reason}', reason)
+			.replaceAll('{message}', message)
 			.replace('{period}', periodText)
 			.replace('{date}', dateText)
 			.replace('{enddate}', endDateText);

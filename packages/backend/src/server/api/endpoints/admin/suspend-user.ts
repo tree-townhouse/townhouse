@@ -23,6 +23,7 @@ export const paramDef = {
 	properties: {
 		userId: { type: 'string', format: 'misskey:id' },
 		reason: { type: 'string', minLength: 1, maxLength: 512 },
+		message: { type: 'string', maxLength: 2048 },
 	},
 	required: ['userId', 'reason'],
 } as const;
@@ -47,7 +48,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new Error('cannot suspend moderator account');
 			}
 
-			await this.userSuspendService.suspend(user, me, ps.reason);
+			await this.userSuspendService.suspend(user, me, ps.reason, ps.message ?? '');
 		});
 	}
 }
