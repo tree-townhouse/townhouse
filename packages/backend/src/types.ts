@@ -145,6 +145,7 @@ export const moderationLogTypes = [
 	'resetWarning',
 	'editModerationLog',
 	'cancelModerationLog',
+	'restoreModerationLog',
 	'deleteModerationLog',
 	'deleteChannel',
 	'approveChannel',
@@ -481,6 +482,12 @@ export type ModerationLogPayloads = {
 		after: Record<string, any>;
 	};
 	cancelModerationLog: {
+		userId: string;
+		logId: string;
+		logType: string;
+		logInfo: Record<string, any>;
+	};
+	restoreModerationLog: {
 		userId: string;
 		logId: string;
 		logType: string;

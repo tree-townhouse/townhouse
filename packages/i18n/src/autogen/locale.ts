@@ -684,6 +684,22 @@ export interface Locale extends ILocale {
      */
     "confirmCancelModerationLog": string;
     /**
+     * 復元
+     */
+    "restoreModerationLog": string;
+    /**
+     * この制裁を復元しますか？制裁の効力が再度適用されます。
+     */
+    "confirmRestoreModerationLog": string;
+    /**
+     * 変更日時
+     */
+    "moderationLogModifiedAt": string;
+    /**
+     * 取り消し日時
+     */
+    "moderationLogCancelledAt": string;
+    /**
      * やめておく
      */
     "noThankYou": string;
@@ -11037,6 +11053,10 @@ export interface Locale extends ILocale {
          */
         "write:admin:cancel-moderation-log": string;
         /**
+         * 取り消した制裁履歴を復元する
+         */
+        "write:admin:restore-moderation-log": string;
+        /**
          * ユーザーを凍結する
          */
         "write:admin:suspend-user": string;
@@ -12986,6 +13006,10 @@ export interface Locale extends ILocale {
          * 制裁を取り消す
          */
         "cancelModerationLog": string;
+        /**
+         * 制裁を復元する
+         */
+        "restoreModerationLog": string;
         /**
          * 拒否
          */

@@ -31,6 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<div v-if="item.status === 'edited'" :class="$style.editedLabel">
 						<i class="ti ti-pencil"></i> {{ i18n.ts.edited }}
+						<span v-if="item.modifiedAt">· {{ i18n.ts.moderationLogModifiedAt }} <MkTime :time="item.modifiedAt" mode="detail"/></span>
 					</div>
 
 					<div :class="{ [$style.cancelledContent]: item.status === 'cancelled' }">
@@ -48,6 +49,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<span v-if="item.expiresAt"><MkTime :time="item.expiresAt" mode="absolute"/> ({{ formatPeriod(item.createdAt, item.expiresAt) }})</span>
 							<span v-else>{{ i18n.ts.indefinitely }}</span>
 						</div>
+					</div>
+
+					<div v-if="item.status === 'cancelled' && item.modifiedAt" :class="$style.editedLabel">
+						<i class="ti ti-pencil"></i> {{ i18n.ts.moderationLogModifiedAt }} <MkTime :time="item.modifiedAt" mode="detail"/>
+					</div>
+					<div v-if="item.status === 'cancelled' && item.cancelledAt" :class="$style.cancelledDate">
+						<i class="ti ti-ban"></i> {{ i18n.ts.moderationLogCancelledAt }} <MkTime :time="item.cancelledAt" mode="detail"/>
 					</div>
 				</div>
 			</div>
@@ -132,6 +140,16 @@ function formatPeriod(createdAt: string, expiresAt: string): string {
 .cancelledContent {
 	text-decoration: line-through;
 	opacity: 0.55;
+}
+
+.cancelledDate {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 12px;
+	color: var(--MI_THEME-warn);
+	font-size: 85%;
+	font-weight: bold;
 }
 
 .header {

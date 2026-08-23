@@ -153,6 +153,11 @@ export type MiNotification = {
 	customIcon: string | null;
 
 	/**
+	 * 시스템에서 생성한 앱 알림인지 여부
+	 */
+	isSystem?: boolean;
+
+	/**
 	 * アプリ通知のアプリ(のトークン)
 	 */
 	appAccessTokenId: MiAccessToken['id'] | null;

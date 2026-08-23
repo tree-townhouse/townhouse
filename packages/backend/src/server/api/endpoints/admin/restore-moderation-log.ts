@@ -8,26 +8,25 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { NotificationService } from '@/core/NotificationService.js';
 import { ApiError } from '../../error.js';
-import { CANCELLABLE_LOG_TYPES, getOriginalModerationLogInfo, isCancelledModerationLog, revertModerationAction, SANCTION_HISTORY_KEY } from './moderation-log-utils.js';
+import { applyModerationAction, CANCELLABLE_LOG_TYPES, getOriginalModerationLogInfo, isCancelledModerationLog, SANCTION_HISTORY_KEY } from './moderation-log-utils.js';
 
 export const meta = {
 	tags: ['admin'],
 	requireCredential: true,
-	requireModerator: true,
-	kind: 'write:admin:cancel-moderation-log',
+	requireAdmin: true,
+	kind: 'write:admin:restore-moderation-log',
 
 	errors: {
 		noSuchLog: {
-			message: 'No such moderation log.',
+			message: 'No such cancelled moderation log.',
 			code: 'NO_SUCH_LOG',
-			id: 'b7a8c1e0-3001-4f00-a001-000000000001',
+			id: 'b7a8c1e0-4001-4f00-a001-000000000001',
 		},
 		unsupportedLogType: {
-			message: 'This log type cannot be cancelled.',
+			message: 'This log type cannot be restored.',
 			code: 'UNSUPPORTED_LOG_TYPE',
-			id: 'b7a8c1e0-3001-4f00-a001-000000000002',
+			id: 'b7a8c1e0-4001-4f00-a001-000000000002',
 		},
 	},
 } as const;
@@ -46,11 +45,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 		private moderationLogService: ModerationLogService,
-		private notificationService: NotificationService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const log = await this.moderationLogService.findById(ps.logId);
-			if (log == null || isCancelledModerationLog(log)) {
+			if (log == null || !isCancelledModerationLog(log)) {
 				throw new ApiError(meta.errors.noSuchLog);
 			}
 
@@ -63,33 +61,29 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.unsupportedLogType);
 			}
 
-			await revertModerationAction(this.usersRepository, log);
-			const previousHistory = log.info[SANCTION_HISTORY_KEY];
+			await applyModerationAction(this.usersRepository, log);
 
-			const cancelledInfo = {
-				...log.info,
-				[SANCTION_HISTORY_KEY]: {
-					...(previousHistory != null && typeof previousHistory === 'object' ? previousHistory : {}),
-					status: 'cancelled',
-					previousStatus: previousHistory?.status === 'edited' ? 'edited' : 'active',
-					original: getOriginalModerationLogInfo(log.info),
-					cancelledAt: new Date().toISOString(),
-				},
-			};
+			const history = log.info[SANCTION_HISTORY_KEY];
+			const { [SANCTION_HISTORY_KEY]: _, ...baseInfo } = log.info;
+			const restoredInfo = history?.previousStatus === 'edited'
+				? {
+					...baseInfo,
+					[SANCTION_HISTORY_KEY]: {
+						status: 'edited',
+						original: history.original ?? getOriginalModerationLogInfo(log.info),
+						...(history.modifiedAt != null ? { modifiedAt: history.modifiedAt } : {}),
+					},
+				}
+				: baseInfo;
 
-			await this.moderationLogService.log(me, 'cancelModerationLog', {
+			await this.moderationLogService.log(me, 'restoreModerationLog', {
 				userId: targetUserId,
 				logId: ps.logId,
 				logType: log.type,
-				logInfo: cancelledInfo,
+				logInfo: restoredInfo,
 			});
 
-			await this.moderationLogService.updateInfo(ps.logId, cancelledInfo);
-
-			this.notificationService.createSystemNotification(targetUserId, {
-				header: '제재가 취소되었습니다',
-				body: '회원님에게 적용된 제재가 취소되었습니다. 프로필의 제재 내역 탭에서 확인할 수 있습니다.',
-			});
+			await this.moderationLogService.updateInfo(ps.logId, restoredInfo);
 		});
 	}
 }

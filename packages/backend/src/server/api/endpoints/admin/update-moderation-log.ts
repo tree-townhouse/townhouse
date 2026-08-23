@@ -127,6 +127,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			newInfo[SANCTION_HISTORY_KEY] = {
 				status: 'edited',
 				original: getOriginalModerationLogInfo(log.info),
+				modifiedAt: new Date().toISOString(),
 			};
 
 			// Save updated info to the log

@@ -110,6 +110,7 @@ export const permissions = [
 	'write:admin:warn-user',
 	'write:admin:update-moderation-log',
 	'write:admin:cancel-moderation-log',
+	'write:admin:restore-moderation-log',
 	'write:admin:delete-moderation-log',
 	'write:admin:meta',
 	'write:admin:user-note',

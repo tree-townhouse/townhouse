@@ -64,12 +64,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</template>
 					</div>
 
-					<div v-if="iAmModerator" :class="$style.logActions">
+					<div v-if="iAmModerator && (iAmAdmin || (!isCancelled(log) && isCancellableType(log.type)))" :class="$style.logActions">
 						<MkButton v-if="iAmAdmin && !isCancelled(log) && isEditableType(log.type)" small @click="editLog(log)">
 							<i class="ti ti-pencil"></i> {{ i18n.ts.edit }}
 						</MkButton>
 						<MkButton v-if="!isCancelled(log) && isCancellableType(log.type)" small danger @click="cancelLog(log)">
 							<i class="ti ti-ban"></i> {{ i18n.ts.cancelModerationLog }}
+						</MkButton>
+						<MkButton v-if="iAmAdmin && isCancelled(log) && isCancellableType(log.type)" small @click="restoreLog(log)">
+							<i class="ti ti-restore"></i> {{ i18n.ts.restoreModerationLog }}
 						</MkButton>
 						<MkButton v-if="iAmAdmin" small danger @click="deleteLog(log)">
 							<i class="ti ti-trash"></i> {{ i18n.ts.delete }}
@@ -357,6 +360,21 @@ async function cancelLog(log: any) {
 	if (confirm.canceled) return;
 
 	await os.apiWithDialog('admin/cancel-moderation-log', {
+		logId: log.id,
+	});
+	paginator.reload();
+	emit('refresh');
+}
+
+async function restoreLog(log: any) {
+	const confirm = await os.confirm({
+		type: 'warning',
+		title: i18n.ts.restoreModerationLog,
+		text: i18n.ts.confirmRestoreModerationLog,
+	});
+	if (confirm.canceled) return;
+
+	await os.apiWithDialog('admin/restore-moderation-log', {
 		logId: log.id,
 	});
 	paginator.reload();

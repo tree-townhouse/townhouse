@@ -44,6 +44,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				customBody: ps.body,
 				customHeader: ps.header ?? token?.name ?? null,
 				customIcon: ps.icon ?? token?.iconUrl ?? null,
+				isSystem: false,
 			});
 		});
 	}

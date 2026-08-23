@@ -4964,6 +4964,7 @@ export type components = {
             body: string;
             header: string | null;
             icon: string | null;
+            isSystem: boolean;
         } | {
             /** Format: id */
             id: string;

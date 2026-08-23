@@ -439,6 +439,10 @@ export const packedNotificationSchema = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			isSystem: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 		},
 	}, {
 		type: 'object',

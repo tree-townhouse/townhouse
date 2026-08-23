@@ -49,6 +49,16 @@ export const meta = {
 					optional: false, nullable: false,
 					enum: ['active', 'edited', 'cancelled'],
 				},
+				modifiedAt: {
+					type: 'string',
+					optional: false, nullable: true,
+					format: 'date-time',
+				},
+				cancelledAt: {
+					type: 'string',
+					optional: false, nullable: true,
+					format: 'date-time',
+				},
 				originalReason: {
 					type: 'string',
 					optional: false, nullable: true,
@@ -117,6 +127,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					type: log.type,
 					reason: log.info?.reason ?? null,
 					status,
+					modifiedAt: history?.modifiedAt ?? null,
+					cancelledAt: history?.cancelledAt ?? null,
 					originalReason: original?.reason ?? null,
 					expiresAt: log.info?.expiresAt ?? null,
 					originalExpiresAt: original?.expiresAt ?? null,

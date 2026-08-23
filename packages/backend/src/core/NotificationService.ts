@@ -102,6 +102,7 @@ export class NotificationService implements OnApplicationShutdown {
 				customBody: data.body,
 				customHeader: data.header,
 				customIcon: data.icon ?? null,
+				isSystem: true,
 			}, null, true),
 		);
 	}

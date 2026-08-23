@@ -67,3 +67,38 @@ export async function revertModerationAction(usersRepository: UsersRepository, l
 			break;
 	}
 }
+
+export async function applyModerationAction(usersRepository: UsersRepository, log: MiModerationLog): Promise<void> {
+	const targetUserId = log.info.userId;
+	if (!targetUserId) return;
+
+	const user = await usersRepository.findOneBy({ id: targetUserId });
+	if (!user) return;
+
+	switch (log.type) {
+		case 'silence':
+			await usersRepository.update(targetUserId, {
+				isSilenced: true,
+				silencedUntil: log.info.expiresAt == null ? null : new Date(log.info.expiresAt),
+			});
+			break;
+
+		case 'restrict':
+			await usersRepository.update(targetUserId, {
+				isRestricted: true,
+				restrictedUntil: log.info.expiresAt == null ? null : new Date(log.info.expiresAt),
+			});
+			break;
+
+		case 'suspend':
+			await usersRepository.update(targetUserId, {
+				isSuspended: true,
+				suspendReason: log.info.reason ?? null,
+			});
+			break;
+
+		case 'warn':
+			await usersRepository.increment({ id: targetUserId }, 'warningCount', 1);
+			break;
+	}
+}
