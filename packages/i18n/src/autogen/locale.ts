@@ -2452,6 +2452,7 @@ export interface Locale extends ILocale {
      */
     "silenceAnnouncementTextLabel": string;
     /**
+<<<<<<< HEAD
      * {reason}は理由、{message}は管理者メッセージ、{period}は期間、{date}は日時、{enddate}は終了日時に置き換えられます。
      */
     "silenceAnnouncementTemplateDescription": ParameterizedString<"reason" | "message" | "period" | "date" | "enddate">;
@@ -2511,6 +2512,11 @@ export interface Locale extends ILocale {
      * {reason}は理由、{message}は管理者メッセージ、{period}は期間、{date}は日時、{enddate}は終了日時に置き換えられます。
      */
     "restrictAnnouncementTemplateDescription": ParameterizedString<"reason" | "message" | "period" | "date" | "enddate">;
+=======
+     * {reason}は理由、{period}は期間、{date}は日時、{enddate}は終了日時に置き換えられます。
+     */
+    "silenceAnnouncementTemplateDescription": ParameterizedString<"reason" | "period" | "date" | "enddate">;
+>>>>>>> cac68b24eba6bd5fc275f48f551c730958301332
     /**
      * 警告
      */
@@ -2548,9 +2554,15 @@ export interface Locale extends ILocale {
      */
     "warningAnnouncementTextLabel": string;
     /**
+<<<<<<< HEAD
      * {reason}は理由、{message}は管理者メッセージ、{date}は日時、{count}は警告回数に置き換えられます。
      */
     "warningAnnouncementTemplateDescription": ParameterizedString<"reason" | "message" | "date" | "count">;
+=======
+     * {reason}は理由、{date}は日時、{count}は警告回数に置き換えられます。
+     */
+    "warningAnnouncementTemplateDescription": ParameterizedString<"reason" | "date" | "count">;
+>>>>>>> cac68b24eba6bd5fc275f48f551c730958301332
     /**
      * 凍結理由
      */
@@ -2572,9 +2584,15 @@ export interface Locale extends ILocale {
      */
     "suspendAnnouncementTextLabel": string;
     /**
+<<<<<<< HEAD
      * {reason}は理由、{message}は管理者メッセージ、{date}は日時に置き換えられます。
      */
     "suspendAnnouncementTemplateDescription": ParameterizedString<"reason" | "message" | "date">;
+=======
+     * {reason}は理由、{date}は日時に置き換えられます。
+     */
+    "suspendAnnouncementTemplateDescription": ParameterizedString<"reason" | "date">;
+>>>>>>> cac68b24eba6bd5fc275f48f551c730958301332
     /**
      * モデレーション履歴
      */
@@ -2592,6 +2610,7 @@ export interface Locale extends ILocale {
      */
     "reason": string;
     /**
+<<<<<<< HEAD
      * 管理者メッセージ
      */
     "adminMessage": string;
@@ -2600,6 +2619,8 @@ export interface Locale extends ILocale {
      */
     "adminMessageDescription": ParameterizedString<"message">;
     /**
+=======
+>>>>>>> cac68b24eba6bd5fc275f48f551c730958301332
      * 履歴を編集
      */
     "editModerationLog": string;
