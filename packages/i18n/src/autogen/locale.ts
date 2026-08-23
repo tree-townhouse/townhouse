@@ -676,6 +676,14 @@ export interface Locale extends ILocale {
      */
     "cancel": string;
     /**
+     * 制裁を取り消す
+     */
+    "cancelModerationLog": string;
+    /**
+     * この制裁を取り消しますか？履歴は取り消し線付きで残ります。
+     */
+    "confirmCancelModerationLog": string;
+    /**
      * やめておく
      */
     "noThankYou": string;
@@ -11025,6 +11033,10 @@ export interface Locale extends ILocale {
          */
         "read:admin:show-user": string;
         /**
+         * 制裁履歴を取り消す
+         */
+        "write:admin:cancel-moderation-log": string;
+        /**
          * ユーザーを凍結する
          */
         "write:admin:suspend-user": string;
@@ -12970,6 +12982,10 @@ export interface Locale extends ILocale {
          * 承認済み
          */
         "approve": string;
+        /**
+         * 制裁を取り消す
+         */
+        "cancelModerationLog": string;
         /**
          * 拒否
          */

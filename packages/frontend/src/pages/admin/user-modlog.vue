@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template #default="{ items }">
 			<div class="_gaps_s">
 				<div v-for="log in items" :key="log.id" v-panel :class="$style.logItem">
-					<div :class="$style.logHeader">
+					<div :class="[$style.logHeader, { [$style.cancelledLog]: isCancelled(log) }]">
 						<span :class="$style.logIcon">
 							<i v-if="log.type === 'silence'" class="ti ti-volume-off" style="color: var(--MI_THEME-warn);"></i>
 							<i v-else-if="log.type === 'unsilence'" class="ti ti-volume" style="color: var(--MI_THEME-success);"></i>
@@ -29,7 +29,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<span :class="$style.logTime"><MkTime :time="log.createdAt" mode="detail"/></span>
 					</div>
 
-					<div :class="$style.logBody">
+					<div :class="[$style.logBody, { [$style.cancelledLog]: isCancelled(log) }]">
 						<div :class="$style.logModerator">
 							{{ i18n.ts.moderator }}: <MkA :to="`/admin/user/${log.userId}`" class="_link">@{{ log.user?.username }}</MkA>
 						</div>
@@ -64,12 +64,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</template>
 					</div>
 
-					<!-- Edit/Delete buttons (admin only) -->
-					<div v-if="iAmAdmin" :class="$style.logActions">
-						<MkButton v-if="isEditableType(log.type)" small @click="editLog(log)">
+					<div v-if="iAmModerator" :class="$style.logActions">
+						<MkButton v-if="iAmAdmin && !isCancelled(log) && isEditableType(log.type)" small @click="editLog(log)">
 							<i class="ti ti-pencil"></i> {{ i18n.ts.edit }}
 						</MkButton>
-						<MkButton small danger @click="deleteLog(log)">
+						<MkButton v-if="!isCancelled(log) && isCancellableType(log.type)" small danger @click="cancelLog(log)">
+							<i class="ti ti-ban"></i> {{ i18n.ts.cancelModerationLog }}
+						</MkButton>
+						<MkButton v-if="iAmAdmin" small danger @click="deleteLog(log)">
 							<i class="ti ti-trash"></i> {{ i18n.ts.delete }}
 						</MkButton>
 					</div>
@@ -92,9 +94,8 @@ import MkPagination from '@/components/MkPagination.vue';
 import MkSelect from '@/components/MkSelect.vue';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
-import { iAmAdmin } from '@/i.js';
+import { iAmAdmin, iAmModerator } from '@/i.js';
 import { useMkSelect } from '@/composables/use-mkselect.js';
 import { Paginator } from '@/utility/paginator.js';
 
@@ -157,6 +158,14 @@ const paginator = markRaw(new Paginator('admin/show-moderation-logs', {
 
 function isEditableType(type: string): boolean {
 	return ['silence', 'restrict', 'suspend', 'warn'].includes(type);
+}
+
+function isCancellableType(type: string): boolean {
+	return ['silence', 'restrict', 'suspend', 'warn'].includes(type);
+}
+
+function isCancelled(log: any): boolean {
+	return log.info?._sanctionHistory?.status === 'cancelled';
 }
 
 async function editLog(log: any) {
@@ -338,12 +347,32 @@ async function deleteLog(log: any) {
 	paginator.reload();
 	emit('refresh');
 }
+
+async function cancelLog(log: any) {
+	const confirm = await os.confirm({
+		type: 'warning',
+		title: i18n.ts.cancelModerationLog,
+		text: i18n.ts.confirmCancelModerationLog,
+	});
+	if (confirm.canceled) return;
+
+	await os.apiWithDialog('admin/cancel-moderation-log', {
+		logId: log.id,
+	});
+	paginator.reload();
+	emit('refresh');
+}
 </script>
 
 <style lang="scss" module>
 .logItem {
 	padding: 12px 16px;
 	border-radius: 8px;
+}
+
+.cancelledLog {
+	text-decoration: line-through;
+	opacity: 0.55;
 }
 
 .logHeader {

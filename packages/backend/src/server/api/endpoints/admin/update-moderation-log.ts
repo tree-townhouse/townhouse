@@ -8,8 +8,9 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { IdService } from '@/core/IdService.js';
+import { NotificationService } from '@/core/NotificationService.js';
 import { ApiError } from '../../error.js';
+import { getOriginalModerationLogInfo, isCancelledModerationLog, SANCTION_HISTORY_KEY } from './moderation-log-utils.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -42,7 +43,7 @@ export const paramDef = {
 } as const;
 
 // Log types that can be edited and how they affect user state
-const EDITABLE_LOG_TYPES = ['silence', 'suspend', 'warn'];
+const EDITABLE_LOG_TYPES = ['silence', 'restrict', 'suspend', 'warn'];
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
@@ -50,7 +51,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 		private moderationLogService: ModerationLogService,
-		private idService: IdService,
+		private notificationService: NotificationService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const log = await this.moderationLogService.findById(ps.logId);
@@ -60,6 +61,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (!EDITABLE_LOG_TYPES.includes(log.type)) {
 				throw new ApiError(meta.errors.unsupportedLogType);
+			}
+
+			if (isCancelledModerationLog(log)) {
+				throw new ApiError(meta.errors.noSuchLog);
 			}
 
 			const targetUserId = log.info.userId;
@@ -81,24 +86,48 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				if (ps.expiresAt === null) {
 					// Change to indefinite
 					newInfo.expiresAt = null;
-					await this.usersRepository.update(targetUserId, {
-						silencedUntil: null,
-					});
 				} else {
 					const newExpiresAtDate = new Date(ps.expiresAt);
 					newInfo.expiresAt = newExpiresAtDate.toISOString();
-					await this.usersRepository.update(targetUserId, {
-						silencedUntil: newExpiresAtDate,
-					});
 				}
 			}
 
+			if (log.type === 'restrict' && ps.expiresAt !== undefined) {
+				if (ps.expiresAt === null) {
+					newInfo.expiresAt = null;
+				} else {
+					const newExpiresAtDate = new Date(ps.expiresAt);
+					newInfo.expiresAt = newExpiresAtDate.toISOString();
+				}
+			}
+
+			if (beforeInfo.reason === newInfo.reason && beforeInfo.expiresAt === newInfo.expiresAt) {
+				return;
+			}
+
+			if (log.type === 'silence' && ps.expiresAt !== undefined) {
+				await this.usersRepository.update(targetUserId, {
+					silencedUntil: newInfo.expiresAt == null ? null : new Date(newInfo.expiresAt),
+				});
+			}
+
+			if (log.type === 'restrict' && ps.expiresAt !== undefined) {
+				await this.usersRepository.update(targetUserId, {
+					restrictedUntil: newInfo.expiresAt == null ? null : new Date(newInfo.expiresAt),
+				});
+			}
+
 			if (log.type === 'suspend' && ps.reason !== undefined && ps.reason !== null) {
-				// Update the suspend reason on the user
 				await this.usersRepository.update(targetUserId, {
 					suspendReason: ps.reason,
 				});
 			}
+
+			// Keep the first version so the sanctioned user can see what was changed.
+			newInfo[SANCTION_HISTORY_KEY] = {
+				status: 'edited',
+				original: getOriginalModerationLogInfo(log.info),
+			};
 
 			// Save updated info to the log
 			await this.moderationLogService.updateInfo(ps.logId, newInfo);
@@ -109,6 +138,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				logType: log.type,
 				before: beforeInfo,
 				after: newInfo,
+			});
+
+			this.notificationService.createSystemNotification(targetUserId, {
+				header: '제재 내역이 수정되었습니다',
+				body: '회원님에게 적용된 제재의 내용이 수정되었습니다. 프로필의 제재 내역 탭에서 변경 내용을 확인해 주세요.',
 			});
 		});
 	}

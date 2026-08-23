@@ -87,18 +87,38 @@ export class NotificationService implements OnApplicationShutdown {
 		);
 	}
 
+	@bindThis
+	public createSystemNotification(
+		notifieeId: MiUser['id'],
+		data: {
+			header: string;
+			body: string;
+			icon?: string | null;
+		},
+	) {
+		trackPromise(
+			this.#createNotificationInternal(notifieeId, 'app', {
+				appAccessTokenId: null,
+				customBody: data.body,
+				customHeader: data.header,
+				customIcon: data.icon ?? null,
+			}, null, true),
+		);
+	}
+
 	async #createNotificationInternal<T extends MiNotification['type']>(
 		notifieeId: MiUser['id'],
 		type: T,
 		data: Omit<FilterUnionByProperty<MiNotification, 'type', T>, 'type' | 'id' | 'createdAt' | 'notifierId'>,
 		notifierId?: MiUser['id'] | null,
+		ignoreNotificationConfig = false,
 	): Promise<MiNotification | null> {
 		const profile = await this.cacheService.userProfileCache.fetch(notifieeId);
 
 		// 古いMisskeyバージョンのキャッシュが残っている可能性がある
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		const recieveConfig = (profile.notificationRecieveConfig ?? {})[type];
-		if (recieveConfig?.type === 'never') {
+		if (!ignoreNotificationConfig && recieveConfig?.type === 'never') {
 			return null;
 		}
 

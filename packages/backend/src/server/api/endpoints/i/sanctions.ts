@@ -44,10 +44,28 @@ export const meta = {
 					type: 'string',
 					optional: false, nullable: true,
 				},
+				status: {
+					type: 'string',
+					optional: false, nullable: false,
+					enum: ['active', 'edited', 'cancelled'],
+				},
+				originalReason: {
+					type: 'string',
+					optional: false, nullable: true,
+				},
 				expiresAt: {
 					type: 'string',
 					optional: true, nullable: true,
 					format: 'date-time',
+				},
+				originalExpiresAt: {
+					type: 'string',
+					optional: false, nullable: true,
+					format: 'date-time',
+				},
+				warningCount: {
+					type: 'integer',
+					optional: false, nullable: true,
 				},
 			},
 		},
@@ -84,14 +102,27 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const logs = await query.limit(ps.limit).getMany();
 
-			return logs.map((log: MiModerationLog) => ({
-				id: log.id,
-				createdAt: this.idService.parse(log.id).date.toISOString(),
-				type: log.type,
-				reason: log.info?.reason ?? null,
-				expiresAt: log.info?.expiresAt ?? null,
-				warningCount: log.info?.warningCount ?? null,
-			}));
+			return logs.map((log: MiModerationLog) => {
+				const history = log.info?._sanctionHistory;
+				const status = history?.status === 'edited' || history?.status === 'cancelled'
+					? history.status
+					: 'active';
+				const original = status === 'edited' && history?.original != null
+					? history.original
+					: null;
+
+				return {
+					id: log.id,
+					createdAt: this.idService.parse(log.id).date.toISOString(),
+					type: log.type,
+					reason: log.info?.reason ?? null,
+					status,
+					originalReason: original?.reason ?? null,
+					expiresAt: log.info?.expiresAt ?? null,
+					originalExpiresAt: original?.expiresAt ?? null,
+					warningCount: log.info?.warningCount ?? null,
+				};
+			});
 		});
 	}
 }

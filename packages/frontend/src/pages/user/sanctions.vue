@@ -12,18 +12,42 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 			<div v-else class="_gaps">
 				<div v-for="item in items" :key="item.id" class="_panel" :class="$style.item">
-					<div :class="$style.header">
-						<span :class="$style.badge" :style="{ background: getBadgeColor(item.type) }">{{ getTypeLabel(item.type) }}</span>
-						<span v-if="item.type === 'warn' && item.warningCount" :class="$style.warningCount">{{ i18n.tsx.warningCount({ count: item.warningCount }) }}</span>
-						<span :class="$style.date"><MkTime :time="item.createdAt" mode="detail"/></span>
+					<div v-if="item.status === 'edited'" :class="$style.previous">
+						<div :class="$style.header">
+							<span :class="$style.badge" :style="{ background: getBadgeColor(item.type) }">{{ getTypeLabel(item.type) }}</span>
+							<span v-if="item.type === 'warn' && item.warningCount" :class="$style.warningCount">{{ i18n.tsx.warningCount({ count: item.warningCount }) }}</span>
+							<span :class="$style.date"><MkTime :time="item.createdAt" mode="detail"/></span>
+						</div>
+						<div :class="$style.reason">
+							<span :class="$style.reasonLabel">{{ i18n.ts.reason }}</span>
+							<span>{{ item.originalReason ?? '-' }}</span>
+						</div>
+						<div v-if="hasExpiration(item.type)" :class="$style.expires">
+							<span :class="$style.reasonLabel">{{ i18n.ts.expiration }}</span>
+							<span v-if="item.originalExpiresAt"><MkTime :time="item.originalExpiresAt" mode="absolute"/> ({{ formatPeriod(item.createdAt, item.originalExpiresAt) }})</span>
+							<span v-else>{{ i18n.ts.indefinitely }}</span>
+						</div>
 					</div>
-					<div :class="$style.reason">
-						<span :class="$style.reasonLabel">{{ i18n.ts.reason }}</span>
-						<span>{{ item.reason ?? '-' }}</span>
+
+					<div v-if="item.status === 'edited'" :class="$style.editedLabel">
+						<i class="ti ti-pencil"></i> {{ i18n.ts.edited }}
 					</div>
-					<div v-if="item.expiresAt" :class="$style.expires">
-						<span :class="$style.reasonLabel">{{ i18n.ts.expiration }}</span>
-						<span><MkTime :time="item.expiresAt" mode="absolute"/> ({{ formatPeriod(item.createdAt, item.expiresAt) }})</span>
+
+					<div :class="{ [$style.cancelledContent]: item.status === 'cancelled' }">
+						<div :class="$style.header">
+							<span :class="$style.badge" :style="{ background: getBadgeColor(item.type) }">{{ getTypeLabel(item.type) }}</span>
+							<span v-if="item.type === 'warn' && item.warningCount" :class="$style.warningCount">{{ i18n.tsx.warningCount({ count: item.warningCount }) }}</span>
+							<span :class="$style.date"><MkTime :time="item.createdAt" mode="detail"/></span>
+						</div>
+						<div :class="$style.reason">
+							<span :class="$style.reasonLabel">{{ i18n.ts.reason }}</span>
+							<span>{{ item.reason ?? '-' }}</span>
+						</div>
+						<div v-if="hasExpiration(item.type)" :class="$style.expires">
+							<span :class="$style.reasonLabel">{{ i18n.ts.expiration }}</span>
+							<span v-if="item.expiresAt"><MkTime :time="item.expiresAt" mode="absolute"/> ({{ formatPeriod(item.createdAt, item.expiresAt) }})</span>
+							<span v-else>{{ i18n.ts.indefinitely }}</span>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -62,6 +86,10 @@ function getBadgeColor(type: string): string {
 	}
 }
 
+function hasExpiration(type: string): boolean {
+	return type === 'silence' || type === 'restrict';
+}
+
 function formatPeriod(createdAt: string, expiresAt: string): string {
 	const start = new Date(createdAt).getTime();
 	const end = new Date(expiresAt).getTime();
@@ -84,6 +112,26 @@ function formatPeriod(createdAt: string, expiresAt: string): string {
 <style lang="scss" module>
 .item {
 	padding: 16px;
+}
+
+.previous {
+	text-decoration: line-through;
+	opacity: 0.55;
+}
+
+.editedLabel {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin: 12px 0;
+	color: var(--MI_THEME-accent);
+	font-size: 85%;
+	font-weight: bold;
+}
+
+.cancelledContent {
+	text-decoration: line-through;
+	opacity: 0.55;
 }
 
 .header {

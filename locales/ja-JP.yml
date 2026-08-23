@@ -629,8 +629,10 @@ sanctionHistory: "制裁履歴"
 noSanctionHistory: "制裁履歴はありません。"
 reason: "理由"
 editModerationLog: "履歴を編集"
+cancelModerationLog: "制裁を取り消す"
+confirmCancelModerationLog: "この制裁を取り消しますか？履歴は取り消し線付きで残ります。"
 deleteModerationLog: "履歴を削除"
-confirmDeleteModerationLog: "この履歴を削除しますか？"
+confirmDeleteModerationLog: "この履歴を完全に削除しますか？ユーザーの制裁履歴からも消えます。"
 deleteAndRevert: "削除して操作を元に戻す"
 deleteLogOnly: "履歴のみ削除"
 noModerationHistory: "モデレーション履歴はありません。"
@@ -3012,6 +3014,7 @@ _permissions:
   "write:admin:unsuspend-user": "ユーザーの凍結を解除する"
   "write:admin:warn-user": "ユーザーに警告する"
   "write:admin:reset-user-warning": "ユーザーの警告をリセット"
+  "write:admin:cancel-moderation-log": "制裁履歴を取り消す"
   "write:admin:meta": "インスタンスのメタデータを操作する"
   "write:admin:user-note": "モデレーションノートを操作する"
   "write:admin:roles": "ロールを操作する"
@@ -3557,6 +3560,7 @@ _moderationLogTypes:
   warn: "警告"
   resetWarning: "警告リセット"
   editModerationLog: "履歴を編集"
+  cancelModerationLog: "制裁を取り消す"
   deleteModerationLog: "履歴を削除"
 
 _fileViewer:
@@ -4155,4 +4159,3 @@ _deliveryTargetControl:
   deliveryTargetsInclude: "一部のサーバーにのみ公開"
   deliveryTargetsExclude: "一部のサーバーに非公開"
   hasDeliveryTargets: "配送先が選択されています"
-

@@ -135,6 +135,7 @@ export * as 'admin/update-note-visibility' from './endpoints/admin/update-note-v
 export * as 'admin/warn-user' from './endpoints/admin/warn-user.js';
 export * as 'admin/update-moderation-log' from './endpoints/admin/update-moderation-log.js';
 export * as 'admin/delete-moderation-log' from './endpoints/admin/delete-moderation-log.js';
+export * as 'admin/cancel-moderation-log' from './endpoints/admin/cancel-moderation-log.js';
 export * as 'announcements' from './endpoints/announcements.js';
 export * as 'announcements/show' from './endpoints/announcements/show.js';
 export * as 'antennas/create' from './endpoints/antennas/create.js';

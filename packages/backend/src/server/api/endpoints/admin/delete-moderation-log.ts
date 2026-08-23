@@ -9,6 +9,7 @@ import type { UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { ApiError } from '../../error.js';
+import { DELETABLE_LOG_TYPES, isCancelledModerationLog, revertModerationAction } from './moderation-log-utils.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -38,9 +39,6 @@ export const paramDef = {
 	required: ['logId'],
 } as const;
 
-// Log types that can be deleted and their revert behavior
-const DELETABLE_LOG_TYPES = ['silence', 'restrict', 'suspend', 'warn', 'unsilence', 'unrestrict', 'unsuspend', 'resetWarning'];
-
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
@@ -58,67 +56,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.unsupportedLogType);
 			}
 
-			const targetUserId = log.info.userId;
-
-			// Auto-detect: if the action is currently active, revert it
-			if (targetUserId) {
-				const user = await this.usersRepository.findOneBy({ id: targetUserId });
-				if (user) {
-					switch (log.type) {
-						case 'silence':
-							// Only revert if user is currently silenced
-							if (user.isSilenced) {
-								await this.usersRepository.update(targetUserId, {
-									isSilenced: false,
-									silencedUntil: null,
-								});
-							}
-							break;
-							case 'restrict':
-								// Only revert if user is currently restricted
-								if (user.isRestricted) {
-									await this.usersRepository.update(targetUserId, {
-										isRestricted: false,
-										restrictedUntil: null,
-									});
-								}
-								break;
-						case 'suspend':
-							// Only revert if user is currently suspended
-							if (user.isSuspended) {
-								await this.usersRepository.update(targetUserId, {
-									isSuspended: false,
-									suspendReason: null,
-								});
-							}
-							break;
-
-						case 'warn':
-							// Decrement warning count if > 0
-							if (user.warningCount > 0) {
-								await this.usersRepository.decrement({ id: targetUserId }, 'warningCount', 1);
-							}
-							break;
-
-						// For unsilence/unsuspend/resetWarning: just delete the log,
-						// don't re-apply the original action
-						case 'unsilence':
-						case 'unrestrict':
-						case 'unsuspend':
-						case 'resetWarning':
-							break;
-					}
-				}
+			// A cancelled sanction was already reverted when it was cancelled.
+			if (!isCancelledModerationLog(log)) {
+				await revertModerationAction(this.usersRepository, log);
 			}
 
-			// Log this deletion before actually deleting
 			await this.moderationLogService.log(me, 'deleteModerationLog', {
 				logId: ps.logId,
 				logType: log.type,
 				logInfo: log.info,
 			});
 
-			// Delete the log entry
 			await this.moderationLogService.deleteLog(ps.logId);
 		});
 	}
